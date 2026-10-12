@@ -1,4 +1,4 @@
-# event-linking-resa2
+# resa2el
 
 CS 2242 final project (Rodrigo Quezada). We compare negative samplers for the
 retrieval stage of Event Linking (Yu et al., EACL 2023), on the Wikipedia data:
