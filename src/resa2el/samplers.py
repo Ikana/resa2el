@@ -25,7 +25,7 @@ TAU = 0.25  # stage 1 weight width, same value as firstSampling.py
 
 def uniform(scores, s_pos, sims, k, rng):
     """Select k pages uniformly, without replacement."""
-    raise NotImplementedError
+    return rng.choice(len(scores), k, replace=False)
 
 
 def topscore(scores, s_pos, sims, k, rng):
