@@ -1,0 +1,14 @@
+# Main runs: 4 samplers x 3 seeds = 12 runs. Same examples, loss, batch size,
+# and number of updates for every run. Set `updates` after the pilot.
+name: main
+data: wikipedia
+init_checkpoint: released_biencoder
+freeze_page_encoder: true
+samplers: [in_batch, uniform, topscore, resa2]
+seeds: [0, 1, 2]
+updates: null          # TODO: set from the pilot
+batch_size: null       # TODO: set from the pilot
+negatives_per_query: 7
+resa2: {pool: 1000, stage1_keep: 500, stage2_top: 75, tau: 0.25}
+eval: [recall@10, top1, recall@100, hard_nominal_recall, nyt_test]
+budget: {gpu_hours: 96, usd: 150}

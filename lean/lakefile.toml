@@ -1,0 +1,5 @@
+name = "resa2proofs"
+defaultTargets = ["FalseNegatives"]
+
+[[lean_lib]]
+name = "FalseNegatives"

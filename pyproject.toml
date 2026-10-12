@@ -1,0 +1,19 @@
+[project]
+name = "resa2el"
+version = "0.1.0"
+description = "Negative samplers (ReSa2, uniform, top-score) for Event Linking retrieval"
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.24"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

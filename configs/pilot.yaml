@@ -1,0 +1,9 @@
+# Pilot: 8 GPU-hours. Measures memory, candidate search time, training speed,
+# and the score gaps of wrong-year errors. Sets the run length for the main runs.
+name: pilot
+data: wikipedia
+init_checkpoint: released_biencoder   # from the EVELINK archive
+freeze_page_encoder: true
+samplers: [uniform, resa2]            # short runs only
+seeds: [0]
+gpu_hours_limit: 8

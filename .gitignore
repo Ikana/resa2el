@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.egg-info/
+# Large files stay out of git
+data/
+checkpoints/
+runs/
+*.zip
+# Lean build output
+lean/.lake/
