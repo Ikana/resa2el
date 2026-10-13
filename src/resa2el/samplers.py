@@ -41,7 +41,8 @@ def stage1_weights(scores, s_pos, tau=TAU):
 def resa2_stage1(scores, s_pos, n_keep, rng, tau=TAU):
     """Keep n_keep pages. Draw one page with prob. proportional to its weight,
     remove it, and draw again from the rest (successive sampling)."""
-    raise NotImplementedError
+    w = stage1_weights(scores, s_pos, tau)
+    return rng.choice(len(scores), n_keep, replace=False, p=w / w.sum())
 
 
 def resa2(scores, s_pos, sims, k, rng, n_stage1=500, n_stage2=75, tau=TAU):
