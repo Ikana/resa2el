@@ -30,7 +30,7 @@ def uniform(scores, s_pos, sims, k, rng):
 
 def topscore(scores, s_pos, sims, k, rng):
     """Select the k pages with the highest score. No randomness."""
-    raise NotImplementedError
+    return np.argsort(scores)[-k:]
 
 
 def stage1_weights(scores, s_pos, tau=TAU):
