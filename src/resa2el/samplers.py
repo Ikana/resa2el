@@ -35,7 +35,7 @@ def topscore(scores, s_pos, sims, k, rng):
 
 def stage1_weights(scores, s_pos, tau=TAU):
     """Weight of each page: exp(-tau * (score - s_pos)^2)."""
-    raise NotImplementedError
+    return np.exp(-tau * (scores - s_pos) ** 2)
 
 
 def resa2_stage1(scores, s_pos, n_keep, rng, tau=TAU):
