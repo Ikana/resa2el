@@ -100,9 +100,9 @@ class BiEncoderRanker(torch.nn.Module):
 
     def load_model(self, fname, cpu=False):
         if cpu:
-            state_dict = torch.load(fname, map_location=lambda storage, location: "cpu")
+            state_dict = torch.load(fname, map_location="cpu", weights_only=False)
         else:
-            state_dict = torch.load(fname)
+            state_dict = torch.load(fname, weights_only=False)
         self.model.load_state_dict(state_dict)
 
     def build_model(self):
@@ -201,8 +201,7 @@ class BiEncoderRanker(torch.nn.Module):
         scores = self.score_candidate(context_input, cand_input, flag)
         bs = scores.size(0)
         if label_input is None:
-            target = torch.LongTensor(torch.arange(bs))
-            target = target.to(self.device)
+            target = torch.arange(bs, dtype=torch.long, device=self.device)
             loss = F.cross_entropy(scores, target, reduction="mean")
         else:
             loss_fct = nn.BCEWithLogitsLoss(reduction="mean")

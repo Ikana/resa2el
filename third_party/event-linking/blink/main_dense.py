@@ -17,7 +17,6 @@ import numpy as np
 from colorama import init
 from termcolor import colored
 
-import blink.ner as NER
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 from blink.biencoder.biencoder import BiEncoderRanker, load_biencoder
 from blink.crossencoder.crossencoder import CrossEncoderRanker, load_crossencoder
@@ -103,7 +102,7 @@ def _load_candidates(
 ):
     # only load candidate encoding if not using faiss index
     if faiss_index is None:
-        candidate_encoding = torch.load(entity_encoding)
+        candidate_encoding = torch.load(entity_encoding, weights_only=False)
         # print(type(candidate_encoding), candidate_encoding.size())
         # candidate_encoding = candidate_encoding[0:int(1174151/2)]
         # print(type(candidate_encoding), candidate_encoding.size())
@@ -251,7 +250,7 @@ def _run_biencoder(biencoder, dataloader, candidate_encoding, top_k=100, indexer
     nn_candidates = []
 
     if save_topk_result:
-        candidate_pool = torch.load(cand_pool_path)
+        candidate_pool = torch.load(cand_pool_path, weights_only=False)
         id2title_file = open('data/wikipedia/wiki/enwiki-20200301.id2t.pkl', 'rb')
         original_id2title = pickle.load(id2title_file)
 
@@ -439,6 +438,7 @@ def run(
             # biencoder_params["eval_batch_size"] = 1
 
             # Load NER model
+            import blink.ner as NER  # only interactive mode needs flair
             ner_model = NER.get_model()
 
             # Interactive

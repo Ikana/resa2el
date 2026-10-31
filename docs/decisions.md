@@ -11,3 +11,8 @@ Newest at the bottom. One line for the decision, one line for the reason.
   Reason: proofs so far are about lists and counting. Add Mathlib when a proof needs real numbers.
 - 2026-10-12: Every run reads one config file in `configs/` and writes to `runs/<name>/<seed>/`.
   Reason: all twelve runs must be repeatable and must use the same budget.
+- 2026-10-31: Run experiments on a rented cloud GPU (RunPod recommended: A40 48 GB at $0.59/h).
+  Reason: full control, disk that stays, and 96 GPU-hours fit the $150 budget.
+- 2026-10-31: Move EVELINK to the newest torch (2.15.0) and Python 3.12+.
+  Reason: rented GPUs are Ampere or newer, and torch 1.6 does not support them.
+  EVELINK is a copy in `third_party/event-linking` (not a submodule), so we can change it.

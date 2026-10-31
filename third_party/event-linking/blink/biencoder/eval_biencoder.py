@@ -203,7 +203,7 @@ def load_or_generate_candidate_pool(
         try:
             logger.info("Loading pre-generated candidate pool from: ")
             logger.info(cand_pool_path)
-            candidate_pool = torch.load(cand_pool_path)
+            candidate_pool = torch.load(cand_pool_path, weights_only=False)
         except:
             logger.info("Loading failed. Generating candidate pool")
 
@@ -245,7 +245,7 @@ def main(params):
         # if success, avoid computing candidate encoding
         try:
             logger.info("Loading pre-generated candidate encode path.")
-            candidate_encoding = torch.load(cand_encode_path)
+            candidate_encoding = torch.load(cand_encode_path, weights_only=False)
         except:
             logger.info("Loading failed. Generating candidate encoding.")
 

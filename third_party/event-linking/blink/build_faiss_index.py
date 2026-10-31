@@ -27,7 +27,7 @@ def main(params):
     logger = utils.get_logger(output_dir)
 
     logger.info("Loading candidate encoding from path: %s" % params["candidate_encoding"])
-    candidate_encoding = torch.load(params["candidate_encoding"])
+    candidate_encoding = torch.load(params["candidate_encoding"], weights_only=False)
     vector_size = candidate_encoding.size(1)
     index_buffer = params["index_buffer"]
     if params["hnsw"]:

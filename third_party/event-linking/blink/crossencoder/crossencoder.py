@@ -103,9 +103,9 @@ class CrossEncoderRanker(torch.nn.Module):
 
     def load_model(self, fname, cpu=False):
         if cpu:
-            state_dict = torch.load(fname, map_location=lambda storage, location: "cpu")
+            state_dict = torch.load(fname, map_location="cpu", weights_only=False)
         else:
-            state_dict = torch.load(fname)
+            state_dict = torch.load(fname, weights_only=False)
         self.model.load_state_dict(state_dict)
 
     def save(self, output_dir):

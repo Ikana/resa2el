@@ -17,8 +17,8 @@ the original in-batch negatives, uniform, top-score, and ReSa2 (Li et al., ACML 
 | `tests/` | Tests for the samplers. A function that is not written yet is skipped. |
 | `sim/` | Small model on fake scores (from the earlier reproduction work) |
 | `lean/` | Lean 4 proofs. `cd lean && lake build` |
-| `third_party/` | EVELINK and ReSa2 code (git submodules, added later) |
-| `env/` | Environment for the GPU machine (EVELINK needs Python 3.8, torch 1.6) |
+| `third_party/` | EVELINK code (a copy, changed for new torch) |
+| `env/` | Environment for the GPU machine (Python 3.12+, torch 2.15) |
 | `configs/` | One file per experiment: pilot and the 12 main runs |
 | `scripts/` | Data download and run scripts |
 | `docs/` | Decisions and the AI-usage log |

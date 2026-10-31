@@ -200,7 +200,7 @@ def main(params):
     context_length = params["max_context_length"]
     
     fname = os.path.join(params["data_path"], "train.t7")
-    train_data = torch.load(fname)
+    train_data = torch.load(fname, weights_only=False)
     context_input = train_data["context_vecs"]
     candidate_input = train_data["candidate_vecs"]
     label_input = train_data["labels"]
@@ -229,7 +229,7 @@ def main(params):
     )
 
     fname = os.path.join(params["data_path"], "valid.t7")
-    valid_data = torch.load(fname)
+    valid_data = torch.load(fname, weights_only=False)
     context_input = valid_data["context_vecs"]
     candidate_input = valid_data["candidate_vecs"]
     label_input = valid_data["labels"]
