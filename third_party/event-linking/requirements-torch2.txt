@@ -1,0 +1,14 @@
+# Environment for new GPUs (Ampere and newer), Python 3.12+.
+# The original requirements.txt (torch 1.6) stays for reference.
+# Only the packages that training and evaluation of the bi-encoder need.
+# flair, pysolr, nltk, segtok, emoji are for NER / Solr tools that we do not use.
+torch==2.15.0
+numpy
+tqdm
+requests
+regex
+six
+boto3          # imported by pytorch_transformers/file_utils.py
+faiss-cpu
+colorama
+termcolor
