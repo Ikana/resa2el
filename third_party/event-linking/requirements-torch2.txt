@@ -8,6 +8,7 @@ tqdm
 requests
 regex
 six
+sacremoses     # imported at top level by pytorch_transformers/tokenization_xlm.py
 boto3          # imported by pytorch_transformers/file_utils.py
 faiss-cpu
 colorama
