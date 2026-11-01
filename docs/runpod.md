@@ -20,7 +20,7 @@ docs.runpod.io on 2026-10-31 (billing, credentials, manage pods, network volumes
      Add more after the pilot, when we know the real hours. Total must stay <= $150.
    - Do **not** turn on auto-pay. If a card is saved, check that auto-pay is off.
    - Notifications: turn on **Low balance alert**, threshold **$15**.
-3. Storage: make one network volume, 150 GB, in a data center that has A40 GPUs.
+3. Storage: one network volume, 150 GB (done by Claude on 2026-11-01, see below).
    Cost: about $10.50 per month. Data and checkpoints go in `/workspace`.
 4. API key (only if we use scripts): console.runpod.io/user/credentials,
    API Keys, Create API Key. Give it the smallest permission that works.
@@ -33,11 +33,21 @@ docs.runpod.io on 2026-10-31 (billing, credentials, manage pods, network volumes
 - Stop the pod when the run ends. Stop, do not terminate: stop keeps `/workspace`.
 - Write the GPU hours and the cost of each session in `docs/compute-log.md`.
 
-## Expected cost (A40 48 GB at $0.59/h, price on 2026-10-31)
+## What exists (2026-11-01, from the RunPod MCP reads)
+- Network volume `resa2el-data`, id `ko5qr8p70s`, 150 GB, STANDARD, data center **EU-RO-1**.
+  Cost: 150 GB x $0.07 = $10.50 per month, also when no pod runs.
+- No pods.
+- GPU: A40 is not in stock in any data center that has network volumes.
+  In EU-RO-1 the **RTX 4090 (24 GB)** has HIGH stock, secure cloud **$0.89/h**
+  (community $0.34/h, but community pods cannot attach the network volume).
+  If 24 GB is too small (the pilot measures memory), use A100 80 GB in EU-RO-1 (low stock).
+- Hosts in stock report CUDA 13.2, so the torch 2.15 cu132 wheel fits.
+
+## Expected cost (RTX 4090 secure at $0.89/h, price on 2026-11-01)
 | Item | Hours | Cost |
 |---|---|---|
-| Data download + smoke test | ~2 | ~$1 |
-| Pilot | 8 | ~$5 |
-| 12 main runs | 96 | ~$57 |
+| Data download + smoke test | ~2 | ~$2 |
+| Pilot | 8 | ~$7 |
+| 12 main runs | 96 | ~$85 |
 | Network volume, 150 GB, ~2 months | – | ~$21 |
-| **Total** | | **~$84** (reserve ~$66) |
+| **Total** | | **~$115** (reserve ~$35) |
