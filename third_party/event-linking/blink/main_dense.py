@@ -18,7 +18,7 @@ from colorama import init
 from termcolor import colored
 
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
-from blink.biencoder.biencoder import BiEncoderRanker, load_biencoder
+from blink.biencoder.biencoder import BiEncoderRanker, load_biencoder, to_bert_input
 from blink.crossencoder.crossencoder import CrossEncoderRanker, load_crossencoder
 from blink.biencoder.data_process import (
     process_mention_data,
@@ -254,6 +254,29 @@ def _run_biencoder(biencoder, dataloader, candidate_encoding, top_k=100, indexer
         id2title_file = open('data/wikipedia/wiki/enwiki-20200301.id2t.pkl', 'rb')
         original_id2title = pickle.load(id2title_file)
 
+    if isinstance(candidate_encoding, np.ndarray):
+        # Low-memory mode: encode all mentions, then stream the candidate
+        # encoding through the GPU once (see blink/lowmem.py).
+        assert not save_topk_result, "save_topk_result is not supported in low-memory mode"
+        from blink import lowmem
+        context_embs = []
+        for batch in tqdm(dataloader):
+            context_input, _, label_ids = batch
+            with torch.no_grad():
+                token_idx, segment_idx, mask = to_bert_input(context_input, biencoder.NULL_IDX)
+                emb, _ = biencoder.model(
+                    token_idx.to(device), segment_idx.to(device), mask.to(device), None, None, None
+                )
+            context_embs.append(emb.float().cpu())
+            labels.extend(label_ids.data.numpy())
+        with torch.no_grad():
+            scores, indicies = lowmem.chunked_topk(
+                torch.cat(context_embs), candidate_encoding, top_k, device=device
+            )
+        nns.extend(indicies)
+        all_scores.extend(scores)
+        return labels, nns, all_scores, None
+
     for batch in tqdm(dataloader):
         context_input, _, label_ids = batch
         with torch.no_grad():
@@ -361,6 +384,23 @@ def load_models(args, logger=None):
     # load candidate entities
     if logger:
         logger.info("loading candidate entities")
+    if getattr(args, "lowmem_dir", None):
+        # Low-memory mode: memory-mapped encoding, no entity catalogue
+        # (the caller passes alternate_mapping, which replaces it).
+        from blink import lowmem
+        candidate_encoding = lowmem.load_encoding(args.lowmem_dir)
+        return (
+            biencoder,
+            biencoder_params,
+            crossencoder,
+            crossencoder_params,
+            candidate_encoding,
+            {},
+            {},
+            {},
+            {},
+            None,
+        )
     (
         candidate_encoding,
         title2id,
@@ -542,25 +582,38 @@ def run(
                     predictions,
                     scores,
                 )
-        # prepare crossencoder data
-        context_input, candidate_input, label_input = prepare_crossencoder_data(
-            crossencoder.tokenizer, samples, labels, nns, id2title, id2text, id2hyper, keep_all=True, args=crossencoder_params
-        )
-        context_input = modify(
-            context_input, candidate_input, crossencoder_params["max_seq_length"]
-        )
+        # prepare crossencoder data and run the crossencoder.
+        # In low-memory mode this runs on chunks of mentions; the result is
+        # the same because each mention is scored on its own.
+        chunk = getattr(args, "cross_chunk", None) or len(samples)
+        index_parts, score_parts = [], []
+        for c0 in range(0, len(samples), chunk):
+            c1 = min(c0 + chunk, len(samples))
+            context_input, candidate_input, label_input = prepare_crossencoder_data(
+                crossencoder.tokenizer, samples[c0:c1], labels[c0:c1], nns[c0:c1], id2title, id2text, id2hyper, keep_all=True, args=crossencoder_params
+            )
+            context_input = modify(
+                context_input, candidate_input, crossencoder_params["max_seq_length"]
+            )
+            del candidate_input
 
-
-        dataloader = _process_crossencoder_dataloader(
-            context_input, label_input, crossencoder_params
-        )
-        # run crossencoder and get accuracy
-        accuracy, index_array, unsorted_scores = _run_crossencoder(
-            crossencoder,
-            dataloader,
-            logger,
-            context_len=biencoder_params["max_context_length"],
-        )
+            dataloader = _process_crossencoder_dataloader(
+                context_input, label_input, crossencoder_params
+            )
+            # run crossencoder and get accuracy
+            accuracy, part_index, part_scores = _run_crossencoder(
+                crossencoder,
+                dataloader,
+                logger,
+                context_len=biencoder_params["max_context_length"],
+            )
+            index_parts.append(np.asarray(part_index))
+            score_parts.append(np.asarray(part_scores))
+            del context_input, dataloader
+            if chunk < len(samples):
+                print("crossencoder: {}/{} mentions".format(c1, len(samples)), flush=True)
+        index_array = np.concatenate(index_parts)
+        unsorted_scores = np.concatenate(score_parts)
 
         if args.interactive:
 

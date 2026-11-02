@@ -28,7 +28,29 @@ def GetWikiID(id2title, title):
 	return ''
 
 
+def BuildLowMem(in_args):
+	# Build the low-memory store once (needs about 70 GB of RAM).
+	from blink import lowmem
+	id2title_file = open('data/wikipedia/wiki/enwiki-20200301.id2t.pkl', 'rb')
+	id2title = pickle.load(id2title_file)
+	print('ID to title loaded.')
+	text_file = open('data/wikipedia/wiki/title_text.json', 'r')
+	title_text = json.load(text_file)
+	print("Text loaded.")
+	hyper_file = open('data/wikipedia/wiki/t2hyperlinks.json', 'r')
+	t2h = json.load(hyper_file)
+	print("Hyperlinks loaded.")
+	n = lowmem.build_store(id2title, title_text, t2h, in_args.lowmem)
+	print("Store written:", n, "candidates")
+	del id2title, title_text, t2h
+	shape, dtype = lowmem.convert_encoding("models/all_entities.encoding", in_args.lowmem)
+	print("Encoding written:", shape, dtype)
+
+
 def EvaluateBLINK(in_args):
+	if in_args.lowmem:
+		LowMemEvaluate(in_args)
+		return
 
 	id2title_file = open('data/wikipedia/wiki/enwiki-20200301.id2t.pkl', 'rb')
 	id2title = pickle.load(id2title_file)
@@ -65,7 +87,25 @@ def EvaluateBLINK(in_args):
 				localid2hyperlinks[idx].append((linked_title, title_text[title][link['start']: link['end']]))
 		idx += 1
 
-	config = {
+	config = MakeConfig(in_args)
+
+	RunBLINK(in_args, config, localid2title, localid2text, localid2hyperlinks)
+
+
+def LowMemEvaluate(in_args):
+	# Same as EvaluateBLINK, but the candidate maps come from the store
+	# made by BuildLowMem, and are read one candidate at a time.
+	from blink import lowmem
+	store = lowmem.LowMemStore(in_args.lowmem)
+	print("Low-memory store opened:", len(store), "candidates")
+	config = MakeConfig(in_args)
+	config["lowmem_dir"] = in_args.lowmem
+	config["cross_chunk"] = in_args.cross_chunk
+	RunBLINK(in_args, config, store.title, store.text, store.hyper)
+
+
+def MakeConfig(in_args):
+	return {
 		"test_entities": None,
 		"test_mentions": None,
 		"interactive": False,
@@ -83,6 +123,8 @@ def EvaluateBLINK(in_args):
 		"save_topk_result": in_args.save_topk_result
 	}
 
+
+def RunBLINK(in_args, config, localid2title, localid2text, localid2hyperlinks):
 	args = argparse.Namespace(**config)
 	models = main_dense.load_models(args, logger=None)
 	print("Model loaded.")
@@ -131,8 +173,9 @@ def WikiAccuracy(args, is_recall=False):
 	id2title_file = open('data/wikipedia/wiki/enwiki-20200301.id2t.pkl', 'rb')
 	id2title = pickle.load(id2title_file)
 
-	text_file = open('data/wikipedia/wiki/title_text.json', 'r')
-	title_text = json.load(text_file)
+	if not args.lowmem:  # title_text is not used below
+		text_file = open('data/wikipedia/wiki/title_text.json', 'r')
+		title_text = json.load(text_file)
 
 	correct = 0
 	correct_v = 0
@@ -424,8 +467,22 @@ if __name__ == '__main__':
 		"--nyt", action="store_true", help="Whether use NYT data"
 	)
 
+	parser.add_argument(
+		"--lowmem", type=str, default=None,
+		help="Low-memory mode: directory of the store made with --build_lowmem."
+	)
+	parser.add_argument(
+		"--build_lowmem", action="store_true", help="Build the low-memory store in --lowmem."
+	)
+	parser.add_argument(
+		"--cross_chunk", type=int, default=500,
+		help="Low-memory mode: number of mentions per crossencoder chunk."
+	)
+
 	args = parser.parse_args()
 
+	if args.build_lowmem:
+		BuildLowMem(args)
 	if args.predict:
 		EvaluateBLINK(args)
 	if args.evaluate:
