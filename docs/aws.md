@@ -38,5 +38,8 @@ The released crossencoder is BERT-large. In float32 it needs about 10 GPU hours 
 - Prefetch (on by default): the next chunk is tokenized on the CPU while the GPU scores the current one. `--no_prefetch` turns it off.
 - `python ../../scripts/check_cross_fast.py [--real]` checks these paths on the CPU. It prints `CROSS_FAST_CHECK=PASS`.
 
+## Results of the released model (2026-11-03, fp16)
+Wikipedia test (19,267 mentions): overall 82.88 (paper 82.87); verb 83.06, nominal 82.71. NYT with Nil (1,762 mentions): Accu@1 55.33 (paper 55.33), Accu@5 59.59. Every class is within 0.3 points of the paper. Full output in `docs/results/`.
+
 ## Costs so far
-See `compute-log.md`. RunPod: about $50 before the move. AWS: about $12 up to 2026-11-03 morning.
+See `compute-log.md`. RunPod: about $50 before the move. AWS: about $21 up to 2026-11-03 evening (about $79 of the $100 left).

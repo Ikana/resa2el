@@ -1,0 +1,18 @@
+ID to title loaded.
+Nil threshold:  -0.1
+1762 1319 443
+Total Verb Seen:  0
+Total Verb Unseen Form:  74
+Total Verb Unseen:  436
+Total Verb Nil:  809
+Total Nom Hard:  243
+Total Nom Easy:  16
+Total Nom Nil:  184
+975 1762 0.5533484676503972 0.5959059893858984 0.42663656884875845
+Verb Seen:  0 0 0
+Verb Unseen Form:  0.17567567567567569 13 74
+Verb Unseen 0.045871559633027525 20 436
+Verb Nil 0.930778739184178 753 809
+Nom Hard:  0.06995884773662552 17 243
+Nom Easy:  0.4375 7 16
+Nom Nil 0.8967391304347826 165 184
