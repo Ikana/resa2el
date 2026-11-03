@@ -60,7 +60,7 @@ def modify(context_input, candidate_input, max_seq_length):
     return torch.LongTensor(new_input)
 
 
-def evaluate(reranker, eval_dataloader, device, logger, context_length, zeshel=False, silent=True):
+def evaluate(reranker, eval_dataloader, device, logger, context_length, zeshel=False, silent=True, amp_dtype=None):
     reranker.model.eval()
     if silent:
         iter_ = eval_dataloader
@@ -90,9 +90,15 @@ def evaluate(reranker, eval_dataloader, device, logger, context_length, zeshel=F
         context_input = batch[0]
         label_input = batch[1]
         with torch.no_grad():
-            eval_loss, logits = reranker(context_input, label_input, context_length)
+            if amp_dtype is None:
+                eval_loss, logits = reranker(context_input, label_input, context_length)
+            else:
+                # Mixed precision (added for resa2el): matmuls run in amp_dtype
+                # on the tensor cores; softmax and layer norm stay in float32.
+                with torch.autocast(device_type=torch.device(device).type, dtype=amp_dtype):
+                    eval_loss, logits = reranker(context_input, label_input, context_length)
 
-        logits = logits.detach().cpu().numpy()
+        logits = logits.float().detach().cpu().numpy()
         label_ids = label_input.cpu().numpy()
 
         tmp_eval_accuracy, eval_result = utils.accuracy(logits, label_ids)

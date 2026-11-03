@@ -4,6 +4,7 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 #
+import torch
 from torch import nn
 
 
@@ -36,7 +37,12 @@ class BertEncoder(nn.Module):
             embeddings = output_bert[:, 0, :]
 
         # in case of dimensionality reduction
-        if self.additional_linear is not None:
+        if self.additional_linear is not None and embeddings.dtype != torch.float32:
+            # Mixed precision (added for resa2el): the final score is computed
+            # in float32, so the ranking is not limited by float16 steps.
+            with torch.autocast(device_type=embeddings.device.type, enabled=False):
+                result = self.additional_linear(self.dropout(embeddings.float()))
+        elif self.additional_linear is not None:
             result = self.additional_linear(self.dropout(embeddings))
         else:
             result = embeddings

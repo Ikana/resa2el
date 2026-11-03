@@ -12,8 +12,10 @@ import pickle
 
 from tqdm import tqdm
 import logging
+import time
 import torch
 import numpy as np
+from concurrent.futures import ThreadPoolExecutor
 from colorama import init
 from termcolor import colored
 
@@ -343,12 +345,22 @@ def _process_crossencoder_dataloader(context_input, label_input, crossencoder_pa
     return dataloader
 
 
-def _run_crossencoder(crossencoder, dataloader, logger, context_len, device="cuda"):
+def _run_crossencoder(crossencoder, dataloader, logger, context_len, device="cuda", amp=None):
     crossencoder.model.eval()
     accuracy = 0.0
     crossencoder.to(device)
 
-    res = evaluate(crossencoder, dataloader, device, logger, context_len, zeshel=False, silent=False)
+    # Precision of the crossencoder only (added for resa2el). The bi-encoder
+    # keeps float32, so the candidate set does not change.
+    amp_dtype = {"fp16": torch.float16, "bf16": torch.bfloat16}.get(amp)
+    tf32 = (torch.backends.cuda.matmul.allow_tf32, torch.backends.cudnn.allow_tf32)
+    if amp == "tf32":
+        torch.backends.cuda.matmul.allow_tf32 = True
+        torch.backends.cudnn.allow_tf32 = True
+    try:
+        res = evaluate(crossencoder, dataloader, device, logger, context_len, zeshel=False, silent=False, amp_dtype=amp_dtype)
+    finally:
+        torch.backends.cuda.matmul.allow_tf32, torch.backends.cudnn.allow_tf32 = tf32
     accuracy = res["normalized_accuracy"]
     logits = res["logits"]
 
@@ -358,6 +370,94 @@ def _run_crossencoder(crossencoder, dataloader, logger, context_len, device="cud
         predictions = []
 
     return accuracy, predictions, logits
+
+
+def _modify_fast(context_input, candidate_input, max_seq_length):
+    """Same result as train_cross.modify, with tensor ops instead of Python loops.
+
+    For each mention, every candidate becomes the context followed by the
+    candidate without its [CLS] token, cut to max_seq_length.
+    """
+    context_input = torch.as_tensor(context_input, dtype=torch.long)
+    candidate_input = torch.as_tensor(candidate_input, dtype=torch.long)
+    num_cand = candidate_input.size(1)
+    ctx = context_input.unsqueeze(1).expand(-1, num_cand, -1)
+    joined = torch.cat([ctx, candidate_input[:, :, 1:]], dim=2)
+    return joined[:, :, :max_seq_length].contiguous()
+
+
+def _ckpt_meta(ckpt_dir, meta):
+    """Create ckpt_dir. Refuse to continue from a run with other settings."""
+    os.makedirs(ckpt_dir, exist_ok=True)
+    path = os.path.join(ckpt_dir, "meta.json")
+    if os.path.exists(path):
+        with open(path) as f:
+            old = json.load(f)
+        if old != meta:
+            raise ValueError("checkpoint {} is from a different run: {} != {}".format(ckpt_dir, old, meta))
+    else:
+        with open(path, "w") as f:
+            json.dump(meta, f)
+
+
+def _score_in_chunks(n, chunk, prep_fn, score_fn, ckpt_dir=None, prefetch=True, tag=""):
+    """Score mentions [0, n) in chunks of `chunk`; return (index, scores) arrays.
+
+    prep_fn(c0, c1) builds the crossencoder input of mentions c0..c1 (CPU).
+    score_fn(prepared) scores it and returns (index, scores) as
+    _run_crossencoder does. The result is the same as one call on all
+    mentions, because each mention is scored on its own.
+    Each finished chunk is saved in ckpt_dir (added for resa2el), so a
+    stopped run continues where it was. With prefetch, the next chunk is
+    prepared on the CPU while the GPU scores the current one. `tag` names
+    the precision; a saved chunk with another tag is refused.
+    """
+    def part_path(c0, c1):
+        return os.path.join(ckpt_dir, "cross_{:08d}_{:08d}.npz".format(c0, c1))
+
+    bounds = [(c0, min(c0 + chunk, n)) for c0 in range(0, n, chunk)]
+    todo = [b for b in bounds if not (ckpt_dir and os.path.exists(part_path(*b)))]
+    todo_set = set(todo)  # decided once: the prefetch order follows this list
+    pool = ThreadPoolExecutor(max_workers=1) if prefetch and todo else None
+    pending = pool.submit(prep_fn, *todo[0]) if pool else None
+    todo_idx = 0
+    index_parts, score_parts = [], []
+    try:
+        for c0, c1 in bounds:
+            t0 = time.time()
+            if (c0, c1) not in todo_set:
+                saved = np.load(part_path(c0, c1))
+                part_index, part_scores = saved["index"], saved["scores"]
+                assert part_index.shape[0] == c1 - c0, part_path(c0, c1)
+                saved_tag = str(saved["tag"]) if "tag" in saved.files else ""
+                if saved_tag != tag:
+                    raise ValueError("{} was scored with {!r}, this run uses {!r}".format(part_path(c0, c1), saved_tag, tag))
+                print("crossencoder: loaded {}-{} from {}".format(c0, c1, part_path(c0, c1)), flush=True)
+            else:
+                if pool:
+                    assert todo[todo_idx] == (c0, c1), (todo[todo_idx], c0, c1)
+                    prepared = pending.result()
+                    todo_idx += 1
+                    pending = pool.submit(prep_fn, *todo[todo_idx]) if todo_idx < len(todo) else None
+                else:
+                    prepared = prep_fn(c0, c1)
+                t_wait = time.time() - t0
+                part_index, part_scores = score_fn(prepared)
+                part_index, part_scores = np.asarray(part_index), np.asarray(part_scores)
+                del prepared
+                if ckpt_dir:
+                    tmp_path = part_path(c0, c1) + ".tmp.npz"
+                    np.savez(tmp_path, index=part_index, scores=part_scores, tag=tag)
+                    os.replace(tmp_path, part_path(c0, c1))
+                if len(bounds) > 1:
+                    print("crossencoder: {}/{} mentions, {:.0f}s (waited {:.0f}s for the input)".format(
+                        c1, n, time.time() - t0, t_wait), flush=True)
+            index_parts.append(part_index)
+            score_parts.append(part_scores)
+    finally:
+        if pool:
+            pool.shutdown(wait=False, cancel_futures=True)
+    return np.concatenate(index_parts), np.concatenate(score_parts)
 
 
 def load_models(args, logger=None):
@@ -379,6 +479,9 @@ def load_models(args, logger=None):
         with open(args.crossencoder_config) as json_file:
             crossencoder_params = json.load(json_file)
             crossencoder_params["path_to_model"] = args.crossencoder_model
+            if getattr(args, "cross_batch", None):
+                # Smaller batch so top-100 reranking fits a 24 GB GPU.
+                crossencoder_params["eval_batch_size"] = args.cross_batch
         crossencoder = load_crossencoder(crossencoder_params)
 
     # load candidate entities
@@ -527,11 +630,34 @@ def run(
             logger.info("run biencoder")
         print("run biencoder")
         top_k = args.top_k
-        labels, nns, scores, nn_data = _run_biencoder(
-            biencoder, dataloader, candidate_encoding, top_k, faiss_indexer, device, cand_pool_path=args.candidate_pool, id2title=id2title, save_topk_result=args.save_topk_result
-        )
+        # Checkpoints (added for resa2el): the bi-encoder top-k and each
+        # crossencoder chunk are saved in ckpt_dir, so a stopped run
+        # continues where it was.
+        ckpt_dir = None if args.interactive else getattr(args, "ckpt_dir", None)
+        bienc_path = os.path.join(ckpt_dir, "biencoder.npz") if ckpt_dir else None
+        if ckpt_dir:
+            _ckpt_meta(ckpt_dir, {
+                "n": len(samples), "top_k": top_k,
+                "chunk": getattr(args, "cross_chunk", None) or len(samples),
+                "first": str(samples[0].get("mention", ""))[:50],
+                "last": str(samples[-1].get("mention", ""))[:50],
+            })
+        if bienc_path and os.path.exists(bienc_path):
+            saved = np.load(bienc_path)
+            labels, nns, scores = list(saved["labels"]), list(saved["nns"]), list(saved["scores"])
+            nn_data = None
+            assert len(nns) == len(samples), bienc_path
+            print("biencoder: loaded top-{} of {} mentions from {}".format(top_k, len(nns), bienc_path), flush=True)
+        else:
+            labels, nns, scores, nn_data = _run_biencoder(
+                biencoder, dataloader, candidate_encoding, top_k, faiss_indexer, device, cand_pool_path=args.candidate_pool, id2title=id2title, save_topk_result=args.save_topk_result
+            )
+            if bienc_path:
+                tmp_path = bienc_path + ".tmp.npz"
+                np.savez(tmp_path, labels=np.asarray(labels), nns=np.asarray(nns), scores=np.asarray(scores))
+                os.replace(tmp_path, bienc_path)
 
-        if args.save_topk_result:
+        if args.save_topk_result and nn_data is not None:
             save_data_path = os.path.join(args.output_path, "%s.t7" % args.mode)
             torch.save(nn_data, save_data_path)
 
@@ -585,18 +711,20 @@ def run(
         # prepare crossencoder data and run the crossencoder.
         # In low-memory mode this runs on chunks of mentions; the result is
         # the same because each mention is scored on its own.
-        chunk = getattr(args, "cross_chunk", None) or len(samples)
-        index_parts, score_parts = [], []
-        for c0 in range(0, len(samples), chunk):
-            c1 = min(c0 + chunk, len(samples))
+        n = len(samples)
+        chunk = getattr(args, "cross_chunk", None) or n
+        amp = getattr(args, "amp", None)
+        amp = None if amp in (None, "none") else amp
+        max_seq_length = crossencoder_params["max_seq_length"]
+
+        def _prep(c0, c1):
             context_input, candidate_input, label_input = prepare_crossencoder_data(
                 crossencoder.tokenizer, samples[c0:c1], labels[c0:c1], nns[c0:c1], id2title, id2text, id2hyper, keep_all=True, args=crossencoder_params
             )
-            context_input = modify(
-                context_input, candidate_input, crossencoder_params["max_seq_length"]
-            )
-            del candidate_input
+            return _modify_fast(context_input, candidate_input, max_seq_length), label_input
 
+        def _score(prepared):
+            context_input, label_input = prepared
             dataloader = _process_crossencoder_dataloader(
                 context_input, label_input, crossencoder_params
             )
@@ -606,14 +734,14 @@ def run(
                 dataloader,
                 logger,
                 context_len=biencoder_params["max_context_length"],
+                amp=amp,
             )
-            index_parts.append(np.asarray(part_index))
-            score_parts.append(np.asarray(part_scores))
-            del context_input, dataloader
-            if chunk < len(samples):
-                print("crossencoder: {}/{} mentions".format(c1, len(samples)), flush=True)
-        index_array = np.concatenate(index_parts)
-        unsorted_scores = np.concatenate(score_parts)
+            return part_index, part_scores
+
+        index_array, unsorted_scores = _score_in_chunks(
+            n, chunk, _prep, _score, ckpt_dir=ckpt_dir, prefetch=getattr(args, "prefetch", True),
+            tag="amp={}".format(amp or "none"),
+        )
 
         if args.interactive:
 

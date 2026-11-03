@@ -100,7 +100,6 @@ def LowMemEvaluate(in_args):
 	print("Low-memory store opened:", len(store), "candidates")
 	config = MakeConfig(in_args)
 	config["lowmem_dir"] = in_args.lowmem
-	config["cross_chunk"] = in_args.cross_chunk
 	RunBLINK(in_args, config, store.title, store.text, store.hyper)
 
 
@@ -120,8 +119,19 @@ def MakeConfig(in_args):
 		"fast": in_args.fast,  # set this to be true if speed is a concern
 		"output_path": "out/",  # logging directory
 		"mode": in_args.mode,
-		"save_topk_result": in_args.save_topk_result
+		"save_topk_result": in_args.save_topk_result,
+		"amp": in_args.amp,
+		"ckpt_dir": in_args.ckpt,
+		"prefetch": not in_args.no_prefetch,
+		"cross_chunk": in_args.cross_chunk,
+		"cross_batch": in_args.cross_batch,
 	}
+
+
+def OutSuffix(in_args):
+	# --limit N runs the first N mentions only (timing tests). Its output
+	# files get a suffix, so they are never mixed up with a full run.
+	return "_limit{}".format(in_args.limit) if getattr(in_args, "limit", None) else ""
 
 
 def RunBLINK(in_args, config, localid2title, localid2text, localid2hyperlinks):
@@ -135,13 +145,15 @@ def RunBLINK(in_args, config, localid2title, localid2text, localid2hyperlinks):
 		with io.open('data/nyt/nyt_test.jsonl', mode="r", encoding="utf-8") as file:
 			for line in file:
 				data_to_link.append(json.loads(line.strip()))
+		if in_args.limit:
+			data_to_link = data_to_link[:in_args.limit]
 		_, _, _, _, _, predictions, scores, = main_dense.run(args, None, *models, test_data=data_to_link, device='cuda',
 		                                                     alternate_mapping=(
 		                                                     localid2title, localid2text, localid2hyperlinks))
 		for idx, data in enumerate(data_to_link):
 			data['edl'] = predictions[idx]
 			data['scores'] = np.array(scores[idx]).tolist()
-		with open(args.output_path + 'nyt_test.jsonl', 'w') as outfile:
+		with open(args.output_path + 'nyt_test{}.jsonl'.format(OutSuffix(in_args)), 'w') as outfile:
 			for entry in data_to_link:
 				json.dump(entry, outfile)
 				outfile.write('\n')
@@ -152,22 +164,37 @@ def RunBLINK(in_args, config, localid2title, localid2text, localid2hyperlinks):
 		with io.open('out/{}.jsonl'.format(args.mode), mode="r", encoding="utf-8") as file:
 			for line in file:
 				data_to_link.append(json.loads(line.strip()))
+		if in_args.limit:
+			data_to_link = data_to_link[:in_args.limit]
 
 		_, _, _, _, _, predictions, scores, = main_dense.run(args, None, *models, test_data=data_to_link, device='cuda',
 		                                                     alternate_mapping=(localid2title, localid2text, localid2hyperlinks))
 		idx = 0
+		out_clusters = {}  # with --limit: only the mentions that have a prediction
 		for t_idx, title in enumerate(clusters):
+			mentions = []
 			for mention in clusters[title]:
+				if in_args.limit and idx >= len(predictions):
+					break
 				mention['edl'] = predictions[idx]
 				mention['scores'] = np.array(scores[idx]).tolist()
+				mentions.append(mention)
 				idx += 1
+			if mentions:
+				out_clusters[title] = mentions
+		assert idx == len(predictions), (idx, len(predictions))
 
-		outfile = open(args.output_path + '{}_result_top{}.json'.format(args.mode, args.top_k), 'w')
-		json.dump(clusters, outfile)
+		outfile = open(args.output_path + '{}_result_top{}{}.json'.format(args.mode, args.top_k, OutSuffix(in_args)), 'w')
+		json.dump(out_clusters if in_args.limit else clusters, outfile)
+
+
+def Ratio(correct, total):
+	# With --limit a class can be empty. Then its accuracy is not defined.
+	return float(correct) / float(total) if total else float("nan")
 
 
 def WikiAccuracy(args, is_recall=False):
-	infile = open('out/{}_result_top{}.json'.format(args.mode, args.topk), 'r')
+	infile = open('out/{}_result_top{}{}.json'.format(args.mode, args.topk, OutSuffix(args)), 'r')
 	clusters = json.load(infile)
 
 	id2title_file = open('data/wikipedia/wiki/enwiki-20200301.id2t.pkl', 'rb')
@@ -253,15 +280,15 @@ def WikiAccuracy(args, is_recall=False):
 	print("Total Nom Hard: ", total_nom_hard)
 	print("Total Nom Easy: ", total_nom_easy)
 
-	accuracy = float(correct) / float(total)
-	accuracy_v = float(correct_v) / float(total_v)
-	accuracy_nom = float(correct_nom) / float(total_nom)
+	accuracy = Ratio(correct, total)
+	accuracy_v = Ratio(correct_v, total_v)
+	accuracy_nom = Ratio(correct_nom, total_nom)
 
-	accuracy_v_seen = float(correct_v_seen) / float(total_v_seen)
-	accuracy_v_unseen_form = float(correct_v_unseen_form) / float(total_v_unseen_form)
-	accuracy_v_unseen = float(correct_v_unseen) / float(total_v_unseen)
-	accuracy_nom_hard = float(correct_nom_hard) / float(total_nom_hard)
-	accuracy_nom_easy = float(correct_nom_easy) / float(total_nom_easy)
+	accuracy_v_seen = Ratio(correct_v_seen, total_v_seen)
+	accuracy_v_unseen_form = Ratio(correct_v_unseen_form, total_v_unseen_form)
+	accuracy_v_unseen = Ratio(correct_v_unseen, total_v_unseen)
+	accuracy_nom_hard = Ratio(correct_nom_hard, total_nom_hard)
+	accuracy_nom_easy = Ratio(correct_nom_easy, total_nom_easy)
 
 	print(correct, total, accuracy, accuracy_v, accuracy_nom)
 	print("Verb Seen: ", accuracy_v_seen, correct_v_seen, total_v_seen)
@@ -293,10 +320,10 @@ def callNER(text):
 		return []
 
 
-def NYTAccuracy(is_recall=False):
+def NYTAccuracy(is_recall=False, suffix=""):
 
 	test_data = []
-	with io.open('out/nyt_test.jsonl', mode="r", encoding="utf-8") as file:
+	with io.open('out/nyt_test{}.jsonl'.format(suffix), mode="r", encoding="utf-8") as file:
 		for line in file:
 			test_data.append(json.loads(line.strip()))
 
@@ -404,21 +431,21 @@ def NYTAccuracy(is_recall=False):
 	print("Total Nom Nil: ", total_nom_nil)
 
 
-	accuracy = float(correct) / float(total)
-	accuracy_v = float(correct_v) / float(total_v)
-	accuracy_nom = float(correct_nom) / float(total_nom)
+	accuracy = Ratio(correct, total)
+	accuracy_v = Ratio(correct_v, total_v)
+	accuracy_nom = Ratio(correct_nom, total_nom)
 
 	if total_v_seen != 0:
-		accuracy_v_seen = float(correct_v_seen) / float(total_v_seen)
+		accuracy_v_seen = Ratio(correct_v_seen, total_v_seen)
 	else:
 		accuracy_v_seen = 0
-	accuracy_v_unseen_form = float(correct_v_unseen_form) / float(total_v_unseen_form)
-	accuracy_v_unseen = float(correct_v_unseen) / float(total_v_unseen)
-	accuracy_nom_hard = float(correct_nom_hard) / float(total_nom_hard)
-	accuracy_nom_easy = float(correct_nom_easy) / float(total_nom_easy)
+	accuracy_v_unseen_form = Ratio(correct_v_unseen_form, total_v_unseen_form)
+	accuracy_v_unseen = Ratio(correct_v_unseen, total_v_unseen)
+	accuracy_nom_hard = Ratio(correct_nom_hard, total_nom_hard)
+	accuracy_nom_easy = Ratio(correct_nom_easy, total_nom_easy)
 
-	accuracy_v_nil = float(correct_v_nil) / float(total_v_nil)
-	accuracy_nom_nil = float(correct_nom_nil) / float(total_nom_nil)
+	accuracy_v_nil = Ratio(correct_v_nil, total_v_nil)
+	accuracy_nom_nil = Ratio(correct_nom_nil, total_nom_nil)
 
 	print(correct, total, accuracy, accuracy_v, accuracy_nom)
 	print("Verb Seen: ", accuracy_v_seen, correct_v_seen, total_v_seen)
@@ -479,6 +506,28 @@ if __name__ == '__main__':
 		help="Low-memory mode: number of mentions per crossencoder chunk."
 	)
 
+	parser.add_argument(
+		"--cross_batch", type=int, default=None,
+		help="Low-memory mode: crossencoder eval batch size (default: from params.json)."
+	)
+
+	parser.add_argument(
+		"--amp", choices=["none", "tf32", "fp16", "bf16"], default="none",
+		help="Crossencoder precision on the GPU: none (float32), tf32, or fp16/bf16 autocast."
+	)
+	parser.add_argument(
+		"--ckpt", type=str, default=None,
+		help="Directory for bi-encoder and crossencoder checkpoints; a stopped run continues from them."
+	)
+	parser.add_argument(
+		"--limit", type=int, default=None,
+		help="Run the first N mentions only (timing tests). Output files get the suffix _limitN."
+	)
+	parser.add_argument(
+		"--no_prefetch", action="store_true",
+		help="Do not tokenize the next crossencoder chunk while the GPU scores the current one."
+	)
+
 	args = parser.parse_args()
 
 	if args.build_lowmem:
@@ -487,7 +536,7 @@ if __name__ == '__main__':
 		EvaluateBLINK(args)
 	if args.evaluate:
 		if args.nyt:
-			NYTAccuracy(is_recall=False)
+			NYTAccuracy(is_recall=False, suffix=OutSuffix(args))
 		else:
 			WikiAccuracy(args, is_recall=False)
 

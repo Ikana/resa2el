@@ -17,6 +17,7 @@ with much less memory:
 import json
 import os
 import sqlite3
+import threading
 
 import numpy as np
 import torch
@@ -105,12 +106,23 @@ class _Column:
 
 class LowMemStore:
     def __init__(self, out_dir):
-        path = os.path.join(out_dir, STORE_FILE)
-        self.conn = sqlite3.connect("file:{}?mode=ro".format(path), uri=True)
+        self.path = os.path.join(out_dir, STORE_FILE)
+        # One read-only connection per thread: a sqlite3 connection must be
+        # used by the thread that opened it, and the crossencoder prefetch
+        # thread (blink/main_dense.py) reads candidates too.
+        self._local = threading.local()
         self.size = self.conn.execute("SELECT COUNT(*) FROM ent").fetchone()[0]
         self.title = _Column(self, "title")
         self.text = _Column(self, "text")
         self.hyper = _Column(self, "hyper", decode=lambda s: [tuple(x) for x in json.loads(s)])
+
+    @property
+    def conn(self):
+        conn = getattr(self._local, "conn", None)
+        if conn is None:
+            conn = sqlite3.connect("file:{}?mode=ro".format(self.path), uri=True)
+            self._local.conn = conn
+        return conn
 
     def __len__(self):
         return self.size

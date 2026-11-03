@@ -26,6 +26,7 @@ from io import open
 
 import torch
 from torch import nn
+import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss, MSELoss
 
 from .modeling_utils import (WEIGHTS_NAME, CONFIG_NAME, PretrainedConfig, PreTrainedModel,
@@ -290,6 +291,19 @@ class BertSelfAttention(nn.Module):
         query_layer = self.transpose_for_scores(mixed_query_layer)
         key_layer = self.transpose_for_scores(mixed_key_layer)
         value_layer = self.transpose_for_scores(mixed_value_layer)
+
+        if (query_layer.dtype in (torch.float16, torch.bfloat16) and head_mask is None
+                and not self.output_attentions and not self.training):
+            # Mixed-precision inference (added for resa2el): fused attention
+            # does not build the full scores matrix, so memory and time stay
+            # low. Same math as below. The float32 path below is unchanged.
+            context_layer = F.scaled_dot_product_attention(
+                query_layer, key_layer, value_layer,
+                attn_mask=attention_mask.to(query_layer.dtype),
+            )
+            context_layer = context_layer.permute(0, 2, 1, 3).contiguous()
+            new_context_layer_shape = context_layer.size()[:-2] + (self.all_head_size,)
+            return (context_layer.view(*new_context_layer_shape),)
 
         # Take the dot product between "query" and "key" to get the raw attention scores.
         attention_scores = torch.matmul(query_layer, key_layer.transpose(-1, -2))
