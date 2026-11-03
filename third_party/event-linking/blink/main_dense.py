@@ -643,6 +643,8 @@ def run(
                 "last": str(samples[-1].get("mention", ""))[:50],
             })
         if bienc_path and os.path.exists(bienc_path):
+            if args.save_topk_result:
+                raise ValueError("--save_topk_result needs a fresh bi-encoder run: remove {} or drop --ckpt".format(bienc_path))
             saved = np.load(bienc_path)
             labels, nns, scores = list(saved["labels"]), list(saved["nns"]), list(saved["scores"])
             nn_data = None

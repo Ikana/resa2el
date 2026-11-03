@@ -100,6 +100,7 @@ def LowMemEvaluate(in_args):
 	print("Low-memory store opened:", len(store), "candidates")
 	config = MakeConfig(in_args)
 	config["lowmem_dir"] = in_args.lowmem
+	config["cross_chunk"] = in_args.cross_chunk or 500
 	RunBLINK(in_args, config, store.title, store.text, store.hyper)
 
 
@@ -502,8 +503,8 @@ if __name__ == '__main__':
 		"--build_lowmem", action="store_true", help="Build the low-memory store in --lowmem."
 	)
 	parser.add_argument(
-		"--cross_chunk", type=int, default=500,
-		help="Low-memory mode: number of mentions per crossencoder chunk."
+		"--cross_chunk", type=int, default=None,
+		help="Low-memory mode: number of mentions per crossencoder chunk (default 500)."
 	)
 
 	parser.add_argument(
