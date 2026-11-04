@@ -6,8 +6,8 @@ init_checkpoint: released_biencoder
 freeze_page_encoder: true
 samplers: [in_batch, uniform, topscore, resa2]
 seeds: [0, 1, 2]
-updates: null          # TODO: set from the pilot
-batch_size: null       # TODO: set from the pilot
+updates: 1500          # from the pilot (2026-11-04): loss flat by 1,500; 45 min per run
+batch_size: 32         # 4 micro-batches of 8 (gradient accumulation); 13 GB on an A10G
 negatives_per_query: 7
 resa2: {pool: 1000, stage1_keep: 500, stage2_top: 75, tau: 0.25}
 eval: [recall@10, top1, recall@100, hard_nominal_recall, nyt_test]

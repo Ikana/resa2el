@@ -1,0 +1,9 @@
+{
+ "split": "valid",
+ "model": "models/biencoder/pytorch_model.bin",
+ "mentions": 16692,
+ "top1": 0.4258327342439492,
+ "recall@10": 0.7771986580397795,
+ "recall@100": 0.9314042655164151,
+ "seconds": 675
+}

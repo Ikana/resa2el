@@ -10,3 +10,5 @@ One line for each GPU session.
 | 2026-11-03 | AWS g5.2xlarge (A10G 24 GB) | 0.65 | $0.80 | Timing pilot, 400 test mentions: float32 2.97 s/mention; fp16 + fused attention 0.94 s/mention, same top-1 on 400/400. |
 | 2026-11-03 | AWS g5.2xlarge (A10G 24 GB) | 6.0 | $7.30 | Full eval, fp16 + fused attention, batch 4: Wikipedia test 5 h 25 min, NYT 36 min. Results in `docs/results/`. |
 | 2026-11-04 | AWS g5.2xlarge (A10G 24 GB) | 2.0 | $2.40 | Pools for valid and train (correct page in its pool for 98%); released recall on valid: top-1 42.6, R@10 77.7, R@100 93.1. Training crashed in EVELINK's validation (last batch smaller than eval_batch_size). |
+| 2026-11-04 | AWS g5.2xlarge (A10G 24 GB) | 1.4 | $1.70 | Pilot try 2: tokenization (27 min, now cached), then CUDA out of memory at batch 32 in one step. |
+| 2026-11-04 | AWS g5.2xlarge (A10G 24 GB) | 2.3 | $2.80 | Pilot try 3: uniform and resa2, 1,500 updates each (batch 32 = 4 x 8), 45 min per run + 11 min recall eval; 13 GB GPU. Valid R@10: released 77.7, uniform 90.0, resa2 92.0. Results in `docs/results/pilot/`. |
