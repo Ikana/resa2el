@@ -99,7 +99,7 @@ class BiEncoderRanker(torch.nn.Module):
             self.model = torch.nn.DataParallel(self.model)
 
     def load_model(self, fname, cpu=False):
-        if cpu:
+        if cpu or not torch.cuda.is_available():
             state_dict = torch.load(fname, map_location="cpu", weights_only=False)
         else:
             state_dict = torch.load(fname, weights_only=False)
@@ -153,8 +153,10 @@ class BiEncoderRanker(torch.nn.Module):
         cand_vecs,
         random_negs=True,
         cand_encs=None,  # pre-computed candidate encoding.
-        device='cuda'
+        device=None
     ):
+        if device is None:
+            device = self.device  # 'cuda' when there is a GPU, as before
         # Encode contexts first
 
         token_idx_ctxt, segment_idx_ctxt, mask_ctxt = to_bert_input(
