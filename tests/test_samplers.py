@@ -63,3 +63,15 @@ def test_resa2_selects_only_from_top_by_similarity():
     for _ in range(200):
         sel = S.resa2(scores, 0.0, sims, 3, rng, n_stage1=n, n_stage2=10)
         assert set(np.asarray(sel).tolist()) <= top
+
+
+def test_stage1_simulation_matches_exact_probability():
+    """Small pool: the simulated inclusion of stage 1 matches the exact enumeration."""
+    from resa2el import analysis as A
+    scores = np.array([0.0, 0.5, 1.0, 2.0, 3.0])
+    w = S.stage1_weights(scores, 0.0)
+    exact = A.exact_stage1_inclusion(w, 2)
+    assert np.isclose(exact.sum(), 2.0)
+    rng = np.random.default_rng(4)
+    sim = A.simulate_inclusion(lambda sc, sp, si, k, r: S.resa2_stage1(sc, sp, k, r), scores, 0.0, None, 2, rng, 40000)
+    assert np.allclose(sim, exact, atol=0.015)
