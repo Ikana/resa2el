@@ -9,3 +9,4 @@ One line for each GPU session.
 | 2026-11-03 | AWS g5.2xlarge (A10G 24 GB) | 8.0 | $9.70 | Test predict, --cross_batch 1, float32: the 8 h timer stopped it before the end. No result. |
 | 2026-11-03 | AWS g5.2xlarge (A10G 24 GB) | 0.65 | $0.80 | Timing pilot, 400 test mentions: float32 2.97 s/mention; fp16 + fused attention 0.94 s/mention, same top-1 on 400/400. |
 | 2026-11-03 | AWS g5.2xlarge (A10G 24 GB) | 6.0 | $7.30 | Full eval, fp16 + fused attention, batch 4: Wikipedia test 5 h 25 min, NYT 36 min. Results in `docs/results/`. |
+| 2026-11-04 | AWS g5.2xlarge (A10G 24 GB) | 2.0 | $2.40 | Pools for valid and train (correct page in its pool for 98%); released recall on valid: top-1 42.6, R@10 77.7, R@100 93.1. Training crashed in EVELINK's validation (last batch smaller than eval_batch_size). |

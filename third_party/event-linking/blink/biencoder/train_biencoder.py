@@ -69,7 +69,7 @@ def evaluate(
         logits = logits.detach().cpu().numpy()
         # Using in-batch negatives, the label ids are diagonal
         label_ids = torch.LongTensor(
-                torch.arange(params["eval_batch_size"])
+                torch.arange(context_input.size(0))  # the last batch can be smaller
         ).numpy()
         tmp_eval_accuracy, _ = utils.accuracy(logits, label_ids)
 
@@ -127,6 +127,34 @@ def _sampled_loss(reranker, context_input, sample_idx, pools, encoding, sampler,
     logits = torch.bmm(cand_enc, ctx.unsqueeze(2)).squeeze(2)  # batch x (k + 1)
     target = torch.zeros(len(sample_idx), dtype=torch.long, device=device)
     return F.cross_entropy(logits, target, reduction="mean")
+
+
+def _tensor_data(split, params, tokenizer, logger):
+    """Tokenized tensors of one split. Cached on disk (added for resa2el):
+    tokenizing the 66k training mentions takes about 30 minutes of CPU."""
+    samples = utils.read_dataset(split, params["data_path"])
+    logger.info("Read %d %s samples." % (len(samples), split))
+    cache = os.path.join(params["data_path"], "cache_{}_{}_{}_{}.pt".format(
+        split, params["max_context_length"], params["max_cand_length"], len(samples)))
+    if not params["debug"] and os.path.exists(cache):
+        tensors = torch.load(cache, weights_only=True)
+        logger.info("Loaded tokenized %s data from %s" % (split, cache))
+        return samples, TensorDataset(*tensors)
+    _, tensor_data = data.process_mention_data(
+        samples,
+        tokenizer,
+        params["max_context_length"],
+        params["max_cand_length"],
+        context_key=params["context_key"],
+        silent=params["silent"],
+        logger=logger,
+        debug=params["debug"],
+    )
+    if not params["debug"]:
+        torch.save(tuple(tensor_data.tensors), cache + ".tmp")
+        os.replace(cache + ".tmp", cache)
+        logger.info("Saved tokenized %s data to %s" % (split, cache))
+    return samples, tensor_data
 
 
 def get_optimizer(model, params):
@@ -207,19 +235,7 @@ def main(params):
         torch.cuda.manual_seed_all(seed)
 
     # Load train data
-    train_samples = utils.read_dataset("train", params["data_path"])
-    logger.info("Read %d train samples." % len(train_samples))
-
-    train_data, train_tensor_data = data.process_mention_data(
-        train_samples,
-        tokenizer,
-        params["max_context_length"],
-        params["max_cand_length"],
-        context_key=params["context_key"],
-        silent=params["silent"],
-        logger=logger,
-        debug=params["debug"],
-    )
+    train_samples, train_tensor_data = _tensor_data("train", params, tokenizer, logger)
     if sampler_name != "in_batch":
         pools, encoding, train_tensor_data = _load_pools(params, train_tensor_data, logger)
 
@@ -234,19 +250,7 @@ def main(params):
 
     # Load eval data
     # TODO: reduce duplicated code here
-    valid_samples = utils.read_dataset("valid", params["data_path"])
-    logger.info("Read %d valid samples." % len(valid_samples))
-
-    valid_data, valid_tensor_data = data.process_mention_data(
-        valid_samples,
-        tokenizer,
-        params["max_context_length"],
-        params["max_cand_length"],
-        context_key=params["context_key"],
-        silent=params["silent"],
-        logger=logger,
-        debug=params["debug"],
-    )
+    valid_samples, valid_tensor_data = _tensor_data("valid", params, tokenizer, logger)
     valid_sampler = SequentialSampler(valid_tensor_data)
     valid_dataloader = DataLoader(
         valid_tensor_data, sampler=valid_sampler, batch_size=eval_batch_size
