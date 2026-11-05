@@ -1,0 +1,9 @@
+{
+ "split": "valid",
+ "model": "runs/main/resa2_s1/pytorch_model.bin",
+ "mentions": 16692,
+ "top1": 0.0,
+ "recall@10": 0.000958543014617781,
+ "recall@100": 0.011921878744308652,
+ "seconds": 646
+}
