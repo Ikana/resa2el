@@ -16,3 +16,9 @@ Healthy seeds only: uniform 61.1 / 90.3 / 97.9; topscore 56.5 / 79.4 / 91.2; res
 Collapsed runs: the loss jumps once (resa2 seed 1 at update ~220, topscore seed 1 at ~400, near the end of
 the warmup at the peak learning rate) and stays at about 0.27-0.30. The mention embeddings then score about 2
 against every page (released model: about 550), so the ranking is noise. Weights are finite.
+
+## Recovery test (2026-11-05)
+The collapsed top-score seed-1 model was trained for 1,500 more updates (same settings) with resa2 negatives,
+and separately with uniform negatives. Neither recovered: valid top-1 / R@10 / R@100 = 0.0 / 0.0 / 2.2 (resa2)
+and 0.0 / 0.0 / 1.1 (uniform). The loss stays at the collapsed level (0.27 and 0.17). A collapsed encoder is a
+stable point of this loss: it must be restarted from the released checkpoint.
