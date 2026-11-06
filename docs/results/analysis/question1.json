@@ -1,0 +1,38 @@
+{
+ "uniform": {
+  "expected_negatives_by_sim_bin": [
+   0.1650500000000001,
+   0.34322999999999976,
+   1.5450300000000003,
+   4.94669
+  ],
+  "coverage_mean": 755.952,
+  "jaccard_mean": 0.004643076923076924,
+  "score_gap_mean": -13.259764765799387,
+  "sim_mean": 503.66267285714287
+ },
+ "topscore": {
+  "expected_negatives_by_sim_bin": [
+   4.132,
+   1.072,
+   1.172,
+   0.624
+  ],
+  "coverage_mean": 7.0,
+  "jaccard_mean": 1.0,
+  "score_gap_mean": -1.4349176461356028,
+  "sim_mean": 83.066
+ },
+ "resa2": {
+  "expected_negatives_by_sim_bin": [
+   2.15103,
+   3.977090000000001,
+   0.8718800000000001,
+   0.0
+  ],
+  "coverage_mean": 84.246,
+  "jaccard_mean": 0.05077487179487179,
+  "score_gap_mean": -8.630418407287598,
+  "sim_mean": 43.326899999999995
+ }
+}

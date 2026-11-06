@@ -6,3 +6,4 @@
 | 2026-11-02 | Claude | Move the GPU work from RunPod to AWS and run the EVELINK eval | AWS account, budget alerts, quota requests, prep and run scripts, `--cross_batch`, `--amp`, `--ckpt`, `--limit`, prefetch, `_modify_fast`, `scripts/check_cross_fast.py`, `docs/aws.md` | |
 | 2026-11-04 | Claude | Write the samplers and the analysis helpers (Rodrigo asked) | `resa2` sampler, `simulate_inclusion`, `exact_stage1_inclusion`, one test that compares them | |
 | 2026-11-04 | Claude | Training hook for the samplers (Rodrigo asked) | `scripts/build_pools.py`, `--sampler/--pools/--encoding/--freeze_cand_encoder/--max_updates` in `train_biencoder.py`, CPU smoke test | |
+| 2026-11-06 | Claude | Question 1 analysis from the pools (Rodrigo asked) | `scripts/analyze_pools.py`, `docs/results/analysis/question1.md` | |
