@@ -13,7 +13,7 @@
 \usepackage{xcolor}
 \usepackage{caption}
 \captionsetup{font=small}
-\lstset{basicstyle=\ttfamily\footnotesize, breaklines=true, columns=fullflexible, keepspaces=true, frame=single, framerule=0.3pt, xleftmargin=4pt, extendedchars=true, literate={≤}{{$\le$}}1 {∈}{{$\in$}}1 {∀}{{$\forall$}}1 {→}{{$\to$}}1 {−}{{$-$}}1 {·}{{$\cdot$}}1 {⟨}{{$\langle$}}1 {⟩}{{$\rangle$}}1}
+\lstset{basicstyle=\ttfamily\footnotesize, breaklines=true, columns=fullflexible, keepspaces=true, frame=single, framerule=0.3pt, xleftmargin=4pt, extendedchars=true, literate={≤}{{$\le$}}1 {ℕ}{{$\mathbb{N}$}}1 {ℝ}{{$\mathbb{R}$}}1 {∑}{{$\sum$}}1 {≥}{{$\ge$}}1 {₀}{{$_0$}}1 {…}{{\dots}}1 {′}{{$'$}}1 {∈}{{$\in$}}1 {∀}{{$\forall$}}1 {→}{{$\to$}}1 {−}{{$-$}}1 {·}{{$\cdot$}}1 {⟨}{{$\langle$}}1 {⟩}{{$\rangle$}}1}
 
 \title{Which Wrong Pages Should an Event Linker Train On?\\
 \large Negative sampling for the retrieval stage of Event Linking}
@@ -24,7 +24,7 @@
 \maketitle
 
 \begin{abstract}
-Event linking connects a mention of an event in text to the Wikipedia page about that event. The retrieval stage of the EVELINK system is trained with a contrastive loss against wrong pages, called negatives. This paper asks which wrong pages the retriever should train on. We compare four samplers at a fixed budget: the original in-batch negatives, uniform negatives from the top 1,000 retrieved pages, the seven highest-scoring pages, and ReSa2, a two-stage sampler that prefers pages that score close to the correct page and are similar to it. On 16,692 validation mentions ranked against 5.87 million pages, ReSa2 gives recall at ten of 93.3\%, against 92.2\% for uniform sampling, 87.2\% for top-score sampling, and 69.6\% for in-batch sampling, and it puts the correct page first 69.5\% of the time against 64.3\% for uniform. We measure the inclusion probability, coverage, and variation between runs of each sampler, prove three counting facts about false negatives in Lean 4, and report a training collapse that appears with hard negatives at a higher learning rate and does not recover.
+Event linking connects a mention of an event in text to the Wikipedia page about that event. The retrieval stage of the EVELINK system is trained with a contrastive loss against wrong pages, called negatives. This paper asks which wrong pages the retriever should train on. We compare four samplers at a fixed budget: the original in-batch negatives, uniform negatives from the top 1,000 retrieved pages, the seven highest-scoring pages, and ReSa2, a two-stage sampler that prefers pages that score close to the correct page and are similar to it. On 16,692 validation mentions ranked against 5.87 million pages, ReSa2 gives recall at ten of 93.3\%, against 92.2\% for uniform sampling, 87.2\% for top-score sampling, and 69.6\% for in-batch sampling, and it puts the correct page first 69.5\% of the time against 64.3\% for uniform. We measure the inclusion probability, coverage, and variation between runs of each sampler, prove the loss bound and three counting facts about false negatives in Lean 4, and report a training collapse that appears with hard negatives at a higher learning rate and does not recover.
 \end{abstract}
 
 \section{Introduction}
@@ -43,7 +43,7 @@ That is where this project starts. During training, the retriever sees the corre
   \item With a fixed compute budget, does ReSa2 put the correct page higher (recall at ten) than the original sampling?
 \end{enumerate}
 
-The contributions are: (1) a fixed-budget comparison of four negative samplers for the EVELINK retriever, with three seeds each; (2) a measurement of what each sampler selects: inclusion probability, coverage, and variation between runs; (3) three counting facts about possible false negatives, proved in Lean 4; and (4) a description of a training collapse that appears with hard negatives at a high learning rate, with a gradient argument for its cause and a test that shows it does not recover. The code, the pools, and the logs are in the project repository.
+The contributions are: (1) a fixed-budget comparison of four negative samplers for the EVELINK retriever, with three seeds each; (2) a measurement of what each sampler selects: inclusion probability, coverage, and variation between runs; (3) the loss bound and three counting facts about possible false negatives, proved in Lean 4; and (4) a description of a training collapse that appears with hard negatives at a high learning rate, with a gradient argument for its cause and a test that shows it does not recover. The code, the pools, and the logs are in the project repository.
 
 \section{Related work}
 
@@ -129,16 +129,21 @@ That last draw gives a simple bound. Once a page makes the final 75, it has a 7-
 \subsection{What is proved in Lean}
 \label{sec:lean}
 
-Three claims from this section are formalized in Lean 4 (core library only, no Mathlib; the file is in Appendix~\ref{app:lean}). A page is modeled by its score, an integer, and a \emph{possible false negative} is a page that scores above the correct page, $s_i > s^{+}$.
+Four claims are formalized in Lean 4 (the files are in Appendix~\ref{app:lean}). The first is the loss bound of equation~\ref{eq:bound}, proved over the real numbers with Mathlib. For the other three, a page is modeled by its score, an integer, and a \emph{possible false negative} is a page that scores above the correct page, $s_i > s^{+}$.
 
 \begin{enumerate}[nosep]
+  \item \textbf{Easy negatives add little.} For any number of negatives with real scores, $L = \log(1 + \sum_i e^{-g_i})$ and $L \le \sum_i e^{-g_i}$; if every gap is at least $g$, then $L \le n e^{-g}$. (\texttt{loss\_eq\_log\_gaps}, \texttt{loss\_le\_sum\_exp\_neg\_gap}, \texttt{loss\_le\_of\_gap\_ge}; the proof uses $\log y \le y - 1$.)
   \item \textbf{A bound for every sampler.} A selection of $k$ pages taken from a pool that contains $A$ pages above $s^{+}$ holds at most $\min(k, A)$ of them. (\texttt{any\_sampler\_le})
-  \item \textbf{Top-score reaches the bound.} The top-score rule selects exactly $\min(k, A)$ pages above $s^{+}$. (\texttt{topscore\_is\_max}) Together, 1 and 2 say that no sampler trains against more possible false negatives than top-score, for every pool and every run; the comparison with ReSa2 needs no assumption about ReSa2.
+  \item \textbf{Top-score reaches the bound.} The top-score rule selects exactly $\min(k, A)$ pages above $s^{+}$. (\texttt{topscore\_is\_max}) Together, 2 and 3 say that no sampler trains against more possible false negatives than top-score, for every pool and every run; the comparison with ReSa2 needs no assumption about ReSa2.
   \item \textbf{The 7/75 share.} Of all 7-page subsets of 75 pages, the share that contains one fixed page is $7/75$, that is, $75 \binom{74}{6} = 7 \binom{75}{7}$. (\texttt{stage2\_share}, checked by computation) So $P(\text{ReSa2 picks } i) = \tfrac{7}{75}\, P(i \text{ is in the top 75})$, which gives equation~\ref{eq:fn}.
 \end{enumerate}
 
 The Lean statements are short enough to compare with the claims above:
 \begin{lstlisting}
+theorem loss_le_sum_exp_neg_gap {n : ℕ} (sPos : ℝ)
+    (s : Fin n → ℝ) :
+    loss sPos s ≤ ∑ i, Real.exp (-(sPos - s i))
+
 theorem any_sampler_le (sPos : Int)
     (pool sel : List Int) (h : sel.Sublist pool) :
     nAbove sPos sel
@@ -153,7 +158,7 @@ theorem stage2_share :
     75 * choose 74 6 = 7 * choose 75 7
 \end{lstlisting}
 
-What is not formalized: the $e^{-g}$ bound of equation~\ref{eq:bound} and the derivative of equation~\ref{eq:push} need real numbers, $\exp$ and $\log$, which core Lean does not provide; they are checked by hand above. The inclusion probability of stage 1 (successive sampling) is checked numerically: the exact enumeration for pools of up to 8 pages matches a simulation of the sampler to within 0.015. The training results of section~\ref{sec:experiments} are empirical.
+What is not formalized: the derivative of equation~\ref{eq:push} and the gradient of equation~\ref{eq:grad} are checked by hand above. The inclusion probability of stage 1 (successive sampling) is checked numerically: the exact enumeration for pools of up to 8 pages matches a simulation of the sampler to within 0.015. The training results of section~\ref{sec:experiments} are empirical.
 
 \section{Experiments}
 \label{sec:experiments}
@@ -252,7 +257,7 @@ I started with the difference between the 1996 award and the 1998 award. The res
 
 \section*{Limitations}
 
-All numbers are on the validation set; the test set is held back for the final version. The page encoder is frozen, so the pool scores and similarities never change during training; a run that also trains the page encoder could behave differently, and the pools would have to be rebuilt. Each sampler was run at one budget (1,500 updates, 7 negatives) and two learning rates; the collapse was observed at one of them and the gradient argument for it is a hypothesis, not a proof. The pool is the released retriever's top 1,000, so a correct page outside the pool (2\% of mentions) cannot be sampled. The Lean results cover counting facts about possible false negatives; the bounds that need real numbers are checked by hand.
+All numbers are on the validation set; the test set is held back for the final version. The page encoder is frozen, so the pool scores and similarities never change during training; a run that also trains the page encoder could behave differently, and the pools would have to be rebuilt. Each sampler was run at one budget (1,500 updates, 7 negatives) and two learning rates; the collapse was observed at one of them and the gradient argument for it is a hypothesis, not a proof. The pool is the released retriever's top 1,000, so a correct page outside the pool (2\% of mentions) cannot be sampled. The Lean results cover the loss bound and counting facts about possible false negatives; the derivative and gradient formulas are checked by hand.
 
 \begin{thebibliography}{9}
 \bibitem[Yu et al.(2023)]{yu2023event} Xiaodong Yu, Wenpeng Yin, Nitish Gupta, and Dan Roth. 2023. Event Linking: Grounding Event Mentions to Wikipedia. In \emph{Proceedings of EACL}.
@@ -308,8 +313,12 @@ The recovery test continued the collapsed top-score seed-1 model for 1,500 more 
 \section{The Lean file}
 \label{app:lean}
 
-\texttt{lean/FalseNegatives.lean} in the project repository, Lean 4 v4.34.1, core library only. It builds with \texttt{lake build}.
+Two files in the project repository, Lean 4 v4.34.1, built with \texttt{lake build}. \texttt{lean/LossBound.lean} uses Mathlib (real numbers, $\exp$, $\log$); its proofs depend only on the axioms \texttt{propext}, \texttt{Classical.choice} and \texttt{Quot.sound}. \texttt{lean/FalseNegatives.lean} uses the core library only.
 
+\subsection*{LossBound.lean}
+\lstinputlisting{../../lean/LossBound.lean}
+
+\subsection*{FalseNegatives.lean}
 \lstinputlisting{../../lean/FalseNegatives.lean}
 
 \end{document}
