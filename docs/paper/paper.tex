@@ -22,58 +22,66 @@ Event linking connects a mention of an event in text to the Wikipedia page about
 
 \section{Introduction}
 
-``He won the Rising Star award in 1996, in his first season with Adelaide.''
+EVELINK is a system that reads a mention of an event and tries to find the Wikipedia page for that event. Yu and colleagues introduced it in 2023~\cite{yu2023event}. You give it a phrase like ``won the Rising Star award,'' along with the sentence around it. EVELINK uses that context to work out which award the writer is talking about.
 
-If I want to link that sentence to Wikipedia, the page I want is ``1996 AFL Rising Star.'' A page about the 2004 Indian Ocean earthquake is easy to rule out. The page for the 1998 AFL Rising Star is harder. It is about the same award. The year is what tells me it is a different event.
+Take this sentence. ``He won the Rising Star award in 1996, in his first season with Adelaide.''
 
-That is the problem I study in this paper. When I train an event linker, which wrong pages should I show it?
+The page we want is ``1996 AFL Rising Star.'' A page about the 2004 Indian Ocean earthquake is easy to rule out. The page for the 1998 AFL Rising Star is harder. It is the same award. The year is what tells us which page to link to. The Event Linking paper calls this a time error; its other common error, a hierarchy error, confuses an event with a parent event or a sub-event. In both cases the wrong page shares much of its wording with the correct page.
 
-\subsection{Where the link can go wrong}
+EVELINK makes that decision in two stages. First, a retriever searches Wikipedia and pulls out 100 candidate pages. Then a reranker reads the mention alongside each candidate and puts the pages in a new order. If the retriever leaves out the 1996 page, the reranker cannot bring it back.
 
-Yu et al.\ introduced event linking in 2023~\cite{yu2023event}. You give the model a mention of an event and the words around it. The model has to find the Wikipedia page that describes that event. We can train it on links that Wikipedia editors already made.
-
-EVELINK does this in two stages. First, a retriever searches for candidate pages. In the original experiments, it retrieves 100. Then a reranker reads the mention and each candidate together and decides which page belongs at the top. If the correct page never makes the list, the reranker has no way to recover it. I work on that first stage.
-
-The Event Linking paper identifies two types of errors that matter here. A hierarchy error confuses an event with a parent event or a sub-event. A time error selects a related event from the wrong year. In both cases, the wrong page can share much of its wording with the correct page.
-
-\subsection{Questions}
-
+That is where my project starts. During training, the retriever sees the correct page alongside a few wrong pages. I wanted to know which wrong pages would help it learn to put the right one higher. Two questions guide the paper:
 \begin{enumerate}[nosep]
-  \item How does ReSa2~\cite{li2025resa2} change the inclusion probability of each candidate, the coverage of the candidate pool, and the variation between runs?
+  \item How does ReSa2~\cite{li2025resa2}, a two-stage sampler of wrong pages, change the inclusion probability of each candidate, the coverage of the candidate pool, and the variation between runs?
   \item With a fixed compute budget, does ReSa2 put the correct page higher (recall at ten) than the original sampling?
 \end{enumerate}
 
-\section{What the model learns from a wrong page}
+\section{The math behind the retriever}
 
-The retriever uses two BERT encoders. One reads the mention in context. The other reads the Wikipedia page. Each produces a vector with 1,024 numbers. I take the dot product of the two vectors to get a score:
+The retriever uses two BERT encoders. One reads the mention and its context. The other reads the Wikipedia page. Each encoder turns its input into a vector with 1,024 numbers. I call the mention vector $u_m$ and the page vector $v_e$.
+
+To score a page, I take the dot product. I multiply the first number in one vector by the first number in the other, do the same for the rest, and add up the products:
 \begin{equation}
-  s(m, e) = \langle f_\theta(m),\, g(e) \rangle .
+  s(m,e) = u_m \cdot v_e = \sum_{j=1}^{1024} u_{m,j}\, v_{e,j} .
+  \label{eq:score}
 \end{equation}
-Since the page encoder works independently, I can compute the page vectors $g(e)$ once and reuse them for every mention.
+The retriever puts pages with higher scores first. The two encoders work separately, so I can compute the page vectors ahead of time. When a new mention comes in, I encode it once and compare that vector with the stored page vectors.
 
-During training, I score the correct page and seven wrong pages. I call those seven pages \emph{negatives}. For one mention the loss is
+During training, I give the retriever the correct page and seven wrong pages. I call the wrong pages \emph{negatives}. If the correct page scores $s^{+}$ and the negatives score $s_1$ through $s_7$, the loss is
 \begin{equation}
-  L = -\log \frac{e^{s^{+}}}{e^{s^{+}} + \sum_{i=1}^{7} e^{s_i}},
+  L = -\log \frac{e^{s^{+}}}{e^{s^{+}} + \sum_{i=1}^{7} e^{s_i}} .
   \label{eq:loss}
 \end{equation}
-where $s^{+}$ is the score of the correct page and $s_i$ the score of negative $i$. The loss goes up when a negative scores close to the correct page or above it.
+The fraction is the correct page's share of the total after I exponentiate the eight scores. When the correct page gets almost all of that share, the loss is close to zero. When a wrong page scores about as high as the correct one, it takes a bigger share and the loss goes up.
 
-Suppose the right page scores 10. If the only negative scores $-10$, the loss is almost zero. The model already knows how to separate those two pages. If the negative scores 9.5, the loss is about 0.47. There is much more for the model to learn from that comparison.
+To see the difference, suppose the correct page scores 10 and there is just one negative. If that negative scores $-10$, the loss is about two billionths. If it scores 9.5, the loss is about 0.47. The correct page has the same score in both cases. All I changed was the wrong page.
 
-The math puts a bound on this. If a negative scores $g$ points below the correct page, adding it increases the loss by at most $e^{-g}$:
+The math puts a bound on this. Write $g_i = s^{+} - s_i$ for the gap by which negative $i$ scores below the correct page. Then
 \begin{equation}
-  \log\!\left(1 + \sum_i e^{s_i - s^{+}}\right) \le \sum_i e^{s_i - s^{+}} = \sum_i e^{-g_i}.
+  L = \log\!\Bigl(1 + \sum_{i=1}^{7} e^{-g_i}\Bigr) \le \sum_{i=1}^{7} e^{-g_i},
+  \label{eq:bound}
 \end{equation}
-And if I ask how much the loss changes when I raise a negative's score, the answer is that negative's share of the softmax:
+because $\log(1+x) \le x$. A negative $g$ points below the correct page adds at most $e^{-g}$ to the loss. At $g = 20$ that is about $2 \times 10^{-9}$; at $g = 0.5$ it is about $0.61$.
+
+I can also ask how much the loss changes if I raise one negative's score. The derivative is that negative's share of the total:
 \begin{equation}
-  \frac{\partial L}{\partial s_i} = p_i = \frac{e^{s_i}}{e^{s^{+}} + \sum_j e^{s_j}} .
+  p_i = \frac{\partial L}{\partial s_i} = \frac{e^{s_i}}{e^{s^{+}} + \sum_{j=1}^{7} e^{s_j}} .
   \label{eq:push}
 \end{equation}
-In other words, each negative gets a share of the training signal, and its score helps determine how big that share is.
+So if the retriever already puts the earthquake page far below the 1996 award, that page contributes almost nothing to the update. If the 1998 award scores close to the 1996 award, the loss puts more pressure on the model to separate them.
+
+The update itself moves the mention vector. By the chain rule through equation~\ref{eq:score},
+\begin{equation}
+  \nabla_{u_m} L = \sum_{i=1}^{7} p_i\,(v_{e_i} - v_{e^{+}}),
+  \label{eq:grad}
+\end{equation}
+a weighted sum of the differences between each negative's page vector and the correct page vector, with the weights $p_i$ from equation~\ref{eq:push}. A negative that scores far below the correct page has $p_i \approx 0$ and moves nothing. A negative that scores close to it has a large $p_i$, and the step is along $v_{e_i} - v_{e^{+}}$; if the two pages are near-duplicates, that difference is small, which matters in section~\ref{sec:collapse}.
+
+In the experiment, I keep the loss and the number of negatives fixed. I change which seven pages the model sees.
 
 \section{How I chose the seven pages}
 
-I compared four ways of picking negatives. The first uses the correct pages for the other seven mentions in the same small batch. That is the in-batch baseline. For the other three, I started with the pages that the released retriever ranked highest for that mention. I built a pool of up to 1,000 candidates and excluded the correct page from sampling. Every sampler sees the same input: the pool scores $s_i$, the score $s^{+}$ of the correct page, and the similarity $\sigma_i$ of each pool page to the correct page (the dot product of the two released page vectors).
+I compared four ways of picking negatives. The first uses the correct pages for the other seven mentions in the same small batch. That is the in-batch baseline. For the other three, I started with the pages that the released retriever ranked highest for that mention. I built a pool of up to 1,000 candidates and excluded the correct page from sampling. Every sampler sees the same input: the pool scores $s_i$, the score $s^{+}$ of the correct page, and the similarity $\sigma_i = v_{e_i} \cdot v_{e^{+}}$ of each pool page to the correct page.
 
 Uniform sampling gives every page in the pool the same chance, $k/N = 7/1{,}000$. Top-score sampling always takes the seven highest-scoring pages, so its inclusion probability is 1 for those seven pages and 0 for the rest. ReSa2 makes the choice in two stages.
 
@@ -86,7 +94,7 @@ It draws one page with probability $w_i / \sum_j w_j$, removes it, and draws aga
 
 That last draw gives me a simple bound. Once a page makes the final 75, it has a 7-in-75 chance of being used. So even if a page labeled as wrong is actually a valid link, I can bound how often ReSa2 trains against it and, with equation~\ref{eq:push}, bound its expected effect on the loss gradient:
 \begin{equation}
-  \mathbb{E}\!\left[\frac{\partial L}{\partial s_i}\right] \le P(\text{ReSa2 picks } i)\cdot \frac{e^{s_i}}{e^{s^{+}} + e^{s_i}} \le \frac{7}{75}\cdot \frac{e^{s_i}}{e^{s^{+}} + e^{s_i}} .
+  \mathbb{E}\!\left[p_i\right] \le P(\text{ReSa2 picks } i)\cdot \frac{e^{s_i}}{e^{s^{+}} + e^{s_i}} \le \frac{7}{75}\cdot \frac{e^{s_i}}{e^{s^{+}} + e^{s_i}} .
 \end{equation}
 
 \section{Experiment setup}
@@ -124,7 +132,7 @@ ReSa2 & \textbf{69.5 $\pm$ 0.3} & \textbf{93.3 $\pm$ 0.1} & \textbf{98.5 $\pm$ 0
 
 Most of the improvement came from drawing negatives from the retrieved pool. ReSa2 added 1.1 percentage points over uniform sampling at ten. The difference was larger at rank one. With uniform sampling, the correct page came first 64.3 percent of the time. With ReSa2, it came first 69.5 percent of the time. The spread between seeds is 0.1 to 0.3 points for both samplers, so the gap is about ten times the noise.
 
-In-batch sampling finished below the released model. At this budget that is expected: seven random negatives per step give almost no gradient (section 2), while the original training used many more negatives per step and ran for longer.
+In-batch sampling finished below the released model. At this budget that is expected: seven random negatives per step give almost no gradient (equation~\ref{eq:bound}), while the original training used many more negatives per step and ran for longer.
 
 \section{Which pages the samplers pick}
 
@@ -150,14 +158,11 @@ ReSa2 picked about six of its seven negatives from the 75 pages most similar to 
 The score gap says how hard the negatives are. ReSa2's negatives score 8.6 points below the correct page on average, between uniform ($-13.3$, easy) and top-score ($-1.4$, hardest). With raw scores of about 550 and differences of tens of points, the weight in equation~\ref{eq:weight} is near zero outside $|s_i - s^{+}| < 4$, so in practice stage 1 is a window around $s^{+}$, and stage 2 picks the most similar pages inside that window.
 
 \section{What happened at the higher learning rate}
+\label{sec:collapse}
 
 At a learning rate of $3 \times 10^{-5}$, one ReSa2 run and one top-score run collapsed. The training loss jumped once, near the end of the warm-up, from about 0.13 to about 0.3, and stayed there. When I looked at the scores, I found that the mention encoder gave almost every page a score of about two. It gave roughly the same score to the correct page and to a random page; a healthy model gives about 550 to the correct page and 545 to a random one. The weights stayed finite. The loss over the eight training pages could still look modest while the ranking across millions of pages had fallen apart.
 
-One possible explanation is in the gradient. The gradient of the loss on the mention vector is
-\begin{equation}
-  \nabla_{f_\theta(m)} L = \sum_{i=1}^{7} p_i\,\bigl(g(e_i) - g(e^{+})\bigr),
-\end{equation}
-with $p_i$ from equation~\ref{eq:push}. When a negative scores close to the correct page, it gets a substantial share of the training signal. If the two page vectors are also similar, the update depends on the small difference between them. My hypothesis is that repeated updates at the higher learning rate weakened the part of the mention vector that lined up with the page vectors. The scores are consistent with that explanation. Uniform and in-batch runs, whose negatives are far from the correct page, never jumped.
+One possible explanation is in the gradient, equation~\ref{eq:grad}. When a negative scores close to the correct page, it gets a substantial share of the training signal. If the two page vectors are also similar, the update depends on the small difference between them. My hypothesis is that repeated updates at the higher learning rate weakened the part of the mention vector that lined up with the page vectors. The scores are consistent with that explanation. Uniform and in-batch runs, whose negatives are far from the correct page, never jumped.
 
 I tried training the collapsed model for another 1,500 updates. I tried ReSa2 negatives in one run and uniform negatives in another. Recall at ten stayed at zero in both. When I restarted from the released checkpoint and used a learning rate of $10^{-5}$, all twelve runs trained without collapsing, and every sampler scored better than at the higher rate.
 
