@@ -6,6 +6,9 @@
 \usepackage[hidelinks]{hyperref}
 \usepackage{enumitem}
 \usepackage{setspace}
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{basicstyle=\ttfamily\small, breaklines=true, columns=fullflexible, keepspaces=true, frame=single, framerule=0.3pt, xleftmargin=4pt, extendedchars=true, literate={≤}{{$\le$}}1 {∈}{{$\in$}}1 {∀}{{$\forall$}}1 {→}{{$\to$}}1 {−}{{$-$}}1 {·}{{$\cdot$}}1 {⟨}{{$\langle$}}1 {⟩}{{$\rangle$}}1 {·}{{$\cdot$}}1}
 \onehalfspacing
 
 \title{Which Wrong Pages Should an Event Linker Train On?\\
@@ -97,6 +100,30 @@ That last draw gives me a simple bound. Once a page makes the final 75, it has a
   \mathbb{E}\!\left[p_i\right] \le P(\text{ReSa2 picks } i)\cdot \frac{e^{s_i}}{e^{s^{+}} + e^{s_i}} \le \frac{7}{75}\cdot \frac{e^{s_i}}{e^{s^{+}} + e^{s_i}} .
 \end{equation}
 
+\subsection{What is proved in Lean}
+\label{sec:lean}
+
+Three claims from this section are formalized in Lean 4 (core library only, no Mathlib; the file is in Appendix~\ref{app:lean}). A page is modeled by its score, an integer, and a \emph{possible false negative} is a page that scores above the correct page, $s_i > s^{+}$.
+
+\begin{enumerate}[nosep]
+  \item \textbf{A bound for every sampler.} A selection of $k$ pages taken from a pool that contains $A$ pages above $s^{+}$ holds at most $\min(k, A)$ of them. (\texttt{any\_sampler\_le})
+  \item \textbf{Top-score reaches the bound.} The top-score rule selects exactly $\min(k, A)$ pages above $s^{+}$. (\texttt{topscore\_is\_max}) Together, 1 and 2 say that no sampler trains against more possible false negatives than top-score, for every pool and every run; the comparison with ReSa2 needs no assumption about ReSa2.
+  \item \textbf{The 7/75 share.} Of all 7-page subsets of 75 pages, the share that contains one fixed page is $7/75$, that is, $75 \binom{74}{6} = 7 \binom{75}{7}$. (\texttt{stage2\_share}, checked by computation) So $P(\text{ReSa2 selects } i) = \tfrac{7}{75}\, P(i \text{ is in the top 75})$.
+\end{enumerate}
+
+The Lean statements are short enough to compare with the claims above:
+\begin{lstlisting}
+theorem any_sampler_le (sPos : Int) (pool sel : List Int) (h : sel.Sublist pool) :
+    nAbove sPos sel ≤ min sel.length (nAbove sPos pool)
+
+theorem topscore_is_max (sPos : Int) (k : Nat) (pool : List Int) :
+    nAbove sPos (topscore sPos k pool) = min k (nAbove sPos pool)
+
+theorem stage2_share : 75 * choose 74 6 = 7 * choose 75 7
+\end{lstlisting}
+
+What is not formalized: the $e^{-g}$ bound of equation~\ref{eq:bound} and the derivative of equation~\ref{eq:push} need real numbers, $\exp$ and $\log$, which core Lean does not provide; they are checked by hand above. The inclusion probability of stage 1 (successive sampling) is checked numerically: the exact enumeration for pools of up to 8 pages matches a simulation of the sampler to within 0.015. The training results of sections~\ref{sec:rankings} and~\ref{sec:picks} are empirical.
+
 \section{Experiment setup}
 
 I started each run from the released EVELINK model. I froze the page encoder and trained the mention encoder for 1,500 updates with a batch of 32 mentions (four micro-batches of 8), AdamW, a learning rate of $10^{-5}$ with 10\% warm-up, gradient clipping at 1.0, and seven negatives per mention. Because the page encoder is frozen, the pool scores and similarities are fixed before training. I ran each of the four samplers with three seeds, twelve runs in total. Each run took about 56 minutes on one NVIDIA A10G.
@@ -110,6 +137,7 @@ I also report top-1 and recall at 100.
 Before the experiments I reproduced the released pipeline: the released retriever and reranker give 82.88\% accuracy on the Wikipedia test set (paper: 82.87\%) and 55.33\% on the New York Times set (paper: 55.33\%). The test set is untouched by everything below.
 
 \section{What changed in the rankings}
+\label{sec:rankings}
 
 Table~\ref{tab:main} gives the results. The released retriever got 77.7 percent recall at ten. After fine-tuning, in-batch sampling got 69.6. Uniform sampling from the pool got 92.2. Taking the seven highest-scoring negatives got 87.2. ReSa2 got 93.3.
 
@@ -135,6 +163,7 @@ Most of the improvement came from drawing negatives from the retrieved pool. ReS
 In-batch sampling finished below the released model. At this budget that is expected: seven random negatives per step give almost no gradient (equation~\ref{eq:bound}), while the original training used many more negatives per step and ran for longer.
 
 \section{Which pages the samplers pick}
+\label{sec:picks}
 
 I also wanted to see which pages the samplers actually picked. I drew negatives 200 times each for 500 validation mentions. Table~\ref{tab:q1} gives the result.
 
@@ -169,6 +198,103 @@ I tried training the collapsed model for another 1,500 updates. I tried ReSa2 ne
 \section{Conclusion}
 
 I started with the difference between the 1996 award and the 1998 award. The results make that example more specific for me. I want the retriever to see pages that are close enough to make it pay attention to the year. I also want it to see a different set of pages the next time it trains on that mention. In these runs, ReSa2 gave me that variety and put the correct page first more often than any of the other samplers I tested.
+
+\appendix
+\section{The Lean file}
+\label{app:lean}
+
+\texttt{lean/FalseNegatives.lean} in the project repository, Lean 4 v4.34.1, core library only. It builds with \texttt{lake build}.
+
+\begin{lstlisting}
+/-!
+# Small Lean model of the false-negative claim in the proposal
+
+Core Lean 4 only (no Mathlib). Check with:  cd lean && lake build
+
+Setup. A page is its score (an integer, to stay simple). The correct page has
+score `sPos`. A "possible false negative" is a page that scores above `sPos`.
+A sampler returns a list of pages taken from the pool.
+
+Main result (`topscore_is_max`): the top-score rule selects `min k A` possible
+false negatives, where `A` is how many the pool has, and NO sampler of `k`
+pages can select more (`any_sampler_le`). So "ReSa2 selects fewer of them than
+top-score, in expectation" is true for every sampler, every pool, and every
+run. It needs no condition on ReSa2.
+-/
+
+/-- `s` scores above the correct page. -/
+def above (sPos s : Int) : Bool := decide (sPos < s)
+
+/-- Number of possible false negatives in a list of pages. -/
+def nAbove (sPos : Int) (l : List Int) : Nat := l.countP (above sPos)
+
+/-! ## 1. An upper bound for every sampler -/
+
+/-- Any selection taken from the pool (each page used at most once) has at most
+`min (its size) A` possible false negatives. (Write the selected pages in
+pool order; then "each page used at most once" means `sel` is a sublist.) -/
+theorem any_sampler_le (sPos : Int) (pool sel : List Int) (h : sel.Sublist pool) :
+    nAbove sPos sel ≤ min sel.length (nAbove sPos pool) :=
+  Nat.le_min.mpr ⟨List.countP_le_length, h.countP_le⟩
+
+/-! ## 2. The top-score rule reaches the bound
+
+Sorting by score puts every page above `sPos` before every page below it.
+So, for counting, top-score is: pages above first, then the others, take `k`. -/
+
+def topscore (sPos : Int) (k : Nat) (pool : List Int) : List Int :=
+  (pool.filter (above sPos) ++ pool.filter (fun s => !above sPos s)).take k
+
+/-- Taking `k` from (all-good list ++ no-good list) gives `min k (good length)` goods. -/
+theorem countP_take_append (p : Int → Bool) (a b : List Int)
+    (ha : ∀ x ∈ a, p x = true) (hb : ∀ x ∈ b, p x = false) :
+    ∀ k, ((a ++ b).take k).countP p = min k a.length := by
+  induction a with
+  | nil =>
+    intro k
+    simp only [List.nil_append, List.length_nil, Nat.min_zero]
+    exact List.countP_eq_zero.mpr fun x hx => by
+      simp [hb x (List.mem_of_mem_take hx)]
+  | cons x xs ih =>
+    intro k
+    cases k with
+    | zero => simp
+    | succ k =>
+      have hx : p x = true := ha x (by simp)
+      have ih' := ih (fun y hy => ha y (by simp [hy])) k
+      simp only [List.cons_append, List.take_succ_cons, List.countP_cons, hx,
+        ite_true, List.length_cons, ih']
+      omega
+
+theorem topscore_is_max (sPos : Int) (k : Nat) (pool : List Int) :
+    nAbove sPos (topscore sPos k pool) = min k (nAbove sPos pool) := by
+  unfold nAbove topscore
+  rw [countP_take_append (above sPos) _ _ (fun x hx => (List.mem_filter.mp hx).2)
+      (fun x hx => by simpa using (List.mem_filter.mp hx).2)]
+  rw [List.countP_eq_length_filter]
+
+/-! ## 3. Stage 2 of ReSa2 picks 7 of the top 75 uniformly
+
+Counting fact: of all 7-page subsets of 75 pages, the share that contains one
+fixed page is 7/75. So P(page selected) = (7/75) · P(page is in the top 75),
+which is at most (7/75) · P(page is kept by stage 1). -/
+
+/-- Binomial coefficient. Step i: C(n, i+1) = C(n, i) · (n − i) / (i + 1),
+    and each division is exact. -/
+def choose (n k : Nat) : Nat :=
+  (List.range k).foldl (fun c i => c * (n - i) / (i + 1)) 1
+
+/-- Subsets that contain the fixed page: choose the other 6 from 74.
+    `75 · C(74,6) = 7 · C(75,7)`, that is, the share is 7/75. -/
+theorem stage2_share : 75 * choose 74 6 = 7 * choose 75 7 := by decide
+
+/-! ## Example with numbers -/
+
+-- Pool: correct page at 0; three pages above it.
+#eval nAbove 0 [5, -3, 1, -8, 2, -1]                 -- 3
+#eval topscore 0 2 [5, -3, 1, -8, 2, -1]             -- [5, 1]
+#eval nAbove 0 (topscore 0 7 [5, -3, 1, -8, 2, -1])  -- 3 = min 7 3
+\end{lstlisting}
 
 \begin{thebibliography}{9}
 \bibitem{yu2023event} Xiaodong Yu, Wenpeng Yin, Nitish Gupta, and Dan Roth. Event Linking: Grounding Event Mentions to Wikipedia. In \emph{Proceedings of EACL}, 2023.
