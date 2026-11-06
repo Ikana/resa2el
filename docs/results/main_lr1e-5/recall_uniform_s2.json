@@ -1,0 +1,9 @@
+{
+ "split": "valid",
+ "model": "runs/main_lr1e-5/uniform_s2/pytorch_model.bin",
+ "mentions": 16692,
+ "top1": 0.6410256410256411,
+ "recall@10": 0.920321111909897,
+ "recall@100": 0.9836448598130841,
+ "seconds": 634
+}

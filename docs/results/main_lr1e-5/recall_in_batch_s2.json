@@ -1,0 +1,9 @@
+{
+ "split": "valid",
+ "model": "runs/main_lr1e-5/in_batch_s2/pytorch_model.bin",
+ "mentions": 16692,
+ "top1": 0.33387251377905586,
+ "recall@10": 0.6971004073807812,
+ "recall@100": 0.9009106158638869,
+ "seconds": 637
+}

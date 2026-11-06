@@ -1,0 +1,9 @@
+{
+ "split": "valid",
+ "model": "runs/main_lr1e-5/topscore_s2/pytorch_model.bin",
+ "mentions": 16692,
+ "top1": 0.6696022046489336,
+ "recall@10": 0.8846752935537983,
+ "recall@100": 0.9670500838725138,
+ "seconds": 635
+}

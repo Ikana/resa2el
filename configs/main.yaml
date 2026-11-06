@@ -7,7 +7,8 @@ freeze_page_encoder: true
 samplers: [in_batch, uniform, topscore, resa2]
 seeds: [0, 1, 2]
 updates: 1500          # from the pilot (2026-11-04): loss flat by 1,500; 45 min per run
-batch_size: 32         # 4 micro-batches of 8 (gradient accumulation); 13 GB on an A10G
+batch_size: 32
+learning_rate: 1.0e-5   # 3e-5 made 2 of 12 runs collapse (see docs/results/main/)         # 4 micro-batches of 8 (gradient accumulation); 13 GB on an A10G
 negatives_per_query: 7
 resa2: {pool: 1000, stage1_keep: 500, stage2_top: 75, tau: 0.25}
 eval: [recall@10, top1, recall@100, hard_nominal_recall, nyt_test]
