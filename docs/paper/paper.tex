@@ -2,9 +2,14 @@
 % abstract, introduction with contributions, related work, task and model,
 % method, experiments (setup, results, analysis), conclusion, limitations,
 % references, appendices.
-\documentclass[11pt,twocolumn]{article}
-\usepackage[margin=1in,columnsep=0.25in]{geometry}
-\usepackage{amsmath,amssymb}
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage[hidelinks]{hyperref}
@@ -18,14 +23,14 @@
 
 \title{Which Wrong Pages Should an Event Linker Train On?\\
 \large Negative sampling for the retrieval stage of Event Linking}
-\author{Rodrigo Quezada\\ CS 2242, Fall 2026}
+\author{Rodrigo Quezada\\ COMPSCI 2242, Fall 2026}
 \date{Draft, \today}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-A retriever that links text to a large collection learns from contrast: during training it sees the correct item next to a few wrong ones, called negatives. The wrong items are usually chosen as an afterthought, yet they decide what the model learns. This paper studies that choice for event linking, where a mention of an event in text must be matched to the Wikipedia page about that event, and the hardest wrong pages describe the same kind of event in a different year. We compare four ways to pick negatives at a fixed training budget: the in-batch negatives of the original system, uniform draws from the retriever's own top candidates, the highest-scoring candidates, and ReSa2, a two-stage sampler that prefers candidates that score close to the correct item and resemble it. We measure what each sampler selects (inclusion probability, coverage, and variation between runs), prove the loss bound and three counting facts about false negatives in Lean 4, and evaluate the trained retrievers against 5.87 million pages. Negatives drawn from the candidate pool raise recall at ten from 77.7\% to 92.2\%; ReSa2 reaches 93.3\% and puts the correct page first 69.5\% of the time, against 64.3\% for uniform draws. Taking only the highest-scoring candidates is worse than uniform draws and, at a higher learning rate, makes training collapse to a model that does not recover.
+A retriever learns from contrast: during training it sees the correct item next to a few wrong ones, the negatives, and the choice of negatives decides what it learns. We study that choice for event linking, where a mention in text must be matched to one of 5.87 million Wikipedia event pages and the hardest wrong pages describe the same event in another year. At a fixed budget we compare four samplers for the EVELINK retriever: in-batch negatives, uniform draws from the top 1,000 candidates, the highest-scoring candidates, and ReSa2, a two-stage sampler that prefers candidates close to the correct page. ReSa2 reaches 93.3\% recall at ten against 92.2\% for uniform draws and 69.6\% for in-batch negatives, and puts the correct page first 69.5\% of the time against 64.3\%. We measure what each sampler selects, prove the loss bound and three counting facts in Lean 4, and show that the hardest negatives can make training collapse.
 \end{abstract}
 
 \section{Introduction}
@@ -85,7 +90,7 @@ which is also an upper bound on the accuracy of any reranker placed after it. Th
 
 \paragraph{Event linking.} Yu et al.~\cite{yu2023event} define the task, release the Wikipedia and New York Times data, and build EVELINK on the BLINK bi-encoder and cross-encoder of Wu et al.~\cite{wu2020blink}. They train the bi-encoder with in-batch negatives and retrieve 100 candidates for the cross-encoder. This paper keeps their model and data and changes only how the bi-encoder's negatives are chosen.
 
-\paragraph{Negatives for dense retrieval.} In-batch negatives \cite{karpukhin2020dpr} are cheap but mostly easy. Hard-negative mining takes negatives from the retriever's own top results: ANCE \cite{xiong2021ance} refreshes them during training, and RocketQA \cite{qu2021rocketqa} filters them with a cross-encoder because many top results are unlabeled positives, that is, false negatives. The top-score sampler in this paper is the unfiltered version of that idea.
+\paragraph{Negatives for dense retrieval.} In-batch negatives \cite{karpukhin2020dpr} are cheap but mostly easy. Hard-negative mining takes negatives from the retriever's own top results: ANCE \cite{xiong2021ance} refreshes them during training, and RocketQA \cite{qu2021rocketqa} filters them with a cross-encoder because many top results are unlabeled positives, that is, false negatives. The top-score sampler in this paper is the unfiltered version of that idea. SimANS \cite{zhou2022simans} samples negatives with a Gaussian weight centered on the positive's score, the same weight ReSa2 uses in its first stage.
 
 \paragraph{ReSa2.} Li et al.~\cite{li2025resa2} sample in two stages: a weighted draw that prefers pages whose score is close to the positive's, then a similarity ranking among the survivors. The sizes used here (pool 1,000, 500 survivors, top 75, 7 negatives) are the ones in their released code. This paper measures what those two stages do to the inclusion probability of each page and compares the result with uniform and top-score sampling at a fixed budget.
 
@@ -110,26 +115,54 @@ The fraction is the correct page's share of the total after I exponentiate the e
 
 To see the difference, suppose the correct page scores 10 and there is just one negative. If that negative scores $-10$, the loss is about two billionths. If it scores 9.5, the loss is about 0.47. The correct page has the same score in both cases. All I changed was the wrong page.
 
-The math puts a bound on this. Write $g_i = s^{+} - s_i$ for the gap by which negative $i$ scores below the correct page. Then
+The math puts a bound on this. Write $g_i = s^{+} - s_i$ for the gap by which negative $i$ scores below the correct page.
+
+\begin{lemma}[Easy negatives add little]
+\label{lem:bound}
+For any $n \ge 1$ and real scores $s^{+}, s_1, \dots, s_n$, the loss of equation~\ref{eq:loss} with $n$ negatives satisfies
 \begin{equation}
-  L = \log\!\Bigl(1 + \sum_{i=1}^{7} e^{-g_i}\Bigr) \le \sum_{i=1}^{7} e^{-g_i},
+  L = \log\!\Bigl(1 + \sum_{i=1}^{n} e^{-g_i}\Bigr) \le \sum_{i=1}^{n} e^{-g_i}, \qquad\text{and}\qquad L \le n\,e^{-g} \;\text{ if every } g_i \ge g.
   \label{eq:bound}
 \end{equation}
-because $\log(1+x) \le x$. A negative $g$ points below the correct page adds at most $e^{-g}$ to the loss. At $g = 20$ that is about $2 \times 10^{-9}$; at $g = 0.5$ it is about $0.61$.
+\end{lemma}
+\begin{proof}
+Divide the numerator and the denominator of the fraction in equation~\ref{eq:loss} by $e^{s^{+}}$: $L = -\log\bigl(1 / (1 + \sum_i e^{s_i - s^{+}})\bigr) = \log(1 + \sum_i e^{-g_i})$. For $x \ge 0$, $\log(1 + x) \le x$, which gives the first inequality. If every $g_i \ge g$ then $e^{-g_i} \le e^{-g}$, which gives the second.
+\end{proof}
 
-I can also ask how much the loss changes if I raise one negative's score. The derivative is that negative's share of the total:
+A negative $g$ points below the correct page adds at most $e^{-g}$ to the loss. At $g = 20$ that is about $2 \times 10^{-9}$; at $g = 0.5$ it is about $0.61$. Lemma~\ref{lem:bound} is proved in Lean 4 (section~\ref{sec:lean}).
+
+I can also ask how much the loss changes if I raise one negative's score.
+
+\begin{lemma}[The push on a negative]
+\label{lem:push}
+The derivative of $L$ with respect to the score of negative $i$ is that negative's share of the softmax,
 \begin{equation}
-  p_i = \frac{\partial L}{\partial s_i} = \frac{e^{s_i}}{e^{s^{+}} + \sum_{j=1}^{7} e^{s_j}} .
+  p_i = \frac{\partial L}{\partial s_i} = \frac{e^{s_i}}{e^{s^{+}} + \sum_{j=1}^{n} e^{s_j}} \in (0, 1),
   \label{eq:push}
 \end{equation}
+and $\partial L / \partial s^{+} = -\sum_i p_i$.
+\end{lemma}
+\begin{proof}
+Write $Z = e^{s^{+}} + \sum_j e^{s_j}$, so $L = \log Z - s^{+}$. Then $\partial L/\partial s_i = e^{s_i}/Z$ and $\partial L/\partial s^{+} = e^{s^{+}}/Z - 1 = -\sum_i e^{s_i}/Z$.
+\end{proof}
+
 So if the retriever already puts the earthquake page far below the 1996 award, that page contributes almost nothing to the update. If the 1998 award scores close to the 1996 award, the loss puts more pressure on the model to separate them.
 
-The update itself moves the mention vector. By the chain rule through equation~\ref{eq:score},
+The update itself moves the mention vector.
+
+\begin{corollary}[The update on the mention vector]
+\label{cor:grad}
+With the page vectors fixed, the gradient of $L$ with respect to the mention vector is
 \begin{equation}
-  \nabla_{u_m} L = \sum_{i=1}^{7} p_i\,(v_{e_i} - v_{e^{+}}),
+  \nabla_{u_m} L = \sum_{i=1}^{n} p_i\,(v_{e_i} - v_{e^{+}}),
   \label{eq:grad}
 \end{equation}
-a weighted sum of the differences between each negative's page vector and the correct page vector. A negative that scores far below the correct page has $p_i \approx 0$ and moves nothing. A negative that scores close to it has a large $p_i$, and the step is along $v_{e_i} - v_{e^{+}}$; if the two pages are near-duplicates, that difference is small, which matters in section~\ref{sec:collapse}.
+\end{corollary}
+\begin{proof}
+By the chain rule through equation~\ref{eq:score}, $\nabla_{u_m} L = \sum_i (\partial L/\partial s_i)\, v_{e_i} + (\partial L/\partial s^{+})\, v_{e^{+}} = \sum_i p_i v_{e_i} - \bigl(\sum_i p_i\bigr) v_{e^{+}}$ by Lemma~\ref{lem:push}.
+\end{proof}
+
+Equation~\ref{eq:grad} is a weighted sum of the differences between each negative's page vector and the correct page vector. A negative that scores far below the correct page has $p_i \approx 0$ and moves nothing. A negative that scores close to it has a large $p_i$, and the step is along $v_{e_i} - v_{e^{+}}$; if the two pages are near-duplicates, that difference is small, which matters in section~\ref{sec:collapse}.
 
 In the experiment, I keep the loss and the number of negatives fixed. I change which seven pages the model sees.
 
@@ -149,7 +182,7 @@ It draws one page with probability $w_i / \sum_j w_j$, removes it, and draws aga
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{figures/weight_window.pdf}
+\includegraphics[width=0.62\textwidth]{figures/weight_window.pdf}
 \caption{The stage-1 weight of equation~\ref{eq:weight} (green, scaled) over the distribution of score gaps $s_i - s^{+}$ in the validation pools (gray; 2,000 mentions $\times$ 1,000 pages). Most pool pages score 5 to 20 points below the correct page; the weight is near zero outside $\pm 4$ points, so stage 1 is a narrow window around the correct page's score.}
 \label{fig:weight}
 \end{figure}
@@ -169,11 +202,36 @@ That last draw gives a simple bound. Once a page makes the final 75, it has a 7-
 Four claims are formalized in Lean 4 (the files are in Appendix~\ref{app:lean}). The first is the loss bound of equation~\ref{eq:bound}, proved over the real numbers with Mathlib. For the other three, a page is modeled by its score, an integer, and a \emph{possible false negative} is a page that scores above the correct page, $s_i > s^{+}$.
 
 \begin{enumerate}[nosep]
-  \item \textbf{Easy negatives add little.} For any number of negatives with real scores, $L = \log(1 + \sum_i e^{-g_i})$ and $L \le \sum_i e^{-g_i}$; if every gap is at least $g$, then $L \le n e^{-g}$. (\texttt{loss\_eq\_log\_gaps}, \texttt{loss\_le\_sum\_exp\_neg\_gap}, \texttt{loss\_le\_of\_gap\_ge}; the proof uses $\log y \le y - 1$.)
-  \item \textbf{A bound for every sampler.} A selection of $k$ pages taken from a pool that contains $A$ pages above $s^{+}$ holds at most $\min(k, A)$ of them. (\texttt{any\_sampler\_le})
-  \item \textbf{Top-score reaches the bound.} The top-score rule selects exactly $\min(k, A)$ pages above $s^{+}$. (\texttt{topscore\_is\_max}) Together, 2 and 3 say that no sampler trains against more possible false negatives than top-score, for every pool and every run; the comparison with ReSa2 needs no assumption about ReSa2.
-  \item \textbf{The 7/75 share.} Of all 7-page subsets of 75 pages, the share that contains one fixed page is $7/75$, that is, $75 \binom{74}{6} = 7 \binom{75}{7}$. (\texttt{stage2\_share}, checked by computation) So $P(\text{ReSa2 picks } i) = \tfrac{7}{75}\, P(i \text{ is in the top 75})$, which gives equation~\ref{eq:fn}.
+  \item Lemma~\ref{lem:bound}, for any number of negatives with real scores (\texttt{loss\_eq\_log\_gaps}, \texttt{loss\_le\_sum\_exp\_neg\_gap}, \texttt{loss\_le\_of\_gap\_ge}; the Lean proof uses Mathlib's $\log y \le y - 1$).
+  \item Proposition~\ref{prop:bound} (\texttt{any\_sampler\_le}) and Proposition~\ref{prop:top} (\texttt{topscore\_is\_max}).
+  \item Proposition~\ref{prop:share} (\texttt{stage2\_share}, checked by computation).
 \end{enumerate}
+
+\begin{proposition}[A bound for every sampler]
+\label{prop:bound}
+Let the pool contain $A$ possible false negatives. Any selection of $k$ distinct pages from the pool contains at most $\min(k, A)$ of them.
+\end{proposition}
+\begin{proof}
+The selection has $k$ pages, and it is a sub-list of the pool, so it cannot contain more pages above $s^{+}$ than the pool does.
+\end{proof}
+
+\begin{proposition}[Top-score reaches the bound]
+\label{prop:top}
+The top-score rule selects exactly $\min(k, A)$ possible false negatives.
+\end{proposition}
+\begin{proof}
+Sorting by score puts every page above $s^{+}$ before every page below it, so the first $k$ pages are the $\min(k, A)$ pages above $s^{+}$ followed, if $k > A$, by $k - A$ pages below it.
+\end{proof}
+
+Together, Propositions~\ref{prop:bound} and~\ref{prop:top} say that no sampler trains against more possible false negatives than top-score, for every pool and every run; the comparison with ReSa2 needs no assumption about ReSa2.
+
+\begin{proposition}[The 7/75 share]
+\label{prop:share}
+Of all 7-page subsets of a set of 75 pages, the fraction that contains one fixed page is $7/75$; equivalently, $75 \binom{74}{6} = 7 \binom{75}{7}$. Hence $P(\text{ReSa2 selects } i) = \tfrac{7}{75}\, P(i \text{ is among the 75 kept by stage 2})$, which gives equation~\ref{eq:fn}.
+\end{proposition}
+\begin{proof}
+A subset that contains the fixed page is the fixed page plus 6 of the other 74 pages, so there are $\binom{74}{6}$ of them out of $\binom{75}{7}$, and $\binom{74}{6} / \binom{75}{7} = 7/75$. The identity is checked by computation in Lean.
+\end{proof}
 
 The Lean statements are short enough to compare with the claims above:
 \begin{lstlisting}
@@ -241,7 +299,7 @@ In-batch sampling finished below the released model. At this budget that is expe
 
 I also wanted to see which pages the samplers actually picked. I drew negatives 200 times each for 500 validation mentions. Table~\ref{tab:q1} and Figure~\ref{fig:incl} give the result.
 
-\begin{table*}[t]
+\begin{table}[t]
 \centering
 \small
 \caption{What each sampler selects: 500 validation mentions, 200 draws per mention, seven negatives per draw. The first column splits the seven negatives of one draw by the rank of their similarity to the correct page.}
@@ -255,11 +313,11 @@ Top-score & 4.13 / 1.07 / 1.17 / 0.62 & 7   & 1.00 & $-1.4$ \\
 ReSa2     & 2.15 / 3.98 / 0.87 / 0.00 & 84  & 0.05 & $-8.6$ \\
 \bottomrule
 \end{tabular}
-\end{table*}
+\end{table}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{figures/inclusion_by_rank.pdf}
+\includegraphics[width=0.62\textwidth]{figures/inclusion_by_rank.pdf}
 \caption{Inclusion probability of a pool page against its similarity rank to the correct page (300 validation mentions, 100 draws each, both axes logarithmic). Uniform is flat at $k/N$. Top-score is high for the most similar pages and falls slowly. ReSa2 is flat at about 0.09 over the 75 most similar pages and selects nothing beyond rank 300.}
 \label{fig:incl}
 \end{figure}
@@ -275,7 +333,7 @@ At a learning rate of $3 \times 10^{-5}$, one ReSa2 run and one top-score run co
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{figures/loss_curves.pdf}
+\includegraphics[width=0.62\textwidth]{figures/loss_curves.pdf}
 \caption{Training loss at learning rate $3 \times 10^{-5}$ for a healthy run and the two collapsed runs. The collapsed runs jump once, near the end of the warm-up, and stay at about 0.3; the loss over eight pages looks modest while the ranking over millions of pages is noise.}
 \label{fig:loss}
 \end{figure}
@@ -292,17 +350,23 @@ I started with the difference between the 1996 award and the 1998 award. The res
 
 All numbers are on the validation set; the test set is held back for the final version. The page encoder is frozen, so the pool scores and similarities never change during training; a run that also trains the page encoder could behave differently, and the pools would have to be rebuilt. Each sampler was run at one budget (1,500 updates, 7 negatives) and two learning rates; the collapse was observed at one of them and the gradient argument for it is a hypothesis, not a proof. The pool is the released retriever's top 1,000, so a correct page outside the pool (2\% of mentions) cannot be sampled. The Lean results cover the loss bound and counting facts about possible false negatives; the derivative and gradient formulas are checked by hand.
 
+\section*{How I used AI}
+
+The course asks for a description of how AI tools were used. I used two. Before the proposal, I used Codex to search for papers from researchers in the instructor's academic circle about linking documents, which led to Event Linking, and then for a more recent negative sampler, which led to ReSa2 and SimANS. It also wrote ``learning versions'' of the papers that explained them through the concepts of this course (conditional probability, indicator variables, expectation) with small examples; I read those first and the full papers second.
+
+During the project I used Claude, through an agent that ran on my computer and on a cloud GPU. It set up the AWS account and the GPU instance, wrote the low-memory and mixed-precision changes that let the released EVELINK model run on a 24 GB GPU, wrote the ReSa2 sampler and the training hook from my descriptions, ran the 24 training runs and the recovery test, computed the tables, drew the figures, and wrote the Lean proofs. Every result in this paper comes from those runs, and the agent fixed its own errors (an out-of-memory crash, a full disk, a validation bug in the original code). The text is mine: I narrated each section in my own words and the agent turned the narration into Simplified Technical English, which I then corrected. The repository has an AI-usage log with one line per session, and I kept the prompts and outputs; I can produce the key ones on request.
+
 \begin{thebibliography}{9}
 \bibitem[Yu et al.(2023)]{yu2023event} Xiaodong Yu, Wenpeng Yin, Nitish Gupta, and Dan Roth. 2023. Event Linking: Grounding Event Mentions to Wikipedia. In \emph{Proceedings of EACL}.
-\bibitem[Li et al.(2025)]{li2025resa2} Li et al. 2025. ReSa2: Re-sampling for Retrieval Training. In \emph{Proceedings of ACML}. (Full author list and title to be checked.)
+\bibitem[Li et al.(2025)]{li2025resa2} Muyang Li, Zihan Wang, Sijia Chen, Yijun Chen, Jiayu Li, Yiming Qiao, Xinyi Li, and Bo Ji. 2025. ReSa2: A Two-Stage Retrieval-Sampling Algorithm for Negative Sampling in Dense Retrieval. In \emph{Proceedings of ACML}, PMLR 304.
 \bibitem[Wu et al.(2020)]{wu2020blink} Ledell Wu, Fabio Petroni, Martin Josifoski, Sebastian Riedel, and Luke Zettlemoyer. 2020. Scalable Zero-shot Entity Linking with Dense Entity Retrieval. In \emph{Proceedings of EMNLP}.
 \bibitem[Karpukhin et al.(2020)]{karpukhin2020dpr} Vladimir Karpukhin, Barlas O\u{g}uz, Sewon Min, Patrick Lewis, Ledell Wu, Sergey Edunov, Danqi Chen, and Wen-tau Yih. 2020. Dense Passage Retrieval for Open-Domain Question Answering. In \emph{Proceedings of EMNLP}.
 \bibitem[Xiong et al.(2021)]{xiong2021ance} Lee Xiong, Chenyan Xiong, Ye Li, Kwok-Fung Tang, Jialin Liu, Paul Bennett, Junaid Ahmed, and Arnold Overwijk. 2021. Approximate Nearest Neighbor Negative Contrastive Learning for Dense Text Retrieval. In \emph{Proceedings of ICLR}.
 \bibitem[Qu et al.(2021)]{qu2021rocketqa} Yingqi Qu, Yuchen Ding, Jing Liu, Kai Liu, Ruiyang Ren, Wayne Xin Zhao, Daxiang Dong, Hua Wu, and Haifeng Wang. 2021. RocketQA: An Optimized Training Approach to Dense Passage Retrieval for Open-Domain Question Answering. In \emph{Proceedings of NAACL}.
+\bibitem[Zhou et al.(2022)]{zhou2022simans} Kun Zhou, Yeyun Gong, Xiao Liu, Wayne Xin Zhao, Yelong Shen, Anlei Dong, Jingwen Lu, Rangan Majumder, Ji-Rong Wen, and Nan Duan. 2022. SimANS: Simple Ambiguous Negatives Sampling for Dense Text Retrieval. In \emph{Proceedings of EMNLP Industry Track}.
 \end{thebibliography}
 
 \appendix
-\onecolumn
 
 \section{Per-seed results}
 \label{app:seeds}
