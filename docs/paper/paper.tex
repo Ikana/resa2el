@@ -104,7 +104,7 @@ The released EVELINK system has an accuracy of $82.87\%$ on the Wikipedia test s
 
 \paragraph{Choosing wrong examples.} The simplest choice is to reuse the right answers of other examples in the same batch~\cite{karpukhin2020dpr}. It costs nothing, but most of these pages are easy to rule out. A harder choice is to take the pages that the retriever itself ranks highest. ANCE~\cite{xiong2021ance} does this and refreshes the pages during training. Some of the highest pages are right answers that nobody labeled. RocketQA~\cite{qu2021rocketqa} removes those with a second model. SimANS~\cite{zhou2022simans} instead picks pages at random, and prefers pages whose score is close to the score of the right answer.
 
-\paragraph{ReSa2.} Li et al.~\cite{li2025resa2} add a second step to SimANS. Among the pages picked in the first step, ReSa2 keeps those most similar to the right answer. I use the sizes from their released code: 1,000 pages to start, 500 after the first step, 75 after the second, and 7 used for training. Their paper tests ReSa2 on web search data. This paper measures what the two steps pick, and tests ReSa2 on event linking.
+\paragraph{ReSa2.} Li et al.~\cite{li2025resa2} add a second step to SimANS. Among the pages picked in the first step, ReSa2 keeps those most similar to the right answer. I use the sizes from their released code: 1,000 pages to start, 500 after the first step, 75 after the second, and 7 used for training. This paper measures what the two steps pick, and tests ReSa2 on event linking.
 
 \section{The retriever and its training loss}
 \label{sec:math}
