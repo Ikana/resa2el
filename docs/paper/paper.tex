@@ -12,6 +12,7 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{caption}
+\newcommand{\citeauthor}[1]{Yu et al.}
 \captionsetup{font=small}
 \lstset{basicstyle=\ttfamily\footnotesize, breaklines=true, columns=fullflexible, keepspaces=true, frame=single, framerule=0.3pt, xleftmargin=4pt, extendedchars=true, literate={≤}{{$\le$}}1 {ℕ}{{$\mathbb{N}$}}1 {ℝ}{{$\mathbb{R}$}}1 {∑}{{$\sum$}}1 {≥}{{$\ge$}}1 {₀}{{$_0$}}1 {…}{{\dots}}1 {′}{{$'$}}1 {∈}{{$\in$}}1 {∀}{{$\forall$}}1 {→}{{$\to$}}1 {−}{{$-$}}1 {·}{{$\cdot$}}1 {⟨}{{$\langle$}}1 {⟩}{{$\rangle$}}1}
 
@@ -35,7 +36,7 @@ Take this sentence. ``He won the Rising Star award in 1996, in his first season 
 
 The page we want is ``1996 AFL Rising Star.'' A page about the 2004 Indian Ocean earthquake is easy to rule out. The page for the 1998 AFL Rising Star is harder. It is the same award. The year is what tells us which page to link to. The Event Linking paper calls this a time error; its other common error, a hierarchy error, confuses an event with a parent event or a sub-event. In both cases the wrong page shares much of its wording with the correct page.
 
-EVELINK makes that decision in two stages. First, a retriever searches Wikipedia and pulls out 100 candidate pages. Then a reranker reads the mention alongside each candidate and puts the pages in a new order. If the retriever leaves out the 1996 page, the reranker cannot bring it back.
+EVELINK makes that decision in two stages (section~\ref{sec:task}). First, a retriever searches Wikipedia and pulls out 100 candidate pages. Then a reranker reads the mention alongside each candidate and puts the pages in a new order. If the retriever leaves out the 1996 page, the reranker cannot bring it back.
 
 That is where this project starts. During training, the retriever sees the correct page alongside a few wrong pages. I wanted to know which wrong pages would help it learn to put the right one higher. Two questions guide the paper:
 \begin{enumerate}[nosep]
@@ -45,6 +46,41 @@ That is where this project starts. During training, the retriever sees the corre
 
 The contributions are: (1) a fixed-budget comparison of four negative samplers for the EVELINK retriever, with three seeds each; (2) a measurement of what each sampler selects: inclusion probability, coverage, and variation between runs; (3) the loss bound and three counting facts about possible false negatives, proved in Lean 4; and (4) a description of a training collapse that appears with hard negatives at a high learning rate, with a gradient argument for its cause and a test that shows it does not recover. The code, the pools, and the logs are in the project repository.
 
+\section{Event linking: task, system, and evaluation}
+\label{sec:task}
+
+This section defines the task, the system this paper changes, and the numbers by which both are judged. Everything later refers back to it.
+
+\paragraph{Task.} Let $\mathcal{E}$ be the set of Wikipedia pages that describe events; in the data of \citeauthor{yu2023event}, $|\mathcal{E}| = 5{,}870{,}755$. A \emph{mention} $m = (d, [a, b])$ is a document $d$ and a span $[a, b]$ of its tokens that refers to an event. Event linking is the function
+\begin{equation}
+  \mathrm{link}: m \;\longmapsto\; e^{*}_m \in \mathcal{E} \cup \{\mathrm{NIL}\},
+  \label{eq:task}
+\end{equation}
+where $e^{*}_m$ is the page about the event the span refers to, and NIL means that no page describes it. The Wikipedia data has no NIL mentions; the New York Times data has them. The goal is to recover $e^{*}_m$ for every mention, using the span and the words around it.
+
+\paragraph{Data.} Training and evaluation pairs $(m, e^{*}_m)$ come from links that Wikipedia editors made: when an article's text links a span to an event page, that span is a mention and the target page is its answer. The released split has 66,426 training, 16,692 validation, and 19,266 test mentions, each labeled as a verb or a nominal and, for verbs, as seen, unseen form, or unseen (whether the verb and its target appear in training). The New York Times set (1,762 mentions) tests transfer to another domain.
+
+\paragraph{System.} Exact search over $5.87$ million pages with an expensive model is too slow, so EVELINK, like BLINK before it, works in two stages:
+\begin{align}
+  \text{retrieve:}\quad & R_K(m) = \operatorname*{top-}K_{e \in \mathcal{E}}\; s(m, e), \label{eq:retrieve}\\
+  \text{rerank:}\quad & \hat{e}_m = \operatorname*{arg\,max}_{e \in R_K(m)}\; r(m, e). \label{eq:rerank}
+\end{align}
+The retriever scores every page with a cheap function $s$, a dot product of two independently computed vectors (section~\ref{sec:math}), and keeps the $K = 100$ best. The reranker scores only those $K$ pages with an expensive function $r$ that reads the mention and the page together, and returns the best. Equation~\ref{eq:rerank} shows the dependence that drives this paper: if $e^{*}_m \notin R_K(m)$, no reranker can return it.
+
+\paragraph{Evaluation.} The full system is judged by accuracy,
+\begin{equation}
+  \mathrm{Acc} = \frac{1}{|V|}\sum_{m \in V} \mathbf{1}\!\left[\hat{e}_m = e^{*}_m\right],
+  \label{eq:acc}
+\end{equation}
+over an evaluation set $V$, reported overall and per class (verb, nominal, and their subclasses). The retriever alone is judged by whether the correct page survives retrieval,
+\begin{equation}
+  \mathrm{Recall@}K = \frac{1}{|V|}\sum_{m \in V} \mathbf{1}\!\left[e^{*}_m \in R_K(m)\right],
+  \label{eq:recall}
+\end{equation}
+which is also an upper bound on the accuracy of any reranker placed after it. This paper changes only the retriever's training, so its main measure is Recall@10 on the validation set, with top-1 (Recall@1) and Recall@100 beside it. The released EVELINK system reaches $82.87\%$ accuracy on the Wikipedia test set and $55.33\%$ on the New York Times set; the released retriever alone has Recall@10 of $77.7\%$ on the validation set.
+
+\paragraph{Where the errors are.} \citeauthor{yu2023event} report two error types that account for most mistakes. A \emph{time error} links to the page of the same recurring event in another year (the 1998 Rising Star for a 1996 mention). A \emph{hierarchy error} links to a parent or a sub-event (the whole war for one battle). Both wrong pages share most of their words with the correct page, so they receive high retriever scores. They are exactly the pages a training procedure must learn to push below the correct one, and they are what the samplers of section~\ref{sec:samplers} differ on.
+
 \section{Related work}
 
 \paragraph{Event linking.} Yu et al.~\cite{yu2023event} define the task, release the Wikipedia and New York Times data, and build EVELINK on the BLINK bi-encoder and cross-encoder of Wu et al.~\cite{wu2020blink}. They train the bi-encoder with in-batch negatives and retrieve 100 candidates for the cross-encoder. This paper keeps their model and data and changes only how the bi-encoder's negatives are chosen.
@@ -53,9 +89,10 @@ The contributions are: (1) a fixed-budget comparison of four negative samplers f
 
 \paragraph{ReSa2.} Li et al.~\cite{li2025resa2} sample in two stages: a weighted draw that prefers pages whose score is close to the positive's, then a similarity ranking among the survivors. The sizes used here (pool 1,000, 500 survivors, top 75, 7 negatives) are the ones in their released code. This paper measures what those two stages do to the inclusion probability of each page and compares the result with uniform and top-score sampling at a fixed budget.
 
-\section{The task and the math behind the retriever}
+\section{The retriever and its training loss}
+\label{sec:math}
 
-The retriever uses two BERT encoders. One reads the mention and its context. The other reads the Wikipedia page. Each encoder turns its input into a vector with 1,024 numbers. I call the mention vector $u_m$ and the page vector $v_e$.
+The retriever of equation~\ref{eq:retrieve} uses two BERT encoders. One reads the mention and its context. The other reads the Wikipedia page. Each encoder turns its input into a vector with 1,024 numbers. I call the mention vector $u_m$ and the page vector $v_e$.
 
 To score a page, I take the dot product. I multiply the first number in one vector by the first number in the other, do the same for the rest, and add up the products:
 \begin{equation}
@@ -167,13 +204,9 @@ What is not formalized: the derivative of equation~\ref{eq:push} and the gradien
 
 I started each run from the released EVELINK model. I froze the page encoder and trained the mention encoder for 1,500 updates with a batch of 32 mentions (four micro-batches of 8), AdamW, a learning rate of $10^{-5}$ with 10\% warm-up, gradient clipping at 1.0, and seven negatives per mention. Because the page encoder is frozen, the pool scores and similarities are fixed before training. I ran each of the four samplers with three seeds, twelve runs in total. Each run took about 56 minutes on one NVIDIA A10G.
 
-Then I ranked all 5.87 million pages for each of the 16,692 validation mentions. The metric I focus on is recall at ten: if the correct page appears anywhere in the first ten results, I count that mention as a hit,
-\begin{equation}
-  \mathrm{Recall@}K = \frac{1}{|V|}\sum_{m \in V} \mathbf{1}\!\left[\mathrm{rank}(e^{*}_m) \le K\right].
-\end{equation}
-I also report top-1 and recall at 100.
+Then I ranked all 5.87 million pages for each of the 16,692 validation mentions and computed Recall@$K$ of equation~\ref{eq:recall} for $K = 1, 10, 100$. The metric I focus on is recall at ten: if the correct page appears anywhere in the first ten results, I count that mention as a hit.
 
-Before the experiments I reproduced the released pipeline: the released retriever and reranker give 82.88\% accuracy on the Wikipedia test set (paper: 82.87\%) and 55.33\% on the New York Times set (paper: 55.33\%). The test set is untouched by everything below.
+Before the experiments I reproduced the released pipeline: the released retriever and reranker give 82.88\% accuracy (equation~\ref{eq:acc}) on the Wikipedia test set (paper: 82.87\%) and 55.33\% on the New York Times set (paper: 55.33\%). The test set is untouched by everything below.
 
 \subsection{What changed in the rankings}
 \label{sec:rankings}
