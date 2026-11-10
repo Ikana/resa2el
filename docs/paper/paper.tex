@@ -18,7 +18,13 @@
 \usepackage{xcolor}
 \usepackage{caption}
 \newcommand{\citeauthor}[1]{Yu et al.}
-\captionsetup{font=small}
+\captionsetup{font=small,skip=6pt}
+\linespread{1.08}
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{1.6em}{0.7em}
+\titlespacing*{\subsection}{0pt}{1.2em}{0.5em}
 \lstset{basicstyle=\ttfamily\footnotesize, breaklines=true, columns=fullflexible, keepspaces=true, frame=single, framerule=0.3pt, xleftmargin=4pt, extendedchars=true, literate={≤}{{$\le$}}1 {ℕ}{{$\mathbb{N}$}}1 {ℝ}{{$\mathbb{R}$}}1 {∑}{{$\sum$}}1 {≥}{{$\ge$}}1 {₀}{{$_0$}}1 {…}{{\dots}}1 {′}{{$'$}}1 {∈}{{$\in$}}1 {∀}{{$\forall$}}1 {→}{{$\to$}}1 {−}{{$-$}}1 {·}{{$\cdot$}}1 {⟨}{{$\langle$}}1 {⟩}{{$\rangle$}}1}
 
 \title{Which Wrong Pages Should an Event Linker Train On?\\
@@ -54,7 +60,7 @@ The contributions are: (1) a fixed-budget comparison of four negative samplers f
 \section{Event linking: task, system, and evaluation}
 \label{sec:task}
 
-This section defines the task, the system this paper changes, and the numbers by which both are judged. Everything later refers back to it.
+Before the samplers, the task itself: what event linking is, how EVELINK does it, and how both are scored.
 
 \paragraph{Task.} Let $\mathcal{E}$ be the set of Wikipedia pages that describe events; in the data of \citeauthor{yu2023event}, $|\mathcal{E}| = 5{,}870{,}755$. A \emph{mention} $m = (d, [a, b])$ is a document $d$ and a span $[a, b]$ of its tokens that refers to an event. Event linking is the function
 \begin{equation}
@@ -70,7 +76,7 @@ where $e^{*}_m$ is the page about the event the span refers to, and NIL means th
   \text{retrieve:}\quad & R_K(m) = \operatorname*{top-}K_{e \in \mathcal{E}}\; s(m, e), \label{eq:retrieve}\\
   \text{rerank:}\quad & \hat{e}_m = \operatorname*{arg\,max}_{e \in R_K(m)}\; r(m, e). \label{eq:rerank}
 \end{align}
-The retriever scores every page with a cheap function $s$, a dot product of two independently computed vectors (section~\ref{sec:math}), and keeps the $K = 100$ best. The reranker scores only those $K$ pages with an expensive function $r$ that reads the mention and the page together, and returns the best. Equation~\ref{eq:rerank} shows the dependence that drives this paper: if $e^{*}_m \notin R_K(m)$, no reranker can return it.
+The retriever scores every page with a cheap function $s$, the dot product of two vectors computed separately (section~\ref{sec:math}), and keeps the $K = 100$ best. The reranker reads the mention and each of those $K$ pages together, with an expensive function $r$, and returns the best one. Equation~\ref{eq:rerank} is also the reason this paper is about the retriever. If $e^{*}_m \notin R_K(m)$, the reranker never sees the right page.
 
 \paragraph{Evaluation.} The full system is judged by accuracy,
 \begin{equation}
@@ -82,15 +88,15 @@ over an evaluation set $V$, reported overall and per class (verb, nominal, and t
   \mathrm{Recall@}K = \frac{1}{|V|}\sum_{m \in V} \mathbf{1}\!\left[e^{*}_m \in R_K(m)\right],
   \label{eq:recall}
 \end{equation}
-which is also an upper bound on the accuracy of any reranker placed after it. This paper changes only the retriever's training, so its main measure is Recall@10 on the validation set, with top-1 (Recall@1) and Recall@100 beside it. The released EVELINK system reaches $82.87\%$ accuracy on the Wikipedia test set and $55.33\%$ on the New York Times set; the released retriever alone has Recall@10 of $77.7\%$ on the validation set.
+which bounds the accuracy of any reranker placed after it. This paper changes only how the retriever is trained, so its main measure is Recall@10 on the validation set, with Recall@1 (the correct page first) and Recall@100 next to it. The released EVELINK system reaches $82.87\%$ accuracy on the Wikipedia test set and $55.33\%$ on the New York Times set; the released retriever alone has Recall@10 of $77.7\%$ on the validation set.
 
-\paragraph{Where the errors are.} \citeauthor{yu2023event} report two error types that account for most mistakes. A \emph{time error} links to the page of the same recurring event in another year (the 1998 Rising Star for a 1996 mention). A \emph{hierarchy error} links to a parent or a sub-event (the whole war for one battle). Both wrong pages share most of their words with the correct page, so they receive high retriever scores. They are exactly the pages a training procedure must learn to push below the correct one, and they are what the samplers of section~\ref{sec:samplers} differ on.
+\paragraph{Where the errors are.} \citeauthor{yu2023event} report two error types that account for most mistakes. A \emph{time error} links to the page of the same recurring event in another year (the 1998 Rising Star for a 1996 mention). A \emph{hierarchy error} links to a parent or a sub-event (the whole war for one battle). Both wrong pages share most of their words with the correct page, so the retriever scores them high. These are the pages it has to learn to rank below the correct one, and the samplers of section~\ref{sec:samplers} differ in how often they show them to it.
 
 \section{Related work}
 
 \paragraph{Event linking.} Yu et al.~\cite{yu2023event} define the task, release the Wikipedia and New York Times data, and build EVELINK on the BLINK bi-encoder and cross-encoder of Wu et al.~\cite{wu2020blink}. They train the bi-encoder with in-batch negatives and retrieve 100 candidates for the cross-encoder. This paper keeps their model and data and changes only how the bi-encoder's negatives are chosen.
 
-\paragraph{Negatives for dense retrieval.} In-batch negatives \cite{karpukhin2020dpr} are cheap but mostly easy. Hard-negative mining takes negatives from the retriever's own top results: ANCE \cite{xiong2021ance} refreshes them during training, and RocketQA \cite{qu2021rocketqa} filters them with a cross-encoder because many top results are unlabeled positives, that is, false negatives. The top-score sampler in this paper is the unfiltered version of that idea. SimANS \cite{zhou2022simans} samples negatives with a Gaussian weight centered on the positive's score, the same weight ReSa2 uses in its first stage.
+\paragraph{Negatives for dense retrieval.} In-batch negatives \cite{karpukhin2020dpr} cost nothing extra, but most of them are easy. Hard-negative mining takes negatives from the retriever's own top results instead. ANCE \cite{xiong2021ance} refreshes them during training; RocketQA \cite{qu2021rocketqa} filters them with a cross-encoder, because many top results are unlabeled positives (false negatives). The top-score sampler in this paper is that idea without the filter. SimANS \cite{zhou2022simans} samples negatives with a Gaussian weight centered on the positive's score, the same weight ReSa2 uses in its first stage.
 
 \paragraph{ReSa2.} Li et al.~\cite{li2025resa2} sample in two stages: a weighted draw that prefers pages whose score is close to the positive's, then a similarity ranking among the survivors. The sizes used here (pool 1,000, 500 survivors, top 75, 7 negatives) are the ones in their released code. This paper measures what those two stages do to the inclusion probability of each page and compares the result with uniform and top-score sampling at a fixed budget.
 
@@ -126,7 +132,7 @@ For any $n \ge 1$ and real scores $s^{+}, s_1, \dots, s_n$, the loss of equation
 \end{equation}
 \end{lemma}
 \begin{proof}
-Divide the numerator and the denominator of the fraction in equation~\ref{eq:loss} by $e^{s^{+}}$: $L = -\log\bigl(1 / (1 + \sum_i e^{s_i - s^{+}})\bigr) = \log(1 + \sum_i e^{-g_i})$. For $x \ge 0$, $\log(1 + x) \le x$, which gives the first inequality. If every $g_i \ge g$ then $e^{-g_i} \le e^{-g}$, which gives the second.
+Divide the numerator and the denominator of the fraction in equation~\ref{eq:loss} by $e^{s^{+}}$: $L = -\log\bigl(1 / (1 + \sum_i e^{s_i - s^{+}})\bigr) = \log(1 + \sum_i e^{-g_i})$. For $x \ge 0$, $\log(1 + x) \le x$, so the first inequality holds. If every $g_i \ge g$ then each $e^{-g_i} \le e^{-g}$, and the second follows.
 \end{proof}
 
 A negative $g$ points below the correct page adds at most $e^{-g}$ to the loss. At $g = 20$ that is about $2 \times 10^{-9}$; at $g = 0.5$ it is about $0.61$. Lemma~\ref{lem:bound} is proved in Lean 4 (section~\ref{sec:lean}).
@@ -162,7 +168,7 @@ With the page vectors fixed, the gradient of $L$ with respect to the mention vec
 By the chain rule through equation~\ref{eq:score}, $\nabla_{u_m} L = \sum_i (\partial L/\partial s_i)\, v_{e_i} + (\partial L/\partial s^{+})\, v_{e^{+}} = \sum_i p_i v_{e_i} - \bigl(\sum_i p_i\bigr) v_{e^{+}}$ by Lemma~\ref{lem:push}.
 \end{proof}
 
-Equation~\ref{eq:grad} is a weighted sum of the differences between each negative's page vector and the correct page vector. A negative that scores far below the correct page has $p_i \approx 0$ and moves nothing. A negative that scores close to it has a large $p_i$, and the step is along $v_{e_i} - v_{e^{+}}$; if the two pages are near-duplicates, that difference is small, which matters in section~\ref{sec:collapse}.
+Equation~\ref{eq:grad} is a weighted sum of the differences between each negative's page vector and the correct page vector. A negative that scores far below the correct page has $p_i \approx 0$ and moves nothing. A negative that scores close to it has a large $p_i$, and the step is along $v_{e_i} - v_{e^{+}}$. If the two pages are near-duplicates, that difference is small. Section~\ref{sec:collapse} returns to this.
 
 In the experiment, I keep the loss and the number of negatives fixed. I change which seven pages the model sees.
 
@@ -227,7 +233,7 @@ Together, Propositions~\ref{prop:bound} and~\ref{prop:top} say that no sampler t
 
 \begin{proposition}[The 7/75 share]
 \label{prop:share}
-Of all 7-page subsets of a set of 75 pages, the fraction that contains one fixed page is $7/75$; equivalently, $75 \binom{74}{6} = 7 \binom{75}{7}$. Hence $P(\text{ReSa2 selects } i) = \tfrac{7}{75}\, P(i \text{ is among the 75 kept by stage 2})$, which gives equation~\ref{eq:fn}.
+Of all 7-page subsets of a set of 75 pages, the fraction that contains one fixed page is $7/75$; equivalently, $75 \binom{74}{6} = 7 \binom{75}{7}$. Hence $P(\text{ReSa2 selects } i) = \tfrac{7}{75}\, P(i \text{ is among the 75 kept by stage 2})$, and equation~\ref{eq:fn} follows.
 \end{proposition}
 \begin{proof}
 A subset that contains the fixed page is the fixed page plus 6 of the other 74 pages, so there are $\binom{74}{6}$ of them out of $\binom{75}{7}$, and $\binom{74}{6} / \binom{75}{7} = 7/75$. The identity is checked by computation in Lean.
@@ -348,13 +354,21 @@ I started with the difference between the 1996 award and the 1998 award. The res
 
 \section*{Limitations}
 
-All numbers are on the validation set; the test set is held back for the final version. The page encoder is frozen, so the pool scores and similarities never change during training; a run that also trains the page encoder could behave differently, and the pools would have to be rebuilt. Each sampler was run at one budget (1,500 updates, 7 negatives) and two learning rates; the collapse was observed at one of them and the gradient argument for it is a hypothesis, not a proof. The pool is the released retriever's top 1,000, so a correct page outside the pool (2\% of mentions) cannot be sampled. The Lean results cover the loss bound and counting facts about possible false negatives; the derivative and gradient formulas are checked by hand.
+All numbers are on the validation set. The test set is held back for the final version.
+
+The page encoder is frozen, so the pool scores and similarities never change during training. A run that also trains the page encoder could behave differently, and its pools would have to be rebuilt as the encoder moves.
+
+Each sampler ran at one budget (1,500 updates, 7 negatives) and two learning rates. The collapse appeared at one of them, and the gradient argument for it is a hypothesis, not a proof.
+
+The pool is the released retriever's top 1,000 pages. A correct page outside the pool (2\% of mentions) can never be sampled.
+
+The Lean results cover the loss bound and the counting facts about possible false negatives. The derivative and the gradient are checked by hand.
 
 \section*{How I used AI}
 
 The course asks for a description of how AI tools were used. I used two. Before the proposal, I used Codex to search for papers from researchers in the instructor's academic circle about linking documents, which led to Event Linking, and then for a more recent negative sampler, which led to ReSa2 and SimANS. It also wrote ``learning versions'' of the papers that explained them through the concepts of this course (conditional probability, indicator variables, expectation) with small examples; I read those first and the full papers second.
 
-During the project I used Claude, through an agent that ran on my computer and on a cloud GPU. It set up the AWS account and the GPU instance, wrote the low-memory and mixed-precision changes that let the released EVELINK model run on a 24 GB GPU, wrote the ReSa2 sampler and the training hook from my descriptions, ran the 24 training runs and the recovery test, computed the tables, drew the figures, and wrote the Lean proofs. Every result in this paper comes from those runs, and the agent fixed its own errors (an out-of-memory crash, a full disk, a validation bug in the original code). The text is mine: I narrated each section in my own words and the agent turned the narration into Simplified Technical English, which I then corrected. The repository has an AI-usage log with one line per session, and I kept the prompts and outputs; I can produce the key ones on request.
+During the project I used Claude, through an agent that ran on my computer and on a cloud GPU. It set up the cloud account and the GPU machine. It changed the released EVELINK code so that the model fits a 24 GB GPU (a low-memory candidate store and mixed precision). From my descriptions it wrote the ReSa2 sampler and the hook that lets the training loop swap samplers, and it wrote the Lean proofs. It ran the 24 training runs and the recovery test, built the tables, and drew the figures. Along the way it fixed its own mistakes: an out-of-memory crash, a full disk, and a bug in the original validation code. The words are mine. I narrated each section, the agent turned the narration into plain technical English, and I corrected the result. The repository has an AI-usage log with one line per session, and I kept the prompts and outputs; I can produce the key ones on request.
 
 \begin{thebibliography}{9}
 \bibitem[Yu et al.(2023)]{yu2023event} Xiaodong Yu, Wenpeng Yin, Nitish Gupta, and Dan Roth. 2023. Event Linking: Grounding Event Mentions to Wikipedia. In \emph{Proceedings of EACL}.
