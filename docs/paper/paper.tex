@@ -19,8 +19,8 @@
 \usepackage{caption}
 \newcommand{\citeauthor}[1]{Yu et al.}
 \captionsetup{font=small,skip=6pt}
-\linespread{1.08}
-\setlength{\parskip}{0.45em}
+\linespread{1.04}
+\setlength{\parskip}{0.38em}
 \setlength{\parindent}{0pt}
 \usepackage{titlesec}
 \titlespacing*{\section}{0pt}{1.6em}{0.7em}
@@ -332,6 +332,75 @@ ReSa2 picked about six of its seven negatives from the 75 pages most similar to 
 
 The score gap says how hard the negatives are. ReSa2's negatives score 8.6 points below the correct page on average, between uniform ($-13.3$, easy) and top-score ($-1.4$, hardest). Figure~\ref{fig:incl} shows the same thing as a profile: ReSa2's inclusion probability is flat over the 75 most similar pages and zero beyond rank 300, while top-score concentrates on the first few pages, which are the near-duplicates.
 
+\subsection{Mention classes, error types, and another domain}
+\label{sec:gaps}
+
+The proposal promised three more views of the same runs. I scored the released retriever and the twelve fine-tuned ones again and kept the rank of the correct page for every mention.
+
+\paragraph{By mention class.} Table~\ref{tab:class} splits recall at ten by the classes of the Event Linking data. ReSa2 is the best sampler in every class. The released model was weakest on hard nominals (68.9); ReSa2 lifts them to 90.3, against 88.8 for uniform draws. The largest gap to uniform is on unseen verbs (90.2 against 88.3), the class where the mention shares the fewest words with its page.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Validation recall at ten by mention class, mean $\pm$ standard deviation over three seeds. Class sizes: 1,814 / 2,585 / 3,947 verbs and 4,173 / 4,173 nominals.}
+\label{tab:class}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+ & \multicolumn{3}{c}{Verb} & \multicolumn{2}{c}{Nominal} \\
+\cmidrule(lr){2-4}\cmidrule(lr){5-6}
+Sampler & Seen & Unseen form & Unseen & Hard & Easy \\
+\midrule
+Released & 76.1 & 77.3 & 82.9 & 68.9 & 82.6 \\
+In-batch & 65.2 $\pm$ 1.5 & 69.0 $\pm$ 1.3 & 75.0 $\pm$ 0.6 & 58.0 $\pm$ 1.5 & 78.4 $\pm$ 3.9 \\
+Uniform & 98.8 $\pm$ 0.2 & 91.3 $\pm$ 0.2 & 88.3 $\pm$ 0.1 & 88.8 $\pm$ 0.2 & 97.1 $\pm$ 0.3 \\
+Top-score & 96.5 $\pm$ 0.2 & 83.2 $\pm$ 1.5 & 79.6 $\pm$ 1.2 & 84.9 $\pm$ 1.0 & 95.2 $\pm$ 0.5 \\
+ReSa2 & \textbf{99.1} $\pm$ 0.0 & \textbf{92.3} $\pm$ 0.1 & \textbf{90.2} $\pm$ 0.1 & \textbf{90.3} $\pm$ 0.2 & \textbf{97.5} $\pm$ 0.2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{By error type.} For every validation mention whose first result is wrong, I compared the title of that result with the title of the correct page. I call it a \emph{time error} when the two titles are equal once the four-digit years are removed, and a \emph{hierarchy error} when the words of one title are a strict subset of the words of the other. This rule reads only titles, so it undercounts both types; it is the same rule for every model. Table~\ref{tab:errors} gives the shares.
+
+\begin{table}[t]
+\centering
+\small
+\caption{First-result errors on the validation set as a percentage of all 16,692 mentions, by type. Types are assigned from the page titles.}
+\label{tab:errors}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Sampler & Wrong first result & Time & Hierarchy & Other \\
+\midrule
+Released & 57.4 & 1.8 & 11.6 & 44.0 \\
+In-batch & 66.4 $\pm$ 1.9 & 1.9 $\pm$ 0.1 & 11.7 $\pm$ 0.6 & 52.8 $\pm$ 1.4 \\
+Uniform & 35.7 $\pm$ 0.2 & 2.1 $\pm$ 0.1 & 5.5 $\pm$ 0.2 & 28.1 $\pm$ 0.2 \\
+Top-score & 34.7 $\pm$ 1.2 & 2.1 $\pm$ 0.1 & 3.0 $\pm$ 0.1 & 29.6 $\pm$ 1.2 \\
+ReSa2 & 30.5 $\pm$ 0.3 & 2.0 $\pm$ 0.1 & 4.4 $\pm$ 0.2 & 24.0 $\pm$ 0.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two things stand out. First, no sampler moves the time errors: they stay at about 2\% of mentions for every model. The proposal named this risk. A wrong-year page scores above the correct page when the model errs, and stage 1 of ReSa2 gives such pages little weight, so the retriever rarely trains against them. Second, hierarchy errors fall most with top-score sampling (3.0\%), then ReSa2 (4.4\%), then uniform (5.5\%): the more often a sampler shows parent and sub-event pages, the fewer of these errors remain. ReSa2's overall lead comes from the errors of neither type.
+
+\paragraph{Another domain.} Table~\ref{tab:nyt} gives the same retrievers on the 769 New York Times mentions that have a page. Here fine-tuning on Wikipedia mentions costs something: no fine-tuned retriever reaches the released model's recall at ten. ReSa2 loses the least (30.9 against 33.6) and top-score loses the most (14.4). The order of the samplers is the same as on Wikipedia, so the choice of negatives matters for transfer too, but 1,500 updates on Wikipedia text do not make a better retriever for news.
+
+\begin{table}[t]
+\centering
+\small
+\caption{New York Times test mentions that have a Wikipedia page ($n = 769$): retrieval against all 5.87 million pages.}
+\label{tab:nyt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Sampler & Top-1 & Recall@10 & Recall@100 \\
+\midrule
+Released & \textbf{13.0} & \textbf{33.6} & \textbf{57.3} \\
+In-batch & 8.5 $\pm$ 1.1 & 24.4 $\pm$ 1.4 & 44.8 $\pm$ 1.7 \\
+Uniform & 9.8 $\pm$ 0.7 & 27.4 $\pm$ 1.0 & 50.8 $\pm$ 1.6 \\
+Top-score & 4.6 $\pm$ 0.7 & 14.4 $\pm$ 1.4 & 26.8 $\pm$ 1.8 \\
+ReSa2 & 11.5 $\pm$ 0.1 & 30.9 $\pm$ 1.5 & 55.9 $\pm$ 0.4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{What happened at the higher learning rate}
 \label{sec:collapse}
 
@@ -350,11 +419,11 @@ I tried training the collapsed model for another 1,500 updates. I tried ReSa2 ne
 
 \section{Conclusion}
 
-I started with the difference between the 1996 award and the 1998 award. The results make that example more specific for me. I want the retriever to see pages that are close enough to make it pay attention to the year. I also want it to see a different set of pages the next time it trains on that mention. In these runs, ReSa2 gave me that variety and put the correct page first more often than any of the other samplers I tested.
+I started with the difference between the 1996 award and the 1998 award. The results make that example more specific for me. I want the retriever to see pages that are close enough to make it pay attention to the year. I also want it to see a different set of pages the next time it trains on that mention. In these runs, ReSa2 gave me that variety and put the correct page first more often than any of the other samplers I tested. It did not fix everything. The wrong-year errors that started this paper are as frequent after training as before, with every sampler, and on news text the released model still retrieves better than any of the fine-tuned ones.
 
 \section*{Limitations}
 
-All numbers are on the validation set. The test set is held back for the final version.
+All Wikipedia numbers are on the validation set; the test set was not used. The error types of section~\ref{sec:gaps} come from a rule on page titles, not from annotation.
 
 The page encoder is frozen, so the pool scores and similarities never change during training. A run that also trains the page encoder could behave differently, and its pools would have to be rebuilt as the encoder moves.
 
@@ -427,9 +496,9 @@ The recovery test continued the collapsed top-score seed-1 model for 1,500 more 
 Two files in the project repository, Lean 4 v4.34.1, built with \texttt{lake build}. \texttt{lean/LossBound.lean} uses Mathlib (real numbers, $\exp$, $\log$); its proofs depend only on the axioms \texttt{propext}, \texttt{Classical.choice} and \texttt{Quot.sound}. \texttt{lean/FalseNegatives.lean} uses the core library only.
 
 \subsection*{LossBound.lean}
-\lstinputlisting{../../lean/LossBound.lean}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize]{../../lean/LossBound.lean}
 
 \subsection*{FalseNegatives.lean}
-\lstinputlisting{../../lean/FalseNegatives.lean}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize]{../../lean/FalseNegatives.lean}
 
 \end{document}

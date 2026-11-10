@@ -15,3 +15,4 @@ One line for each GPU session.
 | 2026-11-04/05 | AWS g5.2xlarge (A10G 24 GB) | 11.0 | $13.30 | 12 main runs (4 samplers x 3 seeds, 1,500 updates). resa2 92.0 R@10 on healthy seeds vs uniform 90.3; topscore s1 and resa2 s1 collapsed. Plus 0.7 h lost to a disk-full crash. Results in `docs/results/main/`. |
 | 2026-11-05 | AWS g5.2xlarge (A10G 24 GB) | 2.1 | $2.50 | Recovery test: the collapsed topscore s1 model + 1,500 updates with resa2 and with uniform negatives. No recovery (R@10 0.0). |
 | 2026-11-05/06 | AWS g5.2xlarge (A10G 24 GB) | 12.0 | $14.50 | 12 main runs at lr 1e-5. No collapse. resa2 93.3 ± 0.1 R@10, uniform 92.2, topscore 87.2, in_batch 69.6. Results in `docs/results/main_lr1e-5/`. |
+| 2026-11-10 | AWS g5.2xlarge (A10G 24 GB) | 2.6 | $3.20 | Per-mention ranks of the released model and the 12 lr 1e-5 models on validation + NYT (`scripts/eval_ranks.py`). Results in `docs/results/gaps/`. |
