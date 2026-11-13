@@ -1,0 +1,193 @@
+11/04/2026 21:53:24 - INFO - pytorch_transformers.tokenization_utils -   loading file https://s3.amazonaws.com/models.huggingface.co/bert/bert-large-uncased-vocab.txt from cache at /home/ubuntu/.cache/torch/pytorch_transformers/9b3c03a36e83b13d5ba95ac965c9f9074a99e14340c523ab405703179e79fc46.542ce4285a40d23a559526243235df47c5f75c197f04f37d1a0c124c32c9a084
+11/04/2026 21:53:24 - INFO - pytorch_transformers.modeling_utils -   loading configuration file https://s3.amazonaws.com/models.huggingface.co/bert/bert-large-uncased-config.json from cache at /home/ubuntu/.cache/torch/pytorch_transformers/6dfaed860471b03ab5b9acb6153bea82b6632fb9bbe514d3fff050fe1319ee6d.788fed32bb8481a9b15ce726d41c53d5d5066b04c667e34ce3a7a3826d1573d8
+11/04/2026 21:53:24 - INFO - pytorch_transformers.modeling_utils -   Model config {
+  "architectures": [
+    "BertForMaskedLM"
+  ],
+  "attention_probs_dropout_prob": 0.1,
+  "finetuning_task": null,
+  "hidden_act": "gelu",
+  "hidden_dropout_prob": 0.1,
+  "hidden_size": 1024,
+  "initializer_range": 0.02,
+  "intermediate_size": 4096,
+  "layer_norm_eps": 1e-12,
+  "max_position_embeddings": 512,
+  "model_type": "bert",
+  "num_attention_heads": 16,
+  "num_hidden_layers": 24,
+  "num_labels": 2,
+  "output_attentions": false,
+  "output_hidden_states": false,
+  "pad_token_id": 0,
+  "pruned_heads": {},
+  "torchscript": false,
+  "type_vocab_size": 2,
+  "vocab_size": 30522
+}
+
+11/04/2026 21:53:24 - INFO - pytorch_transformers.modeling_utils -   loading weights file https://s3.amazonaws.com/models.huggingface.co/bert/bert-large-uncased-pytorch_model.bin from cache at /home/ubuntu/.cache/torch/pytorch_transformers/54da47087cc86ce75324e4dc9bbb5f66c6e83a7c6bd23baea8b489acc8d09aa4.4d5343a4b979c4beeaadef17a0453d1bb183dd9b084f58b84c7cc781df343ae6
+11/04/2026 21:53:37 - INFO - pytorch_transformers.modeling_utils -   loading configuration file https://s3.amazonaws.com/models.huggingface.co/bert/bert-large-uncased-config.json from cache at /home/ubuntu/.cache/torch/pytorch_transformers/6dfaed860471b03ab5b9acb6153bea82b6632fb9bbe514d3fff050fe1319ee6d.788fed32bb8481a9b15ce726d41c53d5d5066b04c667e34ce3a7a3826d1573d8
+11/04/2026 21:53:37 - INFO - pytorch_transformers.modeling_utils -   Model config {
+  "architectures": [
+    "BertForMaskedLM"
+  ],
+  "attention_probs_dropout_prob": 0.1,
+  "finetuning_task": null,
+  "hidden_act": "gelu",
+  "hidden_dropout_prob": 0.1,
+  "hidden_size": 1024,
+  "initializer_range": 0.02,
+  "intermediate_size": 4096,
+  "layer_norm_eps": 1e-12,
+  "max_position_embeddings": 512,
+  "model_type": "bert",
+  "num_attention_heads": 16,
+  "num_hidden_layers": 24,
+  "num_labels": 2,
+  "output_attentions": false,
+  "output_hidden_states": false,
+  "pad_token_id": 0,
+  "pruned_heads": {},
+  "torchscript": false,
+  "type_vocab_size": 2,
+  "vocab_size": 30522
+}
+
+11/04/2026 21:53:37 - INFO - pytorch_transformers.modeling_utils -   loading weights file https://s3.amazonaws.com/models.huggingface.co/bert/bert-large-uncased-pytorch_model.bin from cache at /home/ubuntu/.cache/torch/pytorch_transformers/54da47087cc86ce75324e4dc9bbb5f66c6e83a7c6bd23baea8b489acc8d09aa4.4d5343a4b979c4beeaadef17a0453d1bb183dd9b084f58b84c7cc781df343ae6
+11/04/2026 21:54:02 - INFO - Blink -   cand_encoder frozen
+11/04/2026 21:54:11 - INFO - Blink -   Read 66425 train samples.
+11/04/2026 21:54:13 - INFO - Blink -   Loaded tokenized train data from out/cache_train_256_256_66425.pt
+11/04/2026 21:54:13 - INFO - Blink -   sampler resa2: 66425 of 66425 mentions have the correct page in the pool file
+11/04/2026 21:54:20 - INFO - Blink -   Read 16692 valid samples.
+11/04/2026 21:54:21 - INFO - Blink -   Loaded tokenized valid data from out/cache_valid_256_256_16692.pt
+11/04/2026 22:01:49 - INFO - Blink -   Eval accuracy: 0.53043
+11/04/2026 22:01:49 - INFO - Blink -   Starting training
+11/04/2026 22:01:49 - INFO - Blink -   device: cuda n_gpu: 1, distributed training: False
+11/04/2026 22:01:50 - INFO - Blink -    Num optimization steps = 2075
+11/04/2026 22:01:50 - INFO - Blink -    Num warmup steps = 207
+11/04/2026 22:03:14 - INFO - Blink -   Step 199 - epoch 0 average loss: 0.1533937711076578
+
+11/04/2026 22:04:36 - INFO - Blink -   Step 399 - epoch 0 average loss: 0.12750537056650502
+
+11/04/2026 22:05:55 - INFO - Blink -   Step 599 - epoch 0 average loss: 0.11764736826589797
+
+11/04/2026 22:07:14 - INFO - Blink -   Step 799 - epoch 0 average loss: 0.13707919519278222
+
+11/04/2026 22:08:31 - INFO - Blink -   Step 999 - epoch 0 average loss: 0.10741346830996917
+
+11/04/2026 22:09:48 - INFO - Blink -   Step 1199 - epoch 0 average loss: 0.12115573678980582
+
+11/04/2026 22:11:05 - INFO - Blink -   Step 1399 - epoch 0 average loss: 0.10149388918944169
+
+11/04/2026 22:12:21 - INFO - Blink -   Step 1599 - epoch 0 average loss: 0.08524462743829644
+
+11/04/2026 22:13:37 - INFO - Blink -   Step 1799 - epoch 0 average loss: 0.09656287604069803
+
+11/04/2026 22:14:53 - INFO - Blink -   Step 1999 - epoch 0 average loss: 0.08442987857590196
+
+11/04/2026 22:16:08 - INFO - Blink -   Step 2199 - epoch 0 average loss: 0.08178025908302516
+
+11/04/2026 22:17:23 - INFO - Blink -   Step 2399 - epoch 0 average loss: 0.07417929690331221
+
+11/04/2026 22:18:38 - INFO - Blink -   Step 2599 - epoch 0 average loss: 0.0778093833924504
+
+11/04/2026 22:19:53 - INFO - Blink -   Step 2799 - epoch 0 average loss: 0.07674135378212668
+
+11/04/2026 22:21:07 - INFO - Blink -   Step 2999 - epoch 0 average loss: 0.07904943212401122
+
+11/04/2026 22:22:22 - INFO - Blink -   Step 3199 - epoch 0 average loss: 0.07230179354606663
+
+11/04/2026 22:23:36 - INFO - Blink -   Step 3399 - epoch 0 average loss: 0.06143874055793276
+
+11/04/2026 22:24:51 - INFO - Blink -   Step 3599 - epoch 0 average loss: 0.07134150507699814
+
+11/04/2026 22:26:05 - INFO - Blink -   Step 3799 - epoch 0 average loss: 0.060320820386259584
+
+11/04/2026 22:27:19 - INFO - Blink -   Step 3999 - epoch 0 average loss: 0.053149622665368955
+
+11/04/2026 22:28:33 - INFO - Blink -   Step 4199 - epoch 0 average loss: 0.06735547312637209
+
+11/04/2026 22:29:47 - INFO - Blink -   Step 4399 - epoch 0 average loss: 0.05433315856884292
+
+11/04/2026 22:31:01 - INFO - Blink -   Step 4599 - epoch 0 average loss: 0.058424651055102
+
+11/04/2026 22:32:15 - INFO - Blink -   Step 4799 - epoch 0 average loss: 0.05303227318378049
+
+11/04/2026 22:33:29 - INFO - Blink -   Step 4999 - epoch 0 average loss: 0.05805365472653648
+
+11/04/2026 22:34:43 - INFO - Blink -   Step 5199 - epoch 0 average loss: 0.06008836272110784
+
+11/04/2026 22:35:57 - INFO - Blink -   Step 5399 - epoch 0 average loss: 0.05533150703187857
+
+11/04/2026 22:37:11 - INFO - Blink -   Step 5599 - epoch 0 average loss: 0.05281470365142013
+
+11/04/2026 22:38:24 - INFO - Blink -   Step 5799 - epoch 0 average loss: 0.04913369155750843
+
+11/04/2026 22:39:38 - INFO - Blink -   Step 5999 - epoch 0 average loss: 0.04951197059985134
+
+11/04/2026 22:39:38 - INFO - Blink -   max_updates 1500 reached
+11/04/2026 22:39:38 - INFO - Blink -   ***** Saving fine - tuned model *****
+11/04/2026 22:47:08 - INFO - Blink -   Eval accuracy: 0.52786
+11/04/2026 22:47:08 - INFO - Blink -   
+
+11/04/2026 22:47:08 - INFO - Blink -   The training took 45.32587203184764 minutes
+
+11/04/2026 22:47:08 - INFO - Blink -   Best performance in epoch: 0
+11/04/2026 22:47:08 - INFO - pytorch_transformers.tokenization_utils -   loading file https://s3.amazonaws.com/models.huggingface.co/bert/bert-large-uncased-vocab.txt from cache at /home/ubuntu/.cache/torch/pytorch_transformers/9b3c03a36e83b13d5ba95ac965c9f9074a99e14340c523ab405703179e79fc46.542ce4285a40d23a559526243235df47c5f75c197f04f37d1a0c124c32c9a084
+11/04/2026 22:47:08 - INFO - pytorch_transformers.modeling_utils -   loading configuration file https://s3.amazonaws.com/models.huggingface.co/bert/bert-large-uncased-config.json from cache at /home/ubuntu/.cache/torch/pytorch_transformers/6dfaed860471b03ab5b9acb6153bea82b6632fb9bbe514d3fff050fe1319ee6d.788fed32bb8481a9b15ce726d41c53d5d5066b04c667e34ce3a7a3826d1573d8
+11/04/2026 22:47:08 - INFO - pytorch_transformers.modeling_utils -   Model config {
+  "architectures": [
+    "BertForMaskedLM"
+  ],
+  "attention_probs_dropout_prob": 0.1,
+  "finetuning_task": null,
+  "hidden_act": "gelu",
+  "hidden_dropout_prob": 0.1,
+  "hidden_size": 1024,
+  "initializer_range": 0.02,
+  "intermediate_size": 4096,
+  "layer_norm_eps": 1e-12,
+  "max_position_embeddings": 512,
+  "model_type": "bert",
+  "num_attention_heads": 16,
+  "num_hidden_layers": 24,
+  "num_labels": 2,
+  "output_attentions": false,
+  "output_hidden_states": false,
+  "pad_token_id": 0,
+  "pruned_heads": {},
+  "torchscript": false,
+  "type_vocab_size": 2,
+  "vocab_size": 30522
+}
+
+11/04/2026 22:47:08 - INFO - pytorch_transformers.modeling_utils -   loading weights file https://s3.amazonaws.com/models.huggingface.co/bert/bert-large-uncased-pytorch_model.bin from cache at /home/ubuntu/.cache/torch/pytorch_transformers/54da47087cc86ce75324e4dc9bbb5f66c6e83a7c6bd23baea8b489acc8d09aa4.4d5343a4b979c4beeaadef17a0453d1bb183dd9b084f58b84c7cc781df343ae6
+11/04/2026 22:47:13 - INFO - pytorch_transformers.modeling_utils -   loading configuration file https://s3.amazonaws.com/models.huggingface.co/bert/bert-large-uncased-config.json from cache at /home/ubuntu/.cache/torch/pytorch_transformers/6dfaed860471b03ab5b9acb6153bea82b6632fb9bbe514d3fff050fe1319ee6d.788fed32bb8481a9b15ce726d41c53d5d5066b04c667e34ce3a7a3826d1573d8
+11/04/2026 22:47:13 - INFO - pytorch_transformers.modeling_utils -   Model config {
+  "architectures": [
+    "BertForMaskedLM"
+  ],
+  "attention_probs_dropout_prob": 0.1,
+  "finetuning_task": null,
+  "hidden_act": "gelu",
+  "hidden_dropout_prob": 0.1,
+  "hidden_size": 1024,
+  "initializer_range": 0.02,
+  "intermediate_size": 4096,
+  "layer_norm_eps": 1e-12,
+  "max_position_embeddings": 512,
+  "model_type": "bert",
+  "num_attention_heads": 16,
+  "num_hidden_layers": 24,
+  "num_labels": 2,
+  "output_attentions": false,
+  "output_hidden_states": false,
+  "pad_token_id": 0,
+  "pruned_heads": {},
+  "torchscript": false,
+  "type_vocab_size": 2,
+  "vocab_size": 30522
+}
+
+11/04/2026 22:47:13 - INFO - pytorch_transformers.modeling_utils -   loading weights file https://s3.amazonaws.com/models.huggingface.co/bert/bert-large-uncased-pytorch_model.bin from cache at /home/ubuntu/.cache/torch/pytorch_transformers/54da47087cc86ce75324e4dc9bbb5f66c6e83a7c6bd23baea8b489acc8d09aa4.4d5343a4b979c4beeaadef17a0453d1bb183dd9b084f58b84c7cc781df343ae6

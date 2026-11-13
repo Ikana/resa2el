@@ -331,7 +331,7 @@ ReSa2     & 2.15 / 3.98 / 0.87 / 0.00 & 84  & 0.05 & $-8.6$ \\
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.56\textwidth]{figures/draws_one_mention.pdf}
+\includegraphics[width=0.8\textwidth]{figures/draws_one_mention.pdf}
 \caption{Twenty draws of seven negatives for one validation mention. Each row is one draw. Top-score picks the same seven pages every time. Uniform spreads over the whole pool. ReSa2 stays among the pages most like the correct page and changes from draw to draw.}
 \label{fig:draws}
 \end{figure}
@@ -351,8 +351,8 @@ ReSa2 leads uniform sampling in every mention category. Its largest lead is on u
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.56\textwidth]{figures/by_mention_type.pdf}
-\caption{Recall at 10 on the validation set by kind of mention. Each dot is one retriever (mean of three runs). The means and standard deviations are in \texttt{docs/results/gaps/gaps.md} in the repository.}
+\includegraphics[width=0.8\textwidth]{figures/by_mention_type.pdf}
+\caption{Recall at 10 on the validation set by kind of mention. Each dot is one retriever (mean of three runs). The numbers mark the released retriever and ReSa2. The means and standard deviations are in \texttt{docs/results/gaps/gaps.md} in the repository.}
 \label{fig:class}
 \end{figure}
 
@@ -362,8 +362,8 @@ One possible reason concerns where wrong-year pages score. A wrong-year page can
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.56\textwidth]{figures/mistakes.pdf}
-\caption{Mentions whose first result is wrong, as a percentage of all 16,692 validation mentions, split by kind of mistake. The number in parentheses is the time part.}
+\includegraphics[width=0.8\textwidth]{figures/mistakes.pdf}
+\caption{Mentions whose first result is wrong, as a percentage of all 16,692 validation mentions, split by kind of mistake. The numbers in parentheses are the time and hierarchy parts.}
 \label{fig:errors}
 \end{figure}
 
@@ -373,7 +373,7 @@ The news results in Figure~\ref{fig:beforeafter} show a transfer limit. On the 7
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.56\textwidth]{figures/before_after.pdf}
+\includegraphics[width=0.8\textwidth]{figures/before_after.pdf}
 \caption{Recall at 10 before and after training. On Wikipedia three samplers improve the released retriever. On news text every sampler makes it worse.}
 \label{fig:beforeafter}
 \end{figure}
@@ -387,7 +387,7 @@ My first twelve runs used a learning rate three times higher, $3 \times 10^{-5}$
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.55\textwidth]{figures/loss_curves.pdf}
+\includegraphics[width=0.8\textwidth]{figures/loss_curves.pdf}
 \caption{Training loss at the higher learning rate for two healthy runs (solid) and the two collapsed runs (dashed). The dotted line marks the update at which the learning rate reaches its highest value. The collapsed runs jump once and stay at about 0.3.}
 \label{fig:loss}
 \end{figure}
