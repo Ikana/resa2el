@@ -32,6 +32,7 @@
 \author{Rodrigo Quezada\\ COMPSCI 2242, Fall 2026}
 \date{Draft, \today}
 
+\usepackage{float}
 \begin{document}
 \maketitle
 
@@ -303,7 +304,7 @@ In-batch sampling finished below the released model. I think the reason is the s
 \subsection{Which pages the samplers pick}
 \label{sec:picks}
 
-I also wanted to see which pages the samplers actually picked. I drew negatives 200 times each for 500 validation mentions. Table~\ref{tab:q1} and Figure~\ref{fig:incl} give the result.
+I also wanted to see which pages the samplers actually picked. I drew negatives 200 times each for 500 validation mentions. Table~\ref{tab:q1} and Figure~\ref{fig:incl} give the result. Figure~\ref{fig:draws} shows twenty of those draws for one mention.
 
 \begin{table}[t]
 \centering
@@ -328,6 +329,13 @@ ReSa2     & 2.15 / 3.98 / 0.87 / 0.00 & 84  & 0.05 & $-8.6$ \\
 \label{fig:incl}
 \end{figure}
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.56\textwidth]{figures/draws_one_mention.pdf}
+\caption{Twenty draws of seven negatives for one validation mention. Each row is one draw. Top-score picks the same seven pages every time. Uniform spreads over the whole pool. ReSa2 stays among the pages most like the correct page and changes from draw to draw.}
+\label{fig:draws}
+\end{figure}
+
 ReSa2 picked about six of its seven negatives from the 75 pages most similar to the correct page. For uniform sampling, the average was about half a page. Top-score gave me the same seven pages every time. Two ReSa2 draws shared very few pages, even though both tended to draw from the same part of the pool. Over 200 draws, uniform sampling used 756 different pool pages. ReSa2 used 84, and top-score used 7.
 
 The last column says how hard the negatives are. On average, ReSa2's negatives score 8.6 points below the correct page. Uniform negatives score 13.3 points below it, so they are easier. Top-score negatives score only 1.4 points below it, so they are the hardest. Figure~\ref{fig:incl} shows the same picture page by page. Top-score puts most of its picks on the first few pages, which are the near-copies of the correct page.
@@ -337,73 +345,38 @@ The last column says how hard the negatives are. On average, ReSa2's negatives s
 
 The proposal included three checks: performance by mention type, time and hierarchy mistakes, and transfer to news text. ReSa2 improves the first check. It does not reduce time mistakes or improve retrieval on news text relative to the released model.
 
-Table~\ref{tab:class} gives recall at 10 by mention type. Hard noun mentions are the weakest category for the released retriever, with 68.9\%. ReSa2 raises this to 90.3\%. Uniform sampling reaches 88.8\%, while top-score reaches 84.9\%.
+Figure~\ref{fig:class} gives recall at 10 by mention type. Hard noun mentions are the weakest category for the released retriever, with 68.9\%. ReSa2 raises this to 90.3\%. Uniform sampling reaches 88.8\%, while top-score reaches 84.9\%.
 
-ReSa2 leads uniform sampling in every mention category. Its largest lead is on unseen verbs: 90.2\% against 88.3\%, a difference of 1.9 percentage points. This is consistent with a benefit from more selective negatives when the mention is less familiar. The table alone does not establish that explanation.
+ReSa2 leads uniform sampling in every mention category. Its largest lead is on unseen verbs: 90.2\% against 88.3\%, a difference of 1.9 percentage points. This is consistent with a benefit from more selective negatives when the mention is less familiar. The figure alone does not establish that explanation.
 
-\begin{table}[t]
+\begin{figure}[t]
 \centering
-\small
-\caption{Recall at ten on the validation set by kind of mention (mean of three runs $\pm$ standard deviation). From left to right the columns hold 1,814, 2,585, 3,947, 4,173, and 4,173 mentions.}
-\label{tab:class}
-\begin{tabular}{@{}lccccc@{}}
-\toprule
- & \multicolumn{3}{c}{Verb} & \multicolumn{2}{c}{Noun} \\
-\cmidrule(lr){2-4}\cmidrule(lr){5-6}
-Sampler & Seen & Unseen form & Unseen & Hard & Easy \\
-\midrule
-Released & 76.1 & 77.3 & 82.9 & 68.9 & 82.6 \\
-In-batch & 65.2 $\pm$ 1.5 & 69.0 $\pm$ 1.3 & 75.0 $\pm$ 0.6 & 58.0 $\pm$ 1.5 & 78.4 $\pm$ 3.9 \\
-Uniform & 98.8 $\pm$ 0.2 & 91.3 $\pm$ 0.2 & 88.3 $\pm$ 0.1 & 88.8 $\pm$ 0.2 & 97.1 $\pm$ 0.3 \\
-Top-score & 96.5 $\pm$ 0.2 & 83.2 $\pm$ 1.5 & 79.6 $\pm$ 1.2 & 84.9 $\pm$ 1.0 & 95.2 $\pm$ 0.5 \\
-ReSa2 & \textbf{99.1} $\pm$ 0.0 & \textbf{92.3} $\pm$ 0.1 & \textbf{90.2} $\pm$ 0.1 & \textbf{90.3} $\pm$ 0.2 & \textbf{97.5} $\pm$ 0.2 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\includegraphics[width=0.56\textwidth]{figures/by_mention_type.pdf}
+\caption{Recall at 10 on the validation set by kind of mention. Each dot is one retriever (mean of three runs). The means and standard deviations are in \texttt{docs/results/gaps/gaps.md} in the repository.}
+\label{fig:class}
+\end{figure}
 
-The error breakdown in Table~\ref{tab:errors} is less favorable to the original motivation. Time mistakes remain close to 2\% of all validation mentions. The released model has 1.8\%, uniform and top-score have 2.1\%, and ReSa2 has 2.0\%. There is no reduction here.
+The error breakdown in Figure~\ref{fig:errors} is less favorable to the original motivation. Time mistakes remain close to 2\% of all validation mentions. The released model has 1.8\%, uniform and top-score have 2.1\%, and ReSa2 has 2.0\%. There is no reduction here.
 
 One possible reason concerns where wrong-year pages score. A wrong-year page can score above the correct page. ReSa2's first step prefers scores near the positive score, so it can reduce selection of pages far above it. If those pages need correction, selecting them less often can leave the mistake unresolved. This is a possible mechanism, not proof that it explains the observed result.
 
-\begin{table}[t]
+\begin{figure}[t]
 \centering
-\small
-\caption{Mentions whose first result is wrong, as a percentage of all 16,692 validation mentions, split by kind of mistake.}
-\label{tab:errors}
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Sampler & Wrong first result & Time & Hierarchy & Other \\
-\midrule
-Released & 57.4 & 1.8 & 11.6 & 44.0 \\
-In-batch & 66.4 $\pm$ 1.9 & 1.9 $\pm$ 0.1 & 11.7 $\pm$ 0.6 & 52.8 $\pm$ 1.4 \\
-Uniform & 35.7 $\pm$ 0.2 & 2.1 $\pm$ 0.1 & 5.5 $\pm$ 0.2 & 28.1 $\pm$ 0.2 \\
-Top-score & 34.7 $\pm$ 1.2 & 2.1 $\pm$ 0.1 & 3.0 $\pm$ 0.1 & 29.6 $\pm$ 1.2 \\
-ReSa2 & 30.5 $\pm$ 0.3 & 2.0 $\pm$ 0.1 & 4.4 $\pm$ 0.2 & 24.0 $\pm$ 0.1 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\includegraphics[width=0.56\textwidth]{figures/mistakes.pdf}
+\caption{Mentions whose first result is wrong, as a percentage of all 16,692 validation mentions, split by kind of mistake. The number in parentheses is the time part.}
+\label{fig:errors}
+\end{figure}
 
 Top-score produces the fewest hierarchy mistakes: 3.0\% of validation mentions, compared with 4.4\% for ReSa2. ReSa2 still has fewer errors overall. Its first result is wrong for 30.5\% of mentions, compared with 34.7\% for top-score. Its advantage comes from the broader error count, especially the ``other'' category.
 
-The news results in Table~\ref{tab:nyt} show a transfer limit. On the 769 New York Times mentions with a page, the released retriever gets 33.6\% recall at 10. ReSa2 gets 30.9\%. Recall at 100 also falls, from 57.3\% to 55.9\%. ReSa2 performs better than the other retrained rules on this dataset, but it does not beat the released model. The gains after 1,500 Wikipedia training updates do not carry over to news text.
+The news results in Figure~\ref{fig:beforeafter} show a transfer limit. On the 769 New York Times mentions with a page, the released retriever gets 33.6\% recall at 10. ReSa2 gets 30.9\%. Recall at 100 also falls, from 57.3\% to 55.9\%. ReSa2 performs better than the other retrained rules on this dataset, but it does not beat the released model. The gains after 1,500 Wikipedia training updates do not carry over to news text.
 
-\begin{table}[t]
+\begin{figure}[t]
 \centering
-\small
-\caption{Recall on the 769 New York Times mentions that have a Wikipedia page (mean of three runs $\pm$ standard deviation).}
-\label{tab:nyt}
-\begin{tabular}{@{}lccc@{}}
-\toprule
-Sampler & Top-1 & Recall@10 & Recall@100 \\
-\midrule
-Released & \textbf{13.0} & \textbf{33.6} & \textbf{57.3} \\
-In-batch & 8.5 $\pm$ 1.1 & 24.4 $\pm$ 1.4 & 44.8 $\pm$ 1.7 \\
-Uniform & 9.8 $\pm$ 0.7 & 27.4 $\pm$ 1.0 & 50.8 $\pm$ 1.6 \\
-Top-score & 4.6 $\pm$ 0.7 & 14.4 $\pm$ 1.4 & 26.8 $\pm$ 1.8 \\
-ReSa2 & 11.5 $\pm$ 0.1 & 30.9 $\pm$ 1.5 & 55.9 $\pm$ 0.4 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\includegraphics[width=0.56\textwidth]{figures/before_after.pdf}
+\caption{Recall at 10 before and after training. On Wikipedia three samplers improve the released retriever. On news text every sampler makes it worse.}
+\label{fig:beforeafter}
+\end{figure}
 
 The error labels are approximate. A title rule identifies the same title with a different year as a time mistake. It identifies one title's words contained in another title as a hierarchy mistake. Everything else is ``other.'' No person reviewed every case. These labels measure title patterns, which can miss real relationships or assign a relationship that the titles alone do not establish.
 
@@ -468,13 +441,14 @@ The repository contains an AI-usage log with an entry for each session. The prom
 \end{thebibliography}
 
 \appendix
+\small
 
 \section{Per-seed results}
 \label{app:seeds}
 
 Each cell gives recall at 1, 10, and 100 on the validation set for one run. The runs at learning rate $10^{-5}$ are the main results (Table~\ref{tab:main}). The runs at $3 \times 10^{-5}$ are my first attempt, in which two runs collapsed.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \footnotesize
 \caption{Learning rate $10^{-5}$.}
@@ -490,7 +464,7 @@ ReSa2 & 70.0 / 93.2 / 98.4 & 69.4 / 93.3 / 98.5 & 69.3 / 93.4 / 98.6 \\
 \end{tabular}
 \end{table}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \footnotesize
 \caption{Learning rate $3 \times 10^{-5}$ (first attempt).}
@@ -514,11 +488,13 @@ The recovery test continued the collapsed top-score seed-1 model for 1,500 more 
 Two files in the project repository, Lean 4 v4.34.1, built with \texttt{lake build}. \texttt{lean/LossBound.lean} uses Mathlib (real numbers, $\exp$, $\log$); its proofs depend only on the axioms \texttt{propext}, \texttt{Classical.choice} and \texttt{Quot.sound}. \texttt{lean/FalseNegatives.lean} uses the core library only.
 
 \subsection*{LossBound.lean}
-\lstinputlisting[basicstyle=\ttfamily\scriptsize]{../../lean/LossBound.lean}
+The opening comment, the proof of \texttt{loss\_eq\_log\_gaps}, and \texttt{loss\_nonneg} are left out here.
+
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={28-35,60-78}]{../../lean/LossBound.lean}
 
 \subsection*{FalseNegatives.lean}
-The opening comment and the three examples at the end of the file are left out here.
+The opening comment, the proof of the helper \texttt{countP\_take\_append}, and the three examples at the end of the file are left out here.
 
-\lstinputlisting[basicstyle=\ttfamily\scriptsize,firstline=17,lastline=81]{../../lean/FalseNegatives.lean}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={17-30,37-43,61-66,72-81}]{../../lean/FalseNegatives.lean}
 
 \end{document}
