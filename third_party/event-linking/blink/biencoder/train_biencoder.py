@@ -88,45 +88,64 @@ def evaluate(
 # from its fixed candidate pool (scripts/build_pools.py), chosen by a sampler
 # from src/resa2el/samplers.py. The page encoder is frozen; the page vectors
 # are the released ones.
-def _samplers_module():
+def _resa2el(name):
     src = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "src")
     if src not in sys.path:
         sys.path.insert(0, src)
-    from resa2el import samplers
-    return samplers
+    import importlib
+    return importlib.import_module("resa2el." + name)
 
 
 def _load_pools(params, tensor_data, logger):
+    """Returns the pools, the stored page vectors, the training set (mentions whose
+    correct page is known), and the held-out mentions for the reward log."""
+    C = _resa2el("candidates")
     d = np.load(params["pools"])
     keep = np.flatnonzero(d["gold"] >= 0)
     keep = keep[keep < len(tensor_data)]  # --debug keeps the first 200 mentions
+    keep, held = C.split_heldout(keep, params.get("heldout") or 0)
     if logger:
-        logger.info("sampler {}: {} of {} mentions have the correct page in the pool file".format(
-            params["sampler"], len(keep), len(tensor_data)))
+        logger.info("sampler {}: {} of {} mentions train, {} are held out".format(
+            params["sampler"], len(keep), len(tensor_data), len(held)))
     pools = {k: d[k] for k in ("ids", "scores", "gold", "gold_score", "sims")}
+    pools["gold_ids"] = d["gold"][keep]  # one entry per training mention
     encoding = np.load(params["encoding"], mmap_mode="r")
     tensors = [t[torch.from_numpy(keep)] for t in tensor_data.tensors] + [torch.from_numpy(keep)]
-    return pools, encoding, TensorDataset(*tensors)
+    heldout = (tensor_data.tensors[0][torch.from_numpy(held)], held) if len(held) else None
+    return pools, encoding, TensorDataset(*tensors), heldout
 
 
-def _sampled_loss(reranker, context_input, sample_idx, pools, encoding, sampler, k, rng, device, sampler_kw):
-    """Cross-entropy of the correct page against k sampled negatives."""
-    ids, scores, gold, gold_score, sims = (pools[x] for x in ("ids", "scores", "gold", "gold_score", "sims"))
-    cand = np.empty((len(sample_idx), k + 1), dtype=np.int64)
-    for r, i in enumerate(sample_idx):
-        not_gold = ids[i] != gold[i]  # the correct page is removed from the pool
-        pool_ids = ids[i][not_gold]
-        sel = sampler(scores[i][not_gold].astype(np.float64), float(gold_score[i]),
-                      sims[i][not_gold].astype(np.float64), k, rng, **sampler_kw)
-        cand[r, 0] = gold[i]
-        cand[r, 1:] = pool_ids[np.asarray(sel)]
+def _logits(reranker, context_input, cand, encoding, device):
     cand_enc = torch.from_numpy(encoding[cand.reshape(-1)].astype(np.float32))
-    cand_enc = cand_enc.view(len(sample_idx), k + 1, -1).to(device)
+    cand_enc = cand_enc.view(cand.shape[0], cand.shape[1], -1).to(device)
     token_idx, segment_idx, mask = to_bert_input(context_input, reranker.NULL_IDX)
     ctx, _ = reranker.model(token_idx, segment_idx, mask, None, None, None)
-    logits = torch.bmm(cand_enc, ctx.unsqueeze(2)).squeeze(2)  # batch x (k + 1)
+    return torch.bmm(cand_enc, ctx.unsqueeze(2)).squeeze(2)  # batch x (k + 1)
+
+
+def _sampled_loss(reranker, context_input, sample_idx, pools, encoding, sampler_name, k, rng, device, sampler_kw):
+    """Cross-entropy of the correct page against k sampled negatives."""
+    cand = _resa2el("candidates").batch_candidates(sample_idx, pools, sampler_name, k, rng, sampler_kw, pools["gold_ids"])
+    logits = _logits(reranker, context_input, cand, encoding, device)
     target = torch.zeros(len(sample_idx), dtype=torch.long, device=device)
     return F.cross_entropy(logits, target, reduction="mean")
+
+
+def _heldout_loss(reranker, heldout, pools, encoding, device, batch=32):
+    """Mean cross-entropy of the held-out mentions against their whole pool (999 wrong pages).
+    Evaluation mode, no gradient. Used for the reward log."""
+    ctx_all, rows = heldout
+    cand = _resa2el("candidates").batch_candidates(rows, pools, "allpool", 999, None)
+    model = reranker.model
+    model.eval()
+    total = 0.0
+    with torch.no_grad():
+        for a in range(0, len(rows), batch):
+            logits = _logits(reranker, ctx_all[a:a + batch].to(device), cand[a:a + batch], encoding, device)
+            target = torch.zeros(logits.shape[0], dtype=torch.long, device=device)
+            total += F.cross_entropy(logits, target, reduction="sum").item()
+    model.train()
+    return total / len(rows)
 
 
 def _tensor_data(split, params, tokenizer, logger):
@@ -202,12 +221,13 @@ def main(params):
         logger.info("cand_encoder frozen")
     sampler_name = params.get("sampler") or "in_batch"
     pools = None
+    heldout = None
     if sampler_name != "in_batch":
-        S = _samplers_module()
-        sampler_fn = S.SAMPLERS[sampler_name]
         sampler_kw = {}
         if sampler_name == "resa2":
             sampler_kw = dict(n_stage1=params["resa2_stage1"], n_stage2=params["resa2_stage2"], tau=params["resa2_tau"])
+        if sampler_name == "band":
+            sampler_kw = dict(lo=params["band_lo"], hi=params["band_hi"] if params["band_hi"] > 0 else None)
         sampler_rng = np.random.default_rng(params["seed"])
 
     if params["gradient_accumulation_steps"] < 1:
@@ -237,7 +257,7 @@ def main(params):
     # Load train data
     train_samples, train_tensor_data = _tensor_data("train", params, tokenizer, logger)
     if sampler_name != "in_batch":
-        pools, encoding, train_tensor_data = _load_pools(params, train_tensor_data, logger)
+        pools, encoding, train_tensor_data, heldout = _load_pools(params, train_tensor_data, logger)
 
     if params["shuffle"]:
         train_sampler = RandomSampler(train_tensor_data)
@@ -281,6 +301,15 @@ def main(params):
 
     model.train()
 
+    # Reward log (added for resa2el): the fall of the held-out loss between two measurements.
+    reward_interval = params.get("reward_interval") or 0
+    reward_file, prev_heldout = None, None
+    if heldout is not None and reward_interval:
+        reward_file = open(os.path.join(model_output_path, "reward_log.jsonl"), "w")
+        prev_heldout = _heldout_loss(reranker, heldout, pools, encoding, device)
+        reward_file.write(json.dumps({"update": 0, "heldout_loss": prev_heldout}) + "\n"); reward_file.flush()
+        logger.info("held-out loss before training: {:.4f}".format(prev_heldout))
+
     best_epoch_idx = -1
     best_score = -1
 
@@ -300,7 +329,7 @@ def main(params):
             batch = tuple(t.to(device) for t in batch)
             if pools is not None:
                 loss = _sampled_loss(reranker, batch[0], batch[-1].cpu().numpy(), pools, encoding,
-                                     sampler_fn, params["negatives"], sampler_rng, device, sampler_kw)
+                                     sampler_name, params["negatives"], sampler_rng, device, sampler_kw)
             else:
                 context_input, candidate_input, _= batch
                 loss, _ = reranker(context_input, candidate_input)
@@ -333,6 +362,11 @@ def main(params):
                 scheduler.step()
                 optimizer.zero_grad()
                 n_updates += 1
+                if reward_file is not None and n_updates % reward_interval == 0:
+                    cur = _heldout_loss(reranker, heldout, pools, encoding, device)
+                    reward_file.write(json.dumps({"update": n_updates, "heldout_loss": cur, "reward": prev_heldout - cur}) + "\n")
+                    reward_file.flush()
+                    prev_heldout = cur
                 if max_updates and n_updates >= max_updates:
                     logger.info("max_updates {} reached".format(max_updates))
                     break
@@ -392,7 +426,11 @@ if __name__ == "__main__":
     parser.add_training_args()
     parser.add_eval_args()
     # Sampler training (added for resa2el)
-    parser.add_argument("--sampler", default="in_batch", choices=["in_batch", "uniform", "topscore", "resa2"])
+    parser.add_argument("--sampler", default="in_batch", choices=["in_batch", "uniform", "topscore", "resa2", "band", "stage2_only", "allpool", "gold_random"])
+    parser.add_argument("--band_lo", type=int, default=0, help="sampler band: first similarity rank of the band")
+    parser.add_argument("--band_hi", type=int, default=75, help="sampler band: end of the band (not included); 0 means the end of the pool")
+    parser.add_argument("--heldout", type=int, default=0, help="training mentions held out for the reward log")
+    parser.add_argument("--reward_interval", type=int, default=0, help="write the held-out loss every this many updates (0: off)")
     parser.add_argument("--pools", default=None, help="<split>.npz from scripts/build_pools.py")
     parser.add_argument("--encoding", default=None, help="all_entities_fp16.npy from scripts/build_pools.py")
     parser.add_argument("--negatives", type=int, default=7, help="negatives per mention")

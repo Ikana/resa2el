@@ -75,3 +75,50 @@ def test_stage1_simulation_matches_exact_probability():
     rng = np.random.default_rng(4)
     sim = A.simulate_inclusion(lambda sc, sp, si, k, r: S.resa2_stage1(sc, sp, k, r), scores, 0.0, None, 2, rng, 40000)
     assert np.allclose(sim, exact, atol=0.015)
+
+
+def test_band_stays_inside_its_similarity_ranks(pool):
+    scores, s_pos, sims = pool
+    rank = np.empty(N, int); rank[np.argsort(-sims, kind="stable")] = np.arange(N)
+    rng = np.random.default_rng(3)
+    for lo, hi in S.BANDS.values():
+        for _ in range(50):
+            sel = S.band(scores, s_pos, sims, K, rng, lo=lo, hi=hi)
+            assert rank[sel].min() >= lo and rank[sel].max() < (hi or N)
+
+
+def test_bands_cover_the_pool_once():
+    edges = sorted(S.BANDS.values(), key=lambda b: b[0])
+    assert edges[0][0] == 0 and edges[-1][1] is None
+    assert all(a[1] == b[0] for a, b in zip(edges, edges[1:]))
+
+
+def test_stage2_only_is_uniform_over_the_75_most_similar(pool):
+    scores, s_pos, sims = pool
+    top75 = set(np.argsort(-sims, kind="stable")[:75].tolist())
+    rng = np.random.default_rng(4)
+    counts = np.zeros(N)
+    for _ in range(3000):
+        sel = S.stage2_only(scores, s_pos, sims, K, rng)
+        assert set(sel.tolist()) <= top75
+        counts[sel] += 1
+    freq = counts[sorted(top75)] / 3000
+    assert abs(freq.mean() - K / 75) < 1e-9 and freq.min() > 0.07 and freq.max() < 0.12
+
+
+def test_allpool_returns_the_whole_pool(pool):
+    scores, s_pos, sims = pool
+    sel = S.allpool(scores, s_pos, sims, N, np.random.default_rng(0))
+    assert sorted(sel.tolist()) == list(range(N))
+    sel = S.allpool(scores, s_pos, sims, N - 1, np.random.default_rng(0))
+    assert len(sel) == N - 1 and int(np.argmin(scores)) not in sel.tolist()
+
+
+def test_gold_random_never_returns_the_own_page():
+    gold_ids = np.repeat(np.arange(100, 400), 3)
+    rng = np.random.default_rng(6)
+    for own in (100, 250, 399, 5):
+        for k in (7, 63):
+            sel = S.gold_random(gold_ids, own, k, rng)
+            assert len(sel) == k and len(set(sel.tolist())) == k and own not in sel.tolist()
+            assert set(sel.tolist()) <= set(gold_ids.tolist())

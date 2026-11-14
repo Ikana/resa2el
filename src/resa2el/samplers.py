@@ -59,4 +59,44 @@ def resa2(scores, s_pos, sims, k, rng, n_stage1=500, n_stage2=75, tau=TAU):
     return rng.choice(top, min(k, len(top)), replace=False)
 
 
-SAMPLERS = {"uniform": uniform, "topscore": topscore, "resa2": resa2}
+# Similarity bands used in the paper (ranks by similarity to the correct page, 0 = most similar).
+BANDS = {"top25": (0, 25), "25to75": (25, 75), "75to300": (75, 300), "rest": (300, None)}
+
+
+def band(scores, s_pos, sims, k, rng, lo=0, hi=75):
+    """Select k pages uniformly from one similarity band: the pages whose
+    similarity rank r satisfies lo <= r < hi (hi=None: to the end of the pool)."""
+    order = np.argsort(-np.asarray(sims), kind="stable")
+    part = order[lo:hi]
+    return rng.choice(part, min(k, len(part)), replace=False)
+
+
+def stage2_only(scores, s_pos, sims, k, rng, n_stage2=75):
+    """ReSa2 without stage 1: k uniform picks from the n_stage2 pool pages most similar to the correct page."""
+    return band(scores, s_pos, sims, k, rng, lo=0, hi=n_stage2)
+
+
+def allpool(scores, s_pos, sims, k, rng):
+    """No sampling: the k highest-scoring pages, with k set to the pool size
+    (999, the smallest number of wrong pages a pool has). No randomness."""
+    return np.argsort(scores)[-k:]
+
+
+def gold_random(gold_of_mentions, own_gold, k, rng):
+    """k distinct correct pages of other training mentions. `gold_of_mentions` has
+    one entry per training mention, so a page that is the answer of many mentions
+    is drawn more often, as it is inside a training batch. Returns page ids, not
+    pool indices. This is the in-batch idea with stored page vectors."""
+    out = []
+    seen = {int(own_gold)}
+    while len(out) < k:
+        for g in rng.choice(gold_of_mentions, 2 * k).tolist():
+            if g not in seen:
+                seen.add(g); out.append(g)
+                if len(out) == k:
+                    break
+    return np.asarray(out)
+
+
+SAMPLERS = {"uniform": uniform, "topscore": topscore, "resa2": resa2,
+            "band": band, "stage2_only": stage2_only, "allpool": allpool}
