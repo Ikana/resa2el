@@ -1,0 +1,8 @@
+# Steps 4 and 6 of the results plan. NAME SEED KEEP SAMPLER_ARGS
+band_top25 0 0 --sampler band --band_lo 0 --band_hi 25 --negatives 7 --heldout 128 --reward_interval 10
+band_25to75 0 0 --sampler band --band_lo 25 --band_hi 75 --negatives 7 --heldout 128 --reward_interval 10
+band_75to300 0 0 --sampler band --band_lo 75 --band_hi 300 --negatives 7 --heldout 128 --reward_interval 10
+band_rest 0 0 --sampler band --band_lo 300 --band_hi 0 --negatives 7 --heldout 128 --reward_interval 10
+stage2only 0 1 --sampler stage2_only --negatives 7
+stage2only 1 1 --sampler stage2_only --negatives 7
+stage2only 2 1 --sampler stage2_only --negatives 7

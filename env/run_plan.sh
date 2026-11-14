@@ -30,6 +30,7 @@ grep -v '^#' $RUNS | while read -r NAME SEED KEEP ARGS; do
     /usr/bin/time -v python blink/biencoder/train_biencoder.py --output_path $OUT --seed $SEED $COMMON $ARGS 2>&1 < /dev/null | grep -E "sampler |frozen|average loss|held-out|max_updates|Eval accuracy|training took|Elapsed|Maximum resident|Error|Traceback|^  File"
   fi
   rm -rf $OUT/epoch_0
+  mkdir -p $RUNDIR/rewards; [ -f $OUT/reward_log.jsonl ] && cp $OUT/reward_log.jsonl $RUNDIR/rewards/${NAME}_s${SEED}.jsonl
   [ "${SKIP_EVAL:-0}" = 1 ] && continue
   echo "=== ranks of $NAME seed $SEED on valid and NYT ==="
   mkdir -p $RUNDIR/ranks

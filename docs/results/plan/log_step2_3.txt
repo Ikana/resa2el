@@ -1,0 +1,1821 @@
+Shutdown scheduled for Sat 2026-11-14 19:17:26 UTC, use 'shutdown -c' to cancel.
++ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
++ PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
++ date
+Sat Nov 14 14:47:26 UTC 2026
++ . /home/ubuntu/venv/bin/activate
+++ deactivate nondestructive
+++ '[' -n '' ']'
+++ '[' -n '' ']'
+++ hash -r
+++ '[' -n '' ']'
+++ unset VIRTUAL_ENV
+++ unset VIRTUAL_ENV_PROMPT
+++ '[' '!' nondestructive = nondestructive ']'
+++ '[' linux-gnu = cygwin ']'
+++ '[' linux-gnu = msys ']'
+++ export VIRTUAL_ENV=/home/ubuntu/venv
+++ VIRTUAL_ENV=/home/ubuntu/venv
+++ _OLD_VIRTUAL_PATH=/usr/local/cuda-13.2/bin:/usr/local/cuda-13.2/include:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+++ PATH=/home/ubuntu/venv/bin:/usr/local/cuda-13.2/bin:/usr/local/cuda-13.2/include:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+++ export PATH
+++ '[' -n '' ']'
+++ '[' -z '' ']'
+++ _OLD_VIRTUAL_PS1=
+++ PS1='(venv) '
+++ export PS1
+++ VIRTUAL_ENV_PROMPT='(venv) '
+++ export VIRTUAL_ENV_PROMPT
+++ hash -r
++ cd /home/ubuntu/resa2el/third_party/event-linking
++ export PYTHONPATH=.
++ PYTHONPATH=.
++ cat out/pools/all_entities_fp16.npy
++ RUNDIR=runs/plan
++ mkdir -p runs/plan
++ true
+++ date +%T
++ COMMON='--data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 100000 --print_interval 50 --shuffle True --freeze_cand_encoder --skip_valid_eval --pools out/pools/train.npz --encoding out/pools/all_entities_fp16.npy --max_updates 1500 --learning_rate 1e-5'
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
++ grep -v '^#' /home/ubuntu/plan_runs.txt
++ read -r NAME SEED KEEP ARGS
++ '[' -z goldrand7 ']'
++ OUT=runs/plan/goldrand7_s0
++ '[' -f runs/plan/ranks/goldrand7_s0.npz ']'
++ echo '=== train goldrand7 seed 0: --sampler gold_random --negatives 7 ==='
+=== train goldrand7 seed 0: --sampler gold_random --negatives 7 ===
++ '[' '!' -f runs/plan/goldrand7_s0/pytorch_model.bin ']'
++ rm -rf runs/plan/goldrand7_s0
++ /usr/bin/time -v python blink/biencoder/train_biencoder.py --output_path runs/plan/goldrand7_s0 --seed 0 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 100000 --print_interval 50 --shuffle True --freeze_cand_encoder --skip_valid_eval --pools out/pools/train.npz --encoding out/pools/all_entities_fp16.npy --max_updates 1500 --learning_rate 1e-5 --sampler gold_random --negatives 7
++ grep -E 'sampler |frozen|average loss|held-out|max_updates|Eval accuracy|training took|Elapsed|Maximum resident|Error|Traceback|^  File'
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '14:47:27 0 MiB, 0 % ram_used_gb 1'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '14:48:27 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '14:49:27 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '14:50:27 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '14:51:27 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '14:52:28 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '14:53:28 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '14:54:28 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '14:55:28 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '14:56:28 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '14:57:28 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '14:58:28 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '14:59:28 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:00:28 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:01:28 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:02:28 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:03:28 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:04:28 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:05:28 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:06:28 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:07:28 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:08:28 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:09:28 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
+Namespace(silent=False, debug=False, data_parallel=False, no_cuda=False, top_k=10, seed=0, zeshel=False, max_seq_length=256, max_context_length=256, max_cand_length=256, path_to_model='models/biencoder/pytorch_model.bin', bert_model='bert-large-uncased', pull_from_layer=-1, lowercase=True, context_key='context', out_dim=1, add_linear=False, data_path='out', output_path='runs/plan/goldrand7_s0', evaluate=False, output_eval_file=None, train_batch_size=32, max_grad_norm=1.0, learning_rate=1e-05, num_train_epochs=1, print_interval=50, eval_interval=100000, save_interval=1, warmup_proportion=0.1, gradient_accumulation_steps=4, type_optimization='all_encoder_layers', shuffle=True, eval_batch_size=64, mode='valid', save_topk_result=False, encode_batch_size=8, cand_pool_path=None, cand_encode_path=None, sampler='gold_random', band_lo=0, band_hi=75, skip_valid_eval=True, heldout=0, reward_interval=0, pools='out/pools/train.npz', encoding='out/pools/all_entities_fp16.npy', negatives=7, freeze_cand_encoder=True, max_updates=1500, resa2_stage1=500, resa2_stage2=75, resa2_tau=0.25)
+11/14/2026 14:47:54 - INFO - Blink -   cand_encoder frozen
+11/14/2026 14:48:04 - INFO - Blink -   sampler gold_random: 66425 of 66425 mentions train, 0 are held out
+Batch:   2%|▏         | 199/8304 [01:12<47:29,  2.84it/s][A11/14/2026 14:49:23 - INFO - Blink -   Step 199 - epoch 0 average loss: 0.0031911623509383825
+Batch:   5%|▍         | 399/8304 [02:24<46:22,  2.84it/s][A11/14/2026 14:50:35 - INFO - Blink -   Step 399 - epoch 0 average loss: 0.0025560046959403316
+Batch:   7%|▋         | 599/8304 [03:37<45:15,  2.84it/s][A11/14/2026 14:51:48 - INFO - Blink -   Step 599 - epoch 0 average loss: 0.002642117134280435
+Batch:  10%|▉         | 799/8304 [04:50<44:05,  2.84it/s][A11/14/2026 14:53:01 - INFO - Blink -   Step 799 - epoch 0 average loss: 0.004753682420773091
+Batch:  12%|█▏        | 999/8304 [06:03<42:54,  2.84it/s][A11/14/2026 14:54:14 - INFO - Blink -   Step 999 - epoch 0 average loss: 0.0030422573521103158
+Batch:  14%|█▍        | 1199/8304 [07:15<41:44,  2.84it/s][A11/14/2026 14:55:26 - INFO - Blink -   Step 1199 - epoch 0 average loss: 0.01023466028852115
+Batch:  17%|█▋        | 1399/8304 [08:28<40:31,  2.84it/s][A11/14/2026 14:56:39 - INFO - Blink -   Step 1399 - epoch 0 average loss: 0.006083159413782247
+Batch:  19%|█▉        | 1599/8304 [09:41<39:14,  2.85it/s][A11/14/2026 14:57:52 - INFO - Blink -   Step 1599 - epoch 0 average loss: 0.007029177777892876
+Batch:  22%|██▏       | 1799/8304 [10:53<38:06,  2.85it/s][A11/14/2026 14:59:04 - INFO - Blink -   Step 1799 - epoch 0 average loss: 0.00333257610058435
+Batch:  24%|██▍       | 1999/8304 [12:06<36:58,  2.84it/s][A11/14/2026 15:00:17 - INFO - Blink -   Step 1999 - epoch 0 average loss: 0.006549948124711783
+Batch:  26%|██▋       | 2199/8304 [13:18<35:51,  2.84it/s][A11/14/2026 15:01:29 - INFO - Blink -   Step 2199 - epoch 0 average loss: 0.002262775121364534
+Batch:  29%|██▉       | 2399/8304 [14:31<34:40,  2.84it/s][A11/14/2026 15:02:42 - INFO - Blink -   Step 2399 - epoch 0 average loss: 0.005750260534549952
+Batch:  31%|███▏      | 2599/8304 [15:44<33:29,  2.84it/s][A11/14/2026 15:03:55 - INFO - Blink -   Step 2599 - epoch 0 average loss: 0.0017262813836579271
+Batch:  34%|███▎      | 2799/8304 [16:56<32:19,  2.84it/s][A11/14/2026 15:05:07 - INFO - Blink -   Step 2799 - epoch 0 average loss: 0.0049355656111511725
+Batch:  36%|███▌      | 2999/8304 [18:09<31:11,  2.84it/s][A11/14/2026 15:06:20 - INFO - Blink -   Step 2999 - epoch 0 average loss: 0.0027270030368873243
+Batch:  39%|███▊      | 3199/8304 [19:22<29:59,  2.84it/s][A11/14/2026 15:07:33 - INFO - Blink -   Step 3199 - epoch 0 average loss: 0.006880680931826529
+Batch:  41%|████      | 3399/8304 [20:34<28:47,  2.84it/s][A11/14/2026 15:08:45 - INFO - Blink -   Step 3399 - epoch 0 average loss: 0.0023316555043058893
+Batch:  43%|████▎     | 3599/8304 [21:47<27:35,  2.84it/s][A11/14/2026 15:09:58 - INFO - Blink -  + true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:10:28 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:11:28 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:12:28 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:13:28 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:14:28 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:15:28 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:16:28 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:17:28 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:18:28 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:19:28 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:20:28 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:21:29 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:22:29 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:23:29 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:24:29 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
+ Step 3599 - epoch 0 average loss: 0.00247532678840092
+Batch:  46%|████▌     | 3799/8304 [23:00<26:26,  2.84it/s][A11/14/2026 15:11:11 - INFO - Blink -   Step 3799 - epoch 0 average loss: 0.0067269818446002
+Batch:  48%|████▊     | 3999/8304 [24:12<25:16,  2.84it/s][A11/14/2026 15:12:23 - INFO - Blink -   Step 3999 - epoch 0 average loss: 0.008005046910167816
+Batch:  51%|█████     | 4199/8304 [25:25<24:04,  2.84it/s][A11/14/2026 15:13:36 - INFO - Blink -   Step 4199 - epoch 0 average loss: 0.0024230035742289257
+Batch:  53%|█████▎    | 4399/8304 [26:37<22:54,  2.84it/s][A11/14/2026 15:14:48 - INFO - Blink -   Step 4399 - epoch 0 average loss: 0.0012292337369279982
+Batch:  55%|█████▌    | 4599/8304 [27:50<21:38,  2.85it/s][A11/14/2026 15:16:01 - INFO - Blink -   Step 4599 - epoch 0 average loss: 0.00013150820417795584
+Batch:  58%|█████▊    | 4799/8304 [29:02<20:31,  2.85it/s][A11/14/2026 15:17:13 - INFO - Blink -   Step 4799 - epoch 0 average loss: 0.0006186247781705789
+Batch:  60%|██████    | 4999/8304 [30:15<19:21,  2.85it/s][A11/14/2026 15:18:26 - INFO - Blink -   Step 4999 - epoch 0 average loss: 0.007491471925962757
+Batch:  63%|██████▎   | 5199/8304 [31:27<18:12,  2.84it/s][A11/14/2026 15:19:38 - INFO - Blink -   Step 5199 - epoch 0 average loss: 0.0019415472141366885
+Batch:  65%|██████▌   | 5399/8304 [32:40<17:02,  2.84it/s][A11/14/2026 15:20:51 - INFO - Blink -   Step 5399 - epoch 0 average loss: 0.002727974207880761
+Batch:  67%|██████▋   | 5599/8304 [33:52<15:51,  2.84it/s][A11/14/2026 15:22:03 - INFO - Blink -   Step 5599 - epoch 0 average loss: 0.0004504966498805929
+Batch:  70%|██████▉   | 5799/8304 [35:05<14:40,  2.84it/s][A11/14/2026 15:23:16 - INFO - Blink -   Step 5799 - epoch 0 average loss: 0.003138430010973504
+Batch:  72%|███████▏  | 5999/8304 [36:17<13:31,  2.84it/s][A11/14/2026 15:24:28 - INFO - Blink -   Step 5999 - epoch 0 average loss: 0.0006456810491035625
+11/14/2026 15:24:29 - INFO - Blink -   max_updates 1500 reached
+11/14/2026 15:24:31 - INFO - Blink -   The training took 36.35403549671173 minutes
+	Command being timed: "python blink/biencoder/train_biencoder.py --output_path runs/plan/goldrand7_s0 --seed 0 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 100000 --print_interval 50 --shuffle True --freeze_cand_encoder --skip_valid_eval --pools out/pools/train.npz --encoding out/pools/all_entities_fp16.npy --max_updates 1500 --learning_rate 1e-5 --sampler gold_random --negatives 7"
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 37:25.50
+	Maximum resident set size (kbytes): 14233960
++ rm -rf runs/plan/goldrand7_s0/epoch_0
++ '[' 0 = 1 ']'
++ echo '=== ranks of goldrand7 seed 0 on valid and NYT ==='
+=== ranks of goldrand7 seed 0 on valid and NYT ===
++ mkdir -p runs/plan/ranks
++ python ../../scripts/eval_ranks.py --model runs/plan/goldrand7_s0/pytorch_model.bin --out runs/plan/ranks/goldrand7_s0.npz
++ grep -v 'it/s]$'
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:25:29 2823 MiB, 0 % ram_used_gb 2'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:26:29 2823 MiB, 0 % ram_used_gb 2'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:27:29 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:28:29 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:29:29 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:30:29 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:31:29 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:32:29 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:33:29 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:34:29 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:35:29 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:36:29 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:37:29 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (120s)
+encode mentions:   0%|          | 0/145 [00:00<?, ?it/s]encode mentions:   1%|          | 1/145 [00:01<04:16,  1.78s/it]encode mentions:   1%|▏         | 2/145 [00:03<04:06,  1.73s/it]encode mentions:   2%|▏         | 3/145 [00:05<04:02,  1.71s/it]encode mentions:   3%|▎         | 4/145 [00:06<03:59,  1.70s/it]encode mentions:   3%|▎         | 5/145 [00:08<03:57,  1.70s/it]encode mentions:   4%|▍         | 6/145 [00:10<03:55,  1.70s/it]encode mentions:   5%|▍         | 7/145 [00:11<03:53,  1.69s/it]encode mentions:   6%|▌         | 8/145 [00:13<03:52,  1.69s/it]encode mentions:   6%|▌         | 9/145 [00:15<03:50,  1.69s/it]encode mentions:   7%|▋         | 10/145 [00:17<03:48,  1.70s/it]encode mentions:   8%|▊         | 11/145 [00:18<03:47,  1.70s/it]encode mentions:   8%|▊         | 12/145 [00:20<03:45,  1.70s/it]encode mentions:   9%|▉         | 13/145 [00:22<03:44,  1.70s/it]encode mentions:  10%|▉         | 14/145 [00:23<03:42,  1.70s/it]encode mentions:  10%|█         | 15/145 [00:25<03:40,  1.70s/it]encode mentions:  11%|█         | 16/145 [00:27<03:39,  1.70s/it]encode mentions:  12%|█▏        | 17/145 [00:28<03:37,  1.70s/it]encode mentions:  12%|█▏        | 18/145 [00:30<03:35,  1.70s/it]encode mentions:  13%|█▎        | 19/145 [00:32<03:33,  1.70s/it]encode mentions:  14%|█▍        | 20/145 [00:33<03:31,  1.69s/it]encode mentions:  14%|█▍        | 21/145 [00:35<03:29,  1.69s/it]encode mentions:  15%|█▌        | 22/145 [00:37<03:28,  1.69s/it]encode mentions:  16%|█▌        | 23/145 [00:39<03:26,  1.69s/it]encode mentions:  17%|█▋        | 24/145 [00:40<03:24,  1.69s/it]encode mentions:  17%|█▋        | 25/145 [00:42<03:23,  1.69s/it]encode mentions:  18%|█▊        | 26/145 [00:44<03:21,  1.69s/it]encode mentions:  19%|█▊        | 27/145 [00:45<03:19,  1.69s/it]encode mentions:  19%|█▉        | 28/145 [00:47<03:18,  1.69s/it]encode mentions:  20%|██        | 29/145 [00:49<03:16,  1.69s/it]encode mentions:  21%|██        | 30/145 [00:50<03:14,  1.69s/it]encode mentions:  21%|██▏       | 31/145 [00:52<03:13,  1.69s/it]encode mentions:  22%|██▏       | 32/145 [00:54<03:11,  1.69s/it]encode mentions:  23%|██▎       | 33/145 [00:55<03:09,  1.69s/it]encode mentions:  23%|██▎       | 34/145 [00:57<03:08,  1.70s/it]encode mentions:  24%|██▍       | 35/145 [00:59<03:06,  1.70s/it]encode mentions:  25%|██▍       | 36/145 [01:01<03:04,  1.70s/it]encode mentions:  26%|██▌       | 37/145 [01:02<03:03,  1.70s/it]encode mentions:  26%|██▌       | 38/145 [01:04<03:01,  1.70s/it]encode mentions:  27%|██▋       | 39/145 [01:06<03:00,  1.70s/it]encode mentions:  28%|██▊       | 40/145 [01:07<02:58,  1.70s/it]encode mentions:  28%|██▊       | 41/145 [01:09<02:56,  1.70s/it]encode mentions:  29%|██▉       | 42/145 [01:11<02:55,  1.70s/it]encode mentions:  30%|██▉       | 43/145 [01:12<02:53,  1.70s/it]encode mentions:  30%|███       | 44/145 [01:14<02:51,  1.70s/it]encode mentions:  31%|███       | 45/145 [01:16<02:50,  1.70s/it]encode mentions:  32%|███▏      | 46/145 [01:18<02:48,  1.70s/it]encode mentions:  32%|███▏      | 47/145 [01:19<02:46,  1.70s/it]encode mentions:  33%|███▎      | 48/145 [01:21<02:45,  1.70s/it]encode mentions:  34%|███▍      | 49/145 [01:23<02:43,  1.70s/it]encode mentions:  34%|███▍      | 50/145 [01:24<02:41,  1.70s/it]encode mentions:  35%|███▌      | 51/145 [01:26<02:40,  1.70s/it]encode mentions:  36%|███▌      | 52/145 [01:28<02:38,  1.70s/it]encode mentions:  37%|███▋      | 53/145 [01:30<02:36,  1.70s/it]encode mentions:  37%|███▋      | 54/145 [01:31<02:34,  1.70s/it]encode mentions:  38%|███▊      | 55/145 [01:33<02:33,  1.70s/it]encode mentions:  39%|███▊      | 56/145 [01:35<02:31,  1.70s/it]encode mentions:  39%|███▉      | 57/145 [01:36<02:29,  1.70s/it]encode mentions:  40%|████      | 58/145 [01:38<02:28,  1.70s/it]encode mentions:  41%|████      | 59/145 [01:40<02:26,  1.70s/it]encode mentions:  41%|████▏     | 60/145 [01:41<02:24,  1.70s/it]encode mentions:  42%|████▏     | 61/145 [01:43<02:23,  1.70s/it]encode mentions:  43%|████▎     | 62/145 [01:45<02:21,  1.70s/it]encode mentions:  43%|████▎     | 63/145 [01:47<02:19,  1.70s/it]encode mentions:  44%|████▍     | 64/145 [01:48<02:18,  1.70s/it]encode mentions:  45%|████▍     | 65/145 [01:50<02:16,  1.71s/it]encode mentions:  46%|████▌     | 66/145 [01:52<02:14,  1.71s/it]encode mentions:  46%|████▌     | 67/145 [01:53<02:13,  1.71s/it]encode mentions:  47%|████▋     | 68/145 [01:55<02:11,  1.71s/it]encode mentions:  48%|████▊     | 69/145 [01:57<02:09,  1.71s/it]encode mentions:  48%|████▊     | 70/145 [01:59<02:07,  1.71s/it]encode mentions:  49%|████▉     | 71/145 [02:00<02:06,  1.71s/it]encode mentions:  50%|████▉     | 72/145 [02:02<02:04,  1.71s/it]encode mentions:  50%|█████     | 73/145 [02:04<02:02,  1.71s/it]encode mentions:  51%|█████     | 74/145 [02:05<02:01,  1.71s/it]encode mentions:  52%|█████▏    | 75/145 [02:07<01:59,  1.71s/it]encode mentions:  52%|█████▏    | 76/145 [02:09<01:57,  1.71s/it]encode mentions:  53%|█████▎    | 77/145 [02:10<01:56,  1.71s/it]encode mentions:  54%|█████▍    | 78/145 [02:12<01:54,  1.71s/it]encode mentions:  54%|█████▍    | 79/145 [02:14<01:52,  1.71s/it]encode mentions:  55%|█████▌    | 80/145 [02:16<01:50,  1.71s/it]encode mentions:  56%|█████▌    | 81/145 [02:17<01:49,  1.71s/it]encode mentions:  57%|█████▋    | 82/145 [02:19<01:47,  1.71s/it]encode mentions:  57%|█████▋    | 83/145 [02:21<01:45,  1.71s/it]encode mentions:  58%|█████▊    | 84/145 [02:22<01:44,  1.71s/it]encode mentions:  59%|█████▊    | 85/145 [02:24<01:42,  1.71s/it]encode mentions:  59%|█████▉    | 86/145 [02:26<01:40,  1.71s/it]encode mentions:  60%|██████    | 87/145 [02:28<01:39,  1.71s/it]encode mentions:  61%|██████    | 88/145 [02:29<01:37,  1.71s/it]encode mentions:  61%|██████▏   | 89/145 [02:31<01:35,  1.70s/it]encode mentions:  62%|██████▏   | 90/145 [02:33<01:33,  1.70s/it]encode mentions:  63%|██████▎   | 91/145 [02:34<01:31,  1.70s/it]encode mentions:  63%|██████▎   | 92/145 [02:36<01:30,  1.70s/it]encode mentions:  64%|██████▍   | 93/145 [02:38<01:28,  1.70s/it]encode mentions:  65%|██████▍   | 94/145 [02:39<01:26,  1.70s/it]encode mentions:  66%|██████▌   | 95/145 [02:41<01:25,  1.70s/it]encode mentions:  66%|██████▌   | 96/145 [02:43<01:23,  1.70s/it]encode mentions:  67%|██████▋   | 97/145 [02:45<01:21,  1.70s/it]encode mentions:  68%|██████▊   | 98/145 [02:46<01:20,  1.70s/it]encode mentions:  68%|██████▊   | 99/145 [02:48<01:18,  1.70s/it]encode mentions:  69%|██████▉   | 100/145 [02:50<01:16,  1.70s/it]encode mentions:  70%|██████▉   | 101/145 [02:51<01:14,  1.70s/it]encode mentions:  70%|███████   | 102/145 [02:53<01:13,  1.70s/it]encode mentions:  71%|███████   | 103/145 [02:55<01:11,  1.70s/it]encode mentions:  72%|███████▏  | 104/145 [02:56<01:09,  1.70s/it]encode mentions:  72%|███████▏  | 105/145 [02:58<01:08,  1.70s/it]encode mentions:  73%|███████▎  | 106/145 [03:00<01:06,  1.70s/it]encode mentions:  74%|███████▍  | 107/145 [03:02<01:04,  1.70s/it]encode mentions:  74%|███████▍  | 108/145 [03:03<01:03,  1.70s/it]encode mentions:  75%|███████▌  | 109/145 [03:05<01:01,  1.70s/it]encode mentions:  76%|███████▌  | 110/145 [03:07<00:59,  1.70s/it]encode mentions:  77%|███████▋  | 111/145 [03:08<00:57,  1.70s/it]encode mentions:  77%|███████▋  | 112/145 [03:10<00:56,  1.70s/it]encode mentions:  78%|███████▊  | 113/145 [03:12<00:54,  1.70s/it]encode mentions:  79%|███████▊  | 114/145 [03:14<00:52,  1.70s/it]encode mentions:  79%|███████▉  | 115/145 [03:15<00:51,  1.70s/it]encode mentions:  80%|████████  | 116/145 [03:17<00:49,  1.70s/it]encode mentions:  81%|████████  | 117/145 [03:19<00:47,  1.70s/it]encode mentions:  81%|████████▏ | 118/145 [03:20<00:46,  1.70s/it]encode mentions:  82%|████████▏ | 119/145 [03:22<00:44,  1.70s/it]encode mentions:  83%|████████▎ | 120/145 [03:24<00:42,  1.70s/it]encode mentions:  83%|████████▎ | 121/145 [03:25<00:40,  1.70s/it]encode mentions:  84%|████████▍ | 122/145 [03:27<00:39,  1.70s/it]encode mentions:  85%|████████▍ | 123/145 [03:29<00:37,  1.70s/it]encode mentions:  86%|████████▌ | 124/145 [03:31<00:35,  1.70s/it]encode mentions:  86%|████████▌ | 125/145 [03:32<00:34,  1.70s/it]encode mentions:  87%|████████▋ | 126/145 [03:34<00:32,  1.70s/it]encode mentions:  88%|████████▊ | 127/145 [03:36<00:30,  1.70s/it]encode mentions:  88%|████████▊ | 128/145 [03:37<00:28,  1.70s/it]encode mentions:  89%|████████▉ | 129/145 [03:39<00:27,  1.70s/it]encode mentions:  90%|████████▉ | 130/145 [03:41<00:25,  1.70s/it]encode mentions:  90%|█████████ | 131/145 [03:42<00:23,  1.70s/it]encode mentions:  91%|█████████ | 132/145 [03:44<00:22,  1.70s/it]encode mentions:  92%|█████████▏| 133/145 [03:46<00:20,  1.70s/it]encode mentions:  92%|█████████▏| 134/145 [03:48<00:18,  1.70s/it]encode mentions:  93%|█████████▎| 135/145 [03:49<00:17,  1.70s/it]encode mentions:  94%|█████████▍| 136/145 [03:51<00:15,  1.70s/it]encode mentions:  94%|█████████▍| 137/145 [03:53<00:13,  1.70s/it]encode mentions:  95%|█████████▌| 138/145 [03:54<00:11,  1.70s/it]encode mentions:  96%|█████████▌| 139/145 [03:56<00:10,  1.70s/it]encode mentions:  97%|█████████▋| 140/145 [03:58<00:08,  1.70s/it]encode mentions:  97%|█████████▋| 141/145 [04:00<00:06,  1.70s/it]encode mentions:  98%|█████████▊| 142/145 [04:01<00:05,  1.70s/it]encode mentions:  99%|█████████▊| 143/145 [04:03<00:03,  1.70s/it]encode mentions:  99%|█████████▉| 144/145 [04:05<00:01,  1.70s/it]encode mentions: 100%|██████████| 145/145 [04:05<00:00,  1.28s/it]encode mentions: 100%|██████████| 145/145 [04:05<00:00,  1.69s/it]
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:208.)
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.329 R@10=0.682 R@100=0.887
+nyt: n=769 top1=0.074 R@10=0.215 R@100=0.403
+wrote runs/plan/ranks/goldrand7_s0.npz (782s)
++ '[' 1 = 1 ']'
++ df -h /
++ tail -1
+/dev/root       193G  172G   21G  90% /
++ read -r NAME SEED KEEP ARGS
++ '[' -z goldrand63 ']'
++ OUT=runs/plan/goldrand63_s0
++ '[' -f runs/plan/ranks/goldrand63_s0.npz ']'
++ echo '=== train goldrand63 seed 0: --sampler gold_random --negatives 63 ==='
+=== train goldrand63 seed 0: --sampler gold_random --negatives 63 ===
++ '[' '!' -f runs/plan/goldrand63_s0/pytorch_model.bin ']'
++ rm -rf runs/plan/goldrand63_s0
++ /usr/bin/time -v python blink/biencoder/train_biencoder.py --output_path runs/plan/goldrand63_s0 --seed 0 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 100000 --print_interval 50 --shuffle True --freeze_cand_encoder --skip_valid_eval --pools out/pools/train.npz --encoding out/pools/all_entities_fp16.npy --max_updates 1500 --learning_rate 1e-5 --sampler gold_random --negatives 63
++ grep -E 'sampler |frozen|average loss|held-out|max_updates|Eval accuracy|training took|Elapsed|Maximum resident|Error|Traceback|^  File'
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:38:29 2823 MiB, 0 % ram_used_gb 2'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:39:29 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:40:29 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:41:29 13089 MiB, 96 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:42:29 13089 MiB, 96 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:43:29 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:44:29 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:45:29 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:46:29 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:47:29 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:48:29 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:49:29 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:50:29 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:51:30 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:52:30 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:53:30 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:54:30 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:55:30 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:56:30 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:57:30 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:58:30 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '15:59:30 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:00:30 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
+Namespace(silent=False, debug=False, data_parallel=False, no_cuda=False, top_k=10, seed=0, zeshel=False, max_seq_length=256, max_context_length=256, max_cand_length=256, path_to_model='models/biencoder/pytorch_model.bin', bert_model='bert-large-uncased', pull_from_layer=-1, lowercase=True, context_key='context', out_dim=1, add_linear=False, data_path='out', output_path='runs/plan/goldrand63_s0', evaluate=False, output_eval_file=None, train_batch_size=32, max_grad_norm=1.0, learning_rate=1e-05, num_train_epochs=1, print_interval=50, eval_interval=100000, save_interval=1, warmup_proportion=0.1, gradient_accumulation_steps=4, type_optimization='all_encoder_layers', shuffle=True, eval_batch_size=64, mode='valid', save_topk_result=False, encode_batch_size=8, cand_pool_path=None, cand_encode_path=None, sampler='gold_random', band_lo=0, band_hi=75, skip_valid_eval=True, heldout=0, reward_interval=0, pools='out/pools/train.npz', encoding='out/pools/all_entities_fp16.npy', negatives=63, freeze_cand_encoder=True, max_updates=1500, resa2_stage1=500, resa2_stage2=75, resa2_tau=0.25)
+11/14/2026 15:38:25 - INFO - Blink -   cand_encoder frozen
+11/14/2026 15:38:36 - INFO - Blink -   sampler gold_random: 66425 of 66425 mentions train, 0 are held out
+Batch:   2%|▏         | 199/8304 [01:12<47:38,  2.84it/s][A11/14/2026 15:39:54 - INFO - Blink -   Step 199 - epoch 0 average loss: 0.008959371513545417
+Batch:   5%|▍         | 399/8304 [02:25<46:30,  2.83it/s][A11/14/2026 15:41:07 - INFO - Blink -   Step 399 - epoch 0 average loss: 0.006605821102517365
+Batch:   7%|▋         | 599/8304 [03:38<45:23,  2.83it/s][A11/14/2026 15:42:20 - INFO - Blink -   Step 599 - epoch 0 average loss: 0.010390466331141041
+Batch:  10%|▉         | 799/8304 [04:51<44:11,  2.83it/s][A11/14/2026 15:43:33 - INFO - Blink -   Step 799 - epoch 0 average loss: 0.02295253602545931
+Batch:  12%|█▏        | 999/8304 [06:04<43:01,  2.83it/s][A11/14/2026 15:44:46 - INFO - Blink -   Step 999 - epoch 0 average loss: 0.026334982220139587
+Batch:  14%|█▍        | 1199/8304 [07:17<41:50,  2.83it/s][A11/14/2026 15:45:59 - INFO - Blink -   Step 1199 - epoch 0 average loss: 0.0200158227138954
+Batch:  17%|█▋        | 1399/8304 [08:29<40:39,  2.83it/s][A11/14/2026 15:47:12 - INFO - Blink -   Step 1399 - epoch 0 average loss: 0.02099255575550402
+Batch:  19%|█▉        | 1599/8304 [09:42<39:28,  2.83it/s][A11/14/2026 15:48:24 - INFO - Blink -   Step 1599 - epoch 0 average loss: 0.01763375021019518
+Batch:  22%|██▏       | 1799/8304 [10:55<38:18,  2.83it/s][A11/14/2026 15:49:37 - INFO - Blink -   Step 1799 - epoch 0 average loss: 0.0139180561059875
+Batch:  24%|██▍       | 1999/8304 [12:08<37:06,  2.83it/s][A11/14/2026 15:50:50 - INFO - Blink -   Step 1999 - epoch 0 average loss: 0.01375262890889211
+Batch:  26%|██▋       | 2199/8304 [13:21<35:57,  2.83it/s][A11/14/2026 15:52:03 - INFO - Blink -   Step 2199 - epoch 0 average loss: 0.01363372938950969
+Batch:  29%|██▉       | 2399/8304 [14:34<34:47,  2.83it/s][A11/14/2026 15:53:16 - INFO - Blink -   Step 2399 - epoch 0 average loss: 0.014216931964077606
+Batch:  31%|███▏      | 2599/8304 [15:47<33:37,  2.83it/s][A11/14/2026 15:54:29 - INFO - Blink -   Step 2599 - epoch 0 average loss: 0.01255982335522483
+Batch:  34%|███▎      | 2799/8304 [17:00<32:25,  2.83it/s][A11/14/2026 15:55:42 - INFO - Blink -   Step 2799 - epoch 0 average loss: 0.00794401576926995
+Batch:  36%|███▌      | 2999/8304 [18:12<31:16,  2.83it/s][A11/14/2026 15:56:55 - INFO - Blink -   Step 2999 - epoch 0 average loss: 0.0071480389974295025
+Batch:  39%|███▊      | 3199/8304 [19:25<30:05,  2.83it/s][A11/14/2026 15:58:08 - INFO - Blink -   Step 3199 - epoch 0 average loss: 0.007313067479603464
+Batch:  41%|████      | 3399/8304 [20:38<28:54,  2.83it/s][A11/14/2026 15:59:20 - INFO - Blink -   Step 3399 - epoch 0 average loss: 0.01741813518111565
+Batch:  43%|████▎     | 3599/8304 [21:51<27:42,  2.83it/s][A11/14/2026 16:00:33 - INFO - Blink -   Step 3599 - e+ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:01:30 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:02:30 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:03:30 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:04:30 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:05:30 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:06:30 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:07:30 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:08:30 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:09:30 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:10:30 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:11:30 13089 MiB, 96 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:12:30 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:13:30 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:14:30 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:15:30 13089 MiB, 1 % ram_used_gb 11'
++ sleep 60
+poch 0 average loss: 0.011039048604626532
+Batch:  46%|████▌     | 3799/8304 [23:04<26:31,  2.83it/s][A11/14/2026 16:01:46 - INFO - Blink -   Step 3799 - epoch 0 average loss: 0.008562646098912304
+Batch:  48%|████▊     | 3999/8304 [24:17<25:23,  2.83it/s][A11/14/2026 16:02:59 - INFO - Blink -   Step 3999 - epoch 0 average loss: 0.006002530161007416
+Batch:  51%|█████     | 4199/8304 [25:30<24:10,  2.83it/s][A11/14/2026 16:04:12 - INFO - Blink -   Step 4199 - epoch 0 average loss: 0.005897654518409691
+Batch:  53%|█████▎    | 4399/8304 [26:43<23:00,  2.83it/s][A11/14/2026 16:05:25 - INFO - Blink -   Step 4399 - epoch 0 average loss: 0.008286879568393898
+Batch:  55%|█████▌    | 4599/8304 [27:56<21:50,  2.83it/s][A11/14/2026 16:06:38 - INFO - Blink -   Step 4599 - epoch 0 average loss: 0.010940944404238862
+Batch:  58%|█████▊    | 4799/8304 [29:09<20:39,  2.83it/s][A11/14/2026 16:07:51 - INFO - Blink -   Step 4799 - epoch 0 average loss: 0.0097000063512268
+Batch:  60%|██████    | 4999/8304 [30:22<19:28,  2.83it/s][A11/14/2026 16:09:04 - INFO - Blink -   Step 4999 - epoch 0 average loss: 0.016769646577699374
+Batch:  63%|██████▎   | 5199/8304 [31:35<18:18,  2.83it/s][A11/14/2026 16:10:17 - INFO - Blink -   Step 5199 - epoch 0 average loss: 0.004769935676065872
+Batch:  65%|██████▌   | 5399/8304 [32:48<17:07,  2.83it/s][A11/14/2026 16:11:30 - INFO - Blink -   Step 5399 - epoch 0 average loss: 0.008119964649507117
+Batch:  67%|██████▋   | 5599/8304 [34:01<15:56,  2.83it/s][A11/14/2026 16:12:43 - INFO - Blink -   Step 5599 - epoch 0 average loss: 0.012491593048217658
+Batch:  70%|██████▉   | 5799/8304 [35:13<14:46,  2.83it/s][A11/14/2026 16:13:56 - INFO - Blink -   Step 5799 - epoch 0 average loss: 0.006035322188414239
+Batch:  72%|███████▏  | 5999/8304 [36:26<13:35,  2.83it/s][A11/14/2026 16:15:09 - INFO - Blink -   Step 5999 - epoch 0 average loss: 0.010755630064528805
+11/14/2026 16:15:09 - INFO - Blink -   max_updates 1500 reached
+11/14/2026 16:15:11 - INFO - Blink -   The training took 36.50566900968552 minutes
+	Command being timed: "python blink/biencoder/train_biencoder.py --output_path runs/plan/goldrand63_s0 --seed 0 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 100000 --print_interval 50 --shuffle True --freeze_cand_encoder --skip_valid_eval --pools out/pools/train.npz --encoding out/pools/all_entities_fp16.npy --max_updates 1500 --learning_rate 1e-5 --sampler gold_random --negatives 63"
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 37:35.20
+	Maximum resident set size (kbytes): 14236036
++ rm -rf runs/plan/goldrand63_s0/epoch_0
++ '[' 0 = 1 ']'
++ echo '=== ranks of goldrand63 seed 0 on valid and NYT ==='
+=== ranks of goldrand63 seed 0 on valid and NYT ===
++ mkdir -p runs/plan/ranks
++ python ../../scripts/eval_ranks.py --model runs/plan/goldrand63_s0/pytorch_model.bin --out runs/plan/ranks/goldrand63_s0.npz
++ grep -v 'it/s]$'
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:16:30 2823 MiB, 0 % ram_used_gb 2'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:17:30 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:18:30 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:19:30 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:20:30 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:21:31 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:22:31 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:23:31 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:24:31 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:25:31 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:26:31 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:27:31 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (117s)
+encode mentions:   0%|          | 0/145 [00:00<?, ?it/s]encode mentions:   1%|          | 1/145 [00:01<04:15,  1.77s/it]encode mentions:   1%|▏         | 2/145 [00:03<04:06,  1.72s/it]encode mentions:   2%|▏         | 3/145 [00:05<04:02,  1.71s/it]encode mentions:   3%|▎         | 4/145 [00:06<03:59,  1.70s/it]encode mentions:   3%|▎         | 5/145 [00:08<03:57,  1.70s/it]encode mentions:   4%|▍         | 6/145 [00:10<03:55,  1.70s/it]encode mentions:   5%|▍         | 7/145 [00:11<03:54,  1.70s/it]encode mentions:   6%|▌         | 8/145 [00:13<03:52,  1.70s/it]encode mentions:   6%|▌         | 9/145 [00:15<03:50,  1.70s/it]encode mentions:   7%|▋         | 10/145 [00:17<03:49,  1.70s/it]encode mentions:   8%|▊         | 11/145 [00:18<03:47,  1.70s/it]encode mentions:   8%|▊         | 12/145 [00:20<03:46,  1.70s/it]encode mentions:   9%|▉         | 13/145 [00:22<03:44,  1.70s/it]encode mentions:  10%|▉         | 14/145 [00:23<03:42,  1.70s/it]encode mentions:  10%|█         | 15/145 [00:25<03:40,  1.69s/it]encode mentions:  11%|█         | 16/145 [00:27<03:38,  1.69s/it]encode mentions:  12%|█▏        | 17/145 [00:28<03:36,  1.69s/it]encode mentions:  12%|█▏        | 18/145 [00:30<03:34,  1.69s/it]encode mentions:  13%|█▎        | 19/145 [00:32<03:33,  1.69s/it]encode mentions:  14%|█▍        | 20/145 [00:33<03:31,  1.69s/it]encode mentions:  14%|█▍        | 21/145 [00:35<03:29,  1.69s/it]encode mentions:  15%|█▌        | 22/145 [00:37<03:28,  1.69s/it]encode mentions:  16%|█▌        | 23/145 [00:39<03:26,  1.69s/it]encode mentions:  17%|█▋        | 24/145 [00:40<03:24,  1.69s/it]encode mentions:  17%|█▋        | 25/145 [00:42<03:23,  1.69s/it]encode mentions:  18%|█▊        | 26/145 [00:44<03:21,  1.70s/it]encode mentions:  19%|█▊        | 27/145 [00:45<03:20,  1.70s/it]encode mentions:  19%|█▉        | 28/145 [00:47<03:18,  1.70s/it]encode mentions:  20%|██        | 29/145 [00:49<03:16,  1.70s/it]encode mentions:  21%|██        | 30/145 [00:50<03:15,  1.70s/it]encode mentions:  21%|██▏       | 31/145 [00:52<03:13,  1.70s/it]encode mentions:  22%|██▏       | 32/145 [00:54<03:12,  1.70s/it]encode mentions:  23%|██▎       | 33/145 [00:56<03:10,  1.70s/it]encode mentions:  23%|██▎       | 34/145 [00:57<03:08,  1.70s/it]encode mentions:  24%|██▍       | 35/145 [00:59<03:07,  1.70s/it]encode mentions:  25%|██▍       | 36/145 [01:01<03:05,  1.70s/it]encode mentions:  26%|██▌       | 37/145 [01:02<03:03,  1.70s/it]encode mentions:  26%|██▌       | 38/145 [01:04<03:02,  1.70s/it]encode mentions:  27%|██▋       | 39/145 [01:06<03:00,  1.70s/it]encode mentions:  28%|██▊       | 40/145 [01:07<02:58,  1.70s/it]encode mentions:  28%|██▊       | 41/145 [01:09<02:57,  1.70s/it]encode mentions:  29%|██▉       | 42/145 [01:11<02:55,  1.70s/it]encode mentions:  30%|██▉       | 43/145 [01:13<02:53,  1.70s/it]encode mentions:  30%|███       | 44/145 [01:14<02:52,  1.70s/it]encode mentions:  31%|███       | 45/145 [01:16<02:50,  1.70s/it]encode mentions:  32%|███▏      | 46/145 [01:18<02:48,  1.70s/it]encode mentions:  32%|███▏      | 47/145 [01:19<02:47,  1.70s/it]encode mentions:  33%|███▎      | 48/145 [01:21<02:45,  1.70s/it]encode mentions:  34%|███▍      | 49/145 [01:23<02:43,  1.70s/it]encode mentions:  34%|███▍      | 50/145 [01:24<02:41,  1.71s/it]encode mentions:  35%|███▌      | 51/145 [01:26<02:40,  1.71s/it]encode mentions:  36%|███▌      | 52/145 [01:28<02:38,  1.70s/it]encode mentions:  37%|███▋      | 53/145 [01:30<02:36,  1.70s/it]encode mentions:  37%|███▋      | 54/145 [01:31<02:34,  1.70s/it]encode mentions:  38%|███▊      | 55/145 [01:33<02:33,  1.70s/it]encode mentions:  39%|███▊      | 56/145 [01:35<02:31,  1.70s/it]encode mentions:  39%|███▉      | 57/145 [01:36<02:29,  1.70s/it]encode mentions:  40%|████      | 58/145 [01:38<02:28,  1.70s/it]encode mentions:  41%|████      | 59/145 [01:40<02:26,  1.70s/it]encode mentions:  41%|████▏     | 60/145 [01:42<02:24,  1.70s/it]encode mentions:  42%|████▏     | 61/145 [01:43<02:23,  1.70s/it]encode mentions:  43%|████▎     | 62/145 [01:45<02:21,  1.70s/it]encode mentions:  43%|████▎     | 63/145 [01:47<02:19,  1.70s/it]encode mentions:  44%|████▍     | 64/145 [01:48<02:17,  1.70s/it]encode mentions:  45%|████▍     | 65/145 [01:50<02:16,  1.70s/it]encode mentions:  46%|████▌     | 66/145 [01:52<02:14,  1.70s/it]encode mentions:  46%|████▌     | 67/145 [01:53<02:12,  1.70s/it]encode mentions:  47%|████▋     | 68/145 [01:55<02:11,  1.70s/it]encode mentions:  48%|████▊     | 69/145 [01:57<02:09,  1.70s/it]encode mentions:  48%|████▊     | 70/145 [01:59<02:07,  1.70s/it]encode mentions:  49%|████▉     | 71/145 [02:00<02:06,  1.70s/it]encode mentions:  50%|████▉     | 72/145 [02:02<02:04,  1.70s/it]encode mentions:  50%|█████     | 73/145 [02:04<02:02,  1.70s/it]encode mentions:  51%|█████     | 74/145 [02:05<02:01,  1.70s/it]encode mentions:  52%|█████▏    | 75/145 [02:07<01:59,  1.70s/it]encode mentions:  52%|█████▏    | 76/145 [02:09<01:57,  1.70s/it]encode mentions:  53%|█████▎    | 77/145 [02:10<01:55,  1.70s/it]encode mentions:  54%|█████▍    | 78/145 [02:12<01:54,  1.70s/it]encode mentions:  54%|█████▍    | 79/145 [02:14<01:52,  1.70s/it]encode mentions:  55%|█████▌    | 80/145 [02:16<01:50,  1.71s/it]encode mentions:  56%|█████▌    | 81/145 [02:17<01:49,  1.71s/it]encode mentions:  57%|█████▋    | 82/145 [02:19<01:47,  1.71s/it]encode mentions:  57%|█████▋    | 83/145 [02:21<01:45,  1.71s/it]encode mentions:  58%|█████▊    | 84/145 [02:22<01:44,  1.71s/it]encode mentions:  59%|█████▊    | 85/145 [02:24<01:42,  1.71s/it]encode mentions:  59%|█████▉    | 86/145 [02:26<01:40,  1.71s/it]encode mentions:  60%|██████    | 87/145 [02:28<01:38,  1.71s/it]encode mentions:  61%|██████    | 88/145 [02:29<01:37,  1.71s/it]encode mentions:  61%|██████▏   | 89/145 [02:31<01:35,  1.71s/it]encode mentions:  62%|██████▏   | 90/145 [02:33<01:33,  1.71s/it]encode mentions:  63%|██████▎   | 91/145 [02:34<01:32,  1.71s/it]encode mentions:  63%|██████▎   | 92/145 [02:36<01:30,  1.71s/it]encode mentions:  64%|██████▍   | 93/145 [02:38<01:28,  1.71s/it]encode mentions:  65%|██████▍   | 94/145 [02:39<01:27,  1.71s/it]encode mentions:  66%|██████▌   | 95/145 [02:41<01:25,  1.71s/it]encode mentions:  66%|██████▌   | 96/145 [02:43<01:23,  1.71s/it]encode mentions:  67%|██████▋   | 97/145 [02:45<01:21,  1.71s/it]encode mentions:  68%|██████▊   | 98/145 [02:46<01:20,  1.71s/it]encode mentions:  68%|██████▊   | 99/145 [02:48<01:18,  1.71s/it]encode mentions:  69%|██████▉   | 100/145 [02:50<01:16,  1.71s/it]encode mentions:  70%|██████▉   | 101/145 [02:51<01:15,  1.71s/it]encode mentions:  70%|███████   | 102/145 [02:53<01:13,  1.71s/it]encode mentions:  71%|███████   | 103/145 [02:55<01:11,  1.71s/it]encode mentions:  72%|███████▏  | 104/145 [02:57<01:09,  1.71s/it]encode mentions:  72%|███████▏  | 105/145 [02:58<01:08,  1.71s/it]encode mentions:  73%|███████▎  | 106/145 [03:00<01:06,  1.71s/it]encode mentions:  74%|███████▍  | 107/145 [03:02<01:04,  1.71s/it]encode mentions:  74%|███████▍  | 108/145 [03:03<01:03,  1.71s/it]encode mentions:  75%|███████▌  | 109/145 [03:05<01:01,  1.71s/it]encode mentions:  76%|███████▌  | 110/145 [03:07<00:59,  1.71s/it]encode mentions:  77%|███████▋  | 111/145 [03:09<00:58,  1.71s/it]encode mentions:  77%|███████▋  | 112/145 [03:10<00:56,  1.71s/it]encode mentions:  78%|███████▊  | 113/145 [03:12<00:54,  1.71s/it]encode mentions:  79%|███████▊  | 114/145 [03:14<00:52,  1.71s/it]encode mentions:  79%|███████▉  | 115/145 [03:15<00:51,  1.71s/it]encode mentions:  80%|████████  | 116/145 [03:17<00:49,  1.71s/it]encode mentions:  81%|████████  | 117/145 [03:19<00:47,  1.71s/it]encode mentions:  81%|████████▏ | 118/145 [03:20<00:46,  1.71s/it]encode mentions:  82%|████████▏ | 119/145 [03:22<00:44,  1.71s/it]encode mentions:  83%|████████▎ | 120/145 [03:24<00:42,  1.71s/it]encode mentions:  83%|████████▎ | 121/145 [03:26<00:40,  1.71s/it]encode mentions:  84%|████████▍ | 122/145 [03:27<00:39,  1.71s/it]encode mentions:  85%|████████▍ | 123/145 [03:29<00:37,  1.71s/it]encode mentions:  86%|████████▌ | 124/145 [03:31<00:35,  1.71s/it]encode mentions:  86%|████████▌ | 125/145 [03:32<00:34,  1.71s/it]encode mentions:  87%|████████▋ | 126/145 [03:34<00:32,  1.71s/it]encode mentions:  88%|████████▊ | 127/145 [03:36<00:30,  1.71s/it]encode mentions:  88%|████████▊ | 128/145 [03:38<00:29,  1.71s/it]encode mentions:  89%|████████▉ | 129/145 [03:39<00:27,  1.71s/it]encode mentions:  90%|████████▉ | 130/145 [03:41<00:25,  1.71s/it]encode mentions:  90%|█████████ | 131/145 [03:43<00:23,  1.71s/it]encode mentions:  91%|█████████ | 132/145 [03:44<00:22,  1.71s/it]encode mentions:  92%|█████████▏| 133/145 [03:46<00:20,  1.71s/it]encode mentions:  92%|█████████▏| 134/145 [03:48<00:18,  1.71s/it]encode mentions:  93%|█████████▎| 135/145 [03:49<00:17,  1.71s/it]encode mentions:  94%|█████████▍| 136/145 [03:51<00:15,  1.71s/it]encode mentions:  94%|█████████▍| 137/145 [03:53<00:13,  1.71s/it]encode mentions:  95%|█████████▌| 138/145 [03:55<00:11,  1.71s/it]encode mentions:  96%|█████████▌| 139/145 [03:56<00:10,  1.71s/it]encode mentions:  97%|█████████▋| 140/145 [03:58<00:08,  1.71s/it]encode mentions:  97%|█████████▋| 141/145 [04:00<00:06,  1.71s/it]encode mentions:  98%|█████████▊| 142/145 [04:01<00:05,  1.71s/it]encode mentions:  99%|█████████▊| 143/145 [04:03<00:03,  1.71s/it]encode mentions:  99%|█████████▉| 144/145 [04:05<00:01,  1.71s/it]encode mentions: 100%|██████████| 145/145 [04:05<00:00,  1.29s/it]encode mentions: 100%|██████████| 145/145 [04:05<00:00,  1.69s/it]
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:208.)
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 cand+ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:28:31 9857 MiB, 0 % ram_used_gb 3'
++ sleep 60
+idates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.429 R@10=0.794 R@100=0.943
+nyt: n=769 top1=0.082 R@10=0.231 R@100=0.421
+wrote runs/plan/ranks/goldrand63_s0.npz (777s)
++ '[' 1 = 1 ']'
++ df -h /
++ tail -1
+/dev/root       193G  175G   19G  91% /
++ read -r NAME SEED KEEP ARGS
++ '[' -z uniform63 ']'
++ OUT=runs/plan/uniform63_s0
++ '[' -f runs/plan/ranks/uniform63_s0.npz ']'
++ echo '=== train uniform63 seed 0: --sampler uniform --negatives 63 ==='
+=== train uniform63 seed 0: --sampler uniform --negatives 63 ===
++ '[' '!' -f runs/plan/uniform63_s0/pytorch_model.bin ']'
++ rm -rf runs/plan/uniform63_s0
++ /usr/bin/time -v python blink/biencoder/train_biencoder.py --output_path runs/plan/uniform63_s0 --seed 0 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 100000 --print_interval 50 --shuffle True --freeze_cand_encoder --skip_valid_eval --pools out/pools/train.npz --encoding out/pools/all_entities_fp16.npy --max_updates 1500 --learning_rate 1e-5 --sampler uniform --negatives 63
++ grep -E 'sampler |frozen|average loss|held-out|max_updates|Eval accuracy|training took|Elapsed|Maximum resident|Error|Traceback|^  File'
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:29:31 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:30:31 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:31:31 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:32:31 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:33:31 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:34:31 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:35:31 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:36:31 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:37:31 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:38:31 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:39:31 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:40:31 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:41:31 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:42:31 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:43:31 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:44:31 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:45:31 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:46:31 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:47:31 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:48:31 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:49:31 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:50:32 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
+Namespace(silent=False, debug=False, data_parallel=False, no_cuda=False, top_k=10, seed=0, zeshel=False, max_seq_length=256, max_context_length=256, max_cand_length=256, path_to_model='models/biencoder/pytorch_model.bin', bert_model='bert-large-uncased', pull_from_layer=-1, lowercase=True, context_key='context', out_dim=1, add_linear=False, data_path='out', output_path='runs/plan/uniform63_s0', evaluate=False, output_eval_file=None, train_batch_size=32, max_grad_norm=1.0, learning_rate=1e-05, num_train_epochs=1, print_interval=50, eval_interval=100000, save_interval=1, warmup_proportion=0.1, gradient_accumulation_steps=4, type_optimization='all_encoder_layers', shuffle=True, eval_batch_size=64, mode='valid', save_topk_result=False, encode_batch_size=8, cand_pool_path=None, cand_encode_path=None, sampler='uniform', band_lo=0, band_hi=75, skip_valid_eval=True, heldout=0, reward_interval=0, pools='out/pools/train.npz', encoding='out/pools/all_entities_fp16.npy', negatives=63, freeze_cand_encoder=True, max_updates=1500, resa2_stage1=500, resa2_stage2=75, resa2_tau=0.25)
+11/14/2026 16:29:01 - INFO - Blink -   cand_encoder frozen
+11/14/2026 16:29:11 - INFO - Blink -   sampler uniform: 66425 of 66425 mentions train, 0 are held out
+Batch:   2%|▏         | 199/8304 [01:12<47:42,  2.83it/s][A11/14/2026 16:30:32 - INFO - Blink -   Step 199 - epoch 0 average loss: 0.24202216995414347
+Batch:   5%|▍         | 399/8304 [02:25<46:36,  2.83it/s][A11/14/2026 16:31:45 - INFO - Blink -   Step 399 - epoch 0 average loss: 0.16537852696259506
+Batch:   7%|▋         | 599/8304 [03:38<45:28,  2.82it/s][A11/14/2026 16:32:59 - INFO - Blink -   Step 599 - epoch 0 average loss: 0.1392351696343394
+Batch:  10%|▉         | 799/8304 [04:51<44:15,  2.83it/s][A11/14/2026 16:34:12 - INFO - Blink -   Step 799 - epoch 0 average loss: 0.133081075088121
+Batch:  12%|█▏        | 999/8304 [06:04<43:05,  2.83it/s][A11/14/2026 16:35:25 - INFO - Blink -   Step 999 - epoch 0 average loss: 0.13800457105622627
+Batch:  14%|█▍        | 1199/8304 [07:17<41:54,  2.83it/s][A11/14/2026 16:36:38 - INFO - Blink -   Step 1199 - epoch 0 average loss: 0.11336590368970065
+Batch:  17%|█▋        | 1399/8304 [08:30<40:42,  2.83it/s][A11/14/2026 16:37:51 - INFO - Blink -   Step 1399 - epoch 0 average loss: 0.13297184201772325
+Batch:  19%|█▉        | 1599/8304 [09:43<39:31,  2.83it/s][A11/14/2026 16:39:04 - INFO - Blink -   Step 1599 - epoch 0 average loss: 0.11165204953154899
+Batch:  22%|██▏       | 1799/8304 [10:56<38:21,  2.83it/s][A11/14/2026 16:40:17 - INFO - Blink -   Step 1799 - epoch 0 average loss: 0.08446521419653436
+Batch:  24%|██▍       | 1999/8304 [12:09<37:09,  2.83it/s][A11/14/2026 16:41:30 - INFO - Blink -   Step 1999 - epoch 0 average loss: 0.1043214847688796
+Batch:  26%|██▋       | 2199/8304 [13:22<36:01,  2.83it/s][A11/14/2026 16:42:43 - INFO - Blink -   Step 2199 - epoch 0 average loss: 0.1001748742145719
+Batch:  29%|██▉       | 2399/8304 [14:35<34:48,  2.83it/s][A11/14/2026 16:43:56 - INFO - Blink -   Step 2399 - epoch 0 average loss: 0.1105889717095124
+Batch:  31%|███▏      | 2599/8304 [15:48<33:38,  2.83it/s][A11/14/2026 16:45:08 - INFO - Blink -   Step 2599 - epoch 0 average loss: 0.0810990765360475
+Batch:  34%|███▎      | 2799/8304 [17:01<32:27,  2.83it/s][A11/14/2026 16:46:21 - INFO - Blink -   Step 2799 - epoch 0 average loss: 0.06838989704599953
+Batch:  36%|███▌      | 2999/8304 [18:14<31:18,  2.82it/s][A11/14/2026 16:47:34 - INFO - Blink -   Step 2999 - epoch 0 average loss: 0.0873222274294676
+Batch:  39%|███▊      | 3199/8304 [19:27<30:07,  2.82it/s][A11/14/2026 16:48:47 - INFO - Blink -   Step 3199 - epoch 0 average loss: 0.08264423893939238
+Batch:  41%|████      | 3399/8304 [20:40<28:55,  2.83it/s][A11/14/2026 16:50:00 - INFO - Blink -   Step 3399 - epoch 0 average loss: 0.08509182088746456
+Batch:  43%|████▎     | 3599/8304 [21:53<27:43,  2.83it/s][A11/14/2026 16:51:13 - INFO - Blink -   Step 3599 - epoch 0 average loss: 0.+ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:51:32 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:52:32 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:53:32 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:54:32 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:55:32 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:56:32 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:57:32 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:58:32 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '16:59:32 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:00:32 13089 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:01:32 13089 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:02:32 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:03:32 13089 MiB, 96 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:04:32 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:05:32 13089 MiB, 99 % ram_used_gb 6'
++ sleep 60
+08044314191269222
+Batch:  46%|████▌     | 3799/8304 [23:06<26:32,  2.83it/s][A11/14/2026 16:52:26 - INFO - Blink -   Step 3799 - epoch 0 average loss: 0.07918959034548606
+Batch:  48%|████▊     | 3999/8304 [24:19<25:23,  2.83it/s][A11/14/2026 16:53:39 - INFO - Blink -   Step 3999 - epoch 0 average loss: 0.08772168055409565
+Batch:  51%|█████     | 4199/8304 [25:32<24:12,  2.83it/s][A11/14/2026 16:54:52 - INFO - Blink -   Step 4199 - epoch 0 average loss: 0.07034097770403605
+Batch:  53%|█████▎    | 4399/8304 [26:45<23:00,  2.83it/s][A11/14/2026 16:56:05 - INFO - Blink -   Step 4399 - epoch 0 average loss: 0.06619507284995052
+Batch:  55%|█████▌    | 4599/8304 [27:58<21:50,  2.83it/s][A11/14/2026 16:57:18 - INFO - Blink -   Step 4599 - epoch 0 average loss: 0.07395052907959325
+Batch:  58%|█████▊    | 4799/8304 [29:11<20:39,  2.83it/s][A11/14/2026 16:58:31 - INFO - Blink -   Step 4799 - epoch 0 average loss: 0.08066476243635406
+Batch:  60%|██████    | 4999/8304 [30:24<19:28,  2.83it/s][A11/14/2026 16:59:44 - INFO - Blink -   Step 4999 - epoch 0 average loss: 0.0766497365370742
+Batch:  63%|██████▎   | 5199/8304 [31:37<18:18,  2.83it/s][A11/14/2026 17:00:57 - INFO - Blink -   Step 5199 - epoch 0 average loss: 0.06284792850943631
+Batch:  65%|██████▌   | 5399/8304 [32:50<17:07,  2.83it/s][A11/14/2026 17:02:10 - INFO - Blink -   Step 5399 - epoch 0 average loss: 0.07455369940416859
+Batch:  67%|██████▋   | 5599/8304 [34:03<15:56,  2.83it/s][A11/14/2026 17:03:23 - INFO - Blink -   Step 5599 - epoch 0 average loss: 0.07761628081450908
+Batch:  70%|██████▉   | 5799/8304 [35:15<14:45,  2.83it/s][A11/14/2026 17:04:36 - INFO - Blink -   Step 5799 - epoch 0 average loss: 0.06369295659693307
+Batch:  72%|███████▏  | 5999/8304 [36:28<13:34,  2.83it/s][A11/14/2026 17:05:49 - INFO - Blink -   Step 5999 - epoch 0 average loss: 0.06943228262287449
+11/14/2026 17:05:49 - INFO - Blink -   max_updates 1500 reached
+11/14/2026 17:05:51 - INFO - Blink -   The training took 36.54867314100265 minutes
+	Command being timed: "python blink/biencoder/train_biencoder.py --output_path runs/plan/uniform63_s0 --seed 0 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 100000 --print_interval 50 --shuffle True --freeze_cand_encoder --skip_valid_eval --pools out/pools/train.npz --encoding out/pools/all_entities_fp16.npy --max_updates 1500 --learning_rate 1e-5 --sampler uniform --negatives 63"
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 37:42.49
+	Maximum resident set size (kbytes): 22606996
++ rm -rf runs/plan/uniform63_s0/epoch_0
++ '[' 0 = 1 ']'
++ echo '=== ranks of uniform63 seed 0 on valid and NYT ==='
+=== ranks of uniform63 seed 0 on valid and NYT ===
++ mkdir -p runs/plan/ranks
++ python ../../scripts/eval_ranks.py --model runs/plan/uniform63_s0/pytorch_model.bin --out runs/plan/ranks/uniform63_s0.npz
++ grep -v 'it/s]$'
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:06:32 701 MiB, 2 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:07:32 2823 MiB, 0 % ram_used_gb 2'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:08:32 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:09:32 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:10:32 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:11:32 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:12:32 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:13:32 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:14:32 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:15:32 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:16:32 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:17:32 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:18:32 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (109s)
+encode mentions:   0%|          | 0/145 [00:00<?, ?it/s]encode mentions:   1%|          | 1/145 [00:01<04:16,  1.78s/it]encode mentions:   1%|▏         | 2/145 [00:03<04:07,  1.73s/it]encode mentions:   2%|▏         | 3/145 [00:05<04:02,  1.71s/it]encode mentions:   3%|▎         | 4/145 [00:06<04:00,  1.70s/it]encode mentions:   3%|▎         | 5/145 [00:08<03:57,  1.70s/it]encode mentions:   4%|▍         | 6/145 [00:10<03:55,  1.70s/it]encode mentions:   5%|▍         | 7/145 [00:11<03:53,  1.69s/it]encode mentions:   6%|▌         | 8/145 [00:13<03:52,  1.69s/it]encode mentions:   6%|▌         | 9/145 [00:15<03:50,  1.69s/it]encode mentions:   7%|▋         | 10/145 [00:17<03:48,  1.70s/it]encode mentions:   8%|▊         | 11/145 [00:18<03:47,  1.70s/it]encode mentions:   8%|▊         | 12/145 [00:20<03:45,  1.70s/it]encode mentions:   9%|▉         | 13/145 [00:22<03:44,  1.70s/it]encode mentions:  10%|▉         | 14/145 [00:23<03:42,  1.70s/it]encode mentions:  10%|█         | 15/145 [00:25<03:40,  1.70s/it]encode mentions:  11%|█         | 16/145 [00:27<03:39,  1.70s/it]encode mentions:  12%|█▏        | 17/145 [00:28<03:37,  1.70s/it]encode mentions:  12%|█▏        | 18/145 [00:30<03:35,  1.70s/it]encode mentions:  13%|█▎        | 19/145 [00:32<03:33,  1.70s/it]encode mentions:  14%|█▍        | 20/145 [00:33<03:31,  1.69s/it]encode mentions:  14%|█▍        | 21/145 [00:35<03:29,  1.69s/it]encode mentions:  15%|█▌        | 22/145 [00:37<03:28,  1.69s/it]encode mentions:  16%|█▌        | 23/145 [00:39<03:26,  1.69s/it]encode mentions:  17%|█▋        | 24/145 [00:40<03:24,  1.69s/it]encode mentions:  17%|█▋        | 25/145 [00:42<03:22,  1.69s/it]encode mentions:  18%|█▊        | 26/145 [00:44<03:21,  1.69s/it]encode mentions:  19%|█▊        | 27/145 [00:45<03:19,  1.69s/it]encode mentions:  19%|█▉        | 28/145 [00:47<03:18,  1.69s/it]encode mentions:  20%|██        | 29/145 [00:49<03:16,  1.69s/it]encode mentions:  21%|██        | 30/145 [00:50<03:14,  1.69s/it]encode mentions:  21%|██▏       | 31/145 [00:52<03:13,  1.69s/it]encode mentions:  22%|██▏       | 32/145 [00:54<03:11,  1.69s/it]encode mentions:  23%|██▎       | 33/145 [00:55<03:09,  1.69s/it]encode mentions:  23%|██▎       | 34/145 [00:57<03:08,  1.70s/it]encode mentions:  24%|██▍       | 35/145 [00:59<03:06,  1.70s/it]encode mentions:  25%|██▍       | 36/145 [01:01<03:05,  1.70s/it]encode mentions:  26%|██▌       | 37/145 [01:02<03:03,  1.70s/it]encode mentions:  26%|██▌       | 38/145 [01:04<03:01,  1.70s/it]encode mentions:  27%|██▋       | 39/145 [01:06<03:00,  1.70s/it]encode mentions:  28%|██▊       | 40/145 [01:07<02:58,  1.70s/it]encode mentions:  28%|██▊       | 41/145 [01:09<02:56,  1.70s/it]encode mentions:  29%|██▉       | 42/145 [01:11<02:55,  1.70s/it]encode mentions:  30%|██▉       | 43/145 [01:12<02:53,  1.70s/it]encode mentions:  30%|███       | 44/145 [01:14<02:51,  1.70s/it]encode mentions:  31%|███       | 45/145 [01:16<02:50,  1.70s/it]encode mentions:  32%|███▏      | 46/145 [01:18<02:48,  1.70s/it]encode mentions:  32%|███▏      | 47/145 [01:19<02:46,  1.70s/it]encode mentions:  33%|███▎      | 48/145 [01:21<02:45,  1.70s/it]encode mentions:  34%|███▍      | 49/145 [01:23<02:43,  1.70s/it]encode mentions:  34%|███▍      | 50/145 [01:24<02:41,  1.70s/it]encode mentions:  35%|███▌      | 51/145 [01:26<02:40,  1.70s/it]encode mentions:  36%|███▌      | 52/145 [01:28<02:38,  1.70s/it]encode mentions:  37%|███▋      | 53/145 [01:30<02:36,  1.70s/it]encode mentions:  37%|███▋      | 54/145 [01:31<02:34,  1.70s/it]encode mentions:  38%|███▊      | 55/145 [01:33<02:33,  1.70s/it]encode mentions:  39%|███▊      | 56/145 [01:35<02:31,  1.70s/it]encode mentions:  39%|███▉      | 57/145 [01:36<02:29,  1.70s/it]encode mentions:  40%|████      | 58/145 [01:38<02:28,  1.70s/it]encode mentions:  41%|████      | 59/145 [01:40<02:26,  1.70s/it]encode mentions:  41%|████▏     | 60/145 [01:41<02:24,  1.70s/it]encode mentions:  42%|████▏     | 61/145 [01:43<02:23,  1.70s/it]encode mentions:  43%|████▎     | 62/145 [01:45<02:21,  1.70s/it]encode mentions:  43%|████▎     | 63/145 [01:47<02:19,  1.70s/it]encode mentions:  44%|████▍     | 64/145 [01:48<02:18,  1.70s/it]encode mentions:  45%|████▍     | 65/145 [01:50<02:16,  1.70s/it]encode mentions:  46%|████▌     | 66/145 [01:52<02:14,  1.70s/it]encode mentions:  46%|████▌     | 67/145 [01:53<02:12,  1.70s/it]encode mentions:  47%|████▋     | 68/145 [01:55<02:11,  1.70s/it]encode mentions:  48%|████▊     | 69/145 [01:57<02:09,  1.71s/it]encode mentions:  48%|████▊     | 70/145 [01:58<02:07,  1.71s/it]encode mentions:  49%|████▉     | 71/145 [02:00<02:06,  1.71s/it]encode mentions:  50%|████▉     | 72/145 [02:02<02:04,  1.71s/it]encode mentions:  50%|█████     | 73/145 [02:04<02:02,  1.71s/it]encode mentions:  51%|█████     | 74/145 [02:05<02:01,  1.71s/it]encode mentions:  52%|█████▏    | 75/145 [02:07<01:59,  1.71s/it]encode mentions:  52%|█████▏    | 76/145 [02:09<01:57,  1.71s/it]encode mentions:  53%|█████▎    | 77/145 [02:10<01:55,  1.71s/it]encode mentions:  54%|█████▍    | 78/145 [02:12<01:54,  1.71s/it]encode mentions:  54%|█████▍    | 79/145 [02:14<01:52,  1.71s/it]encode mentions:  55%|█████▌    | 80/145 [02:16<01:50,  1.71s/it]encode mentions:  56%|█████▌    | 81/145 [02:17<01:49,  1.71s/it]encode mentions:  57%|█████▋    | 82/145 [02:19<01:47,  1.71s/it]encode mentions:  57%|█████▋    | 83/145 [02:21<01:45,  1.71s/it]encode mentions:  58%|█████▊    | 84/145 [02:22<01:44,  1.71s/it]encode mentions:  59%|█████▊    | 85/145 [02:24<01:42,  1.71s/it]encode mentions:  59%|█████▉    | 86/145 [02:26<01:40,  1.71s/it]encode mentions:  60%|██████    | 87/145 [02:28<01:38,  1.71s/it]encode mentions:  61%|██████    | 88/145 [02:29<01:37,  1.71s/it]encode mentions:  61%|██████▏   | 89/145 [02:31<01:35,  1.71s/it]encode mentions:  62%|██████▏   | 90/145 [02:33<01:33,  1.71s/it]encode mentions:  63%|██████▎   | 91/145 [02:34<01:32,  1.71s/it]encode mentions:  63%|██████▎   | 92/145 [02:36<01:30,  1.71s/it]encode mentions:  64%|██████▍   | 93/145 [02:38<01:28,  1.70s/it]encode mentions:  65%|██████▍   | 94/145 [02:39<01:26,  1.70s/it]encode mentions:  66%|██████▌   | 95/145 [02:41<01:25,  1.70s/it]encode mentions:  66%|██████▌   | 96/145 [02:43<01:23,  1.70s/it]encode mentions:  67%|██████▋   | 97/145 [02:45<01:21,  1.70s/it]encode mentions:  68%|██████▊   | 98/145 [02:46<01:20,  1.70s/it]encode mentions:  68%|██████▊   | 99/145 [02:48<01:18,  1.70s/it]encode mentions:  69%|██████▉   | 100/145 [02:50<01:16,  1.70s/it]encode mentions:  70%|██████▉   | 101/145 [02:51<01:14,  1.70s/it]encode mentions:  70%|███████   | 102/145 [02:53<01:13,  1.70s/it]encode mentions:  71%|███████   | 103/145 [02:55<01:11,  1.70s/it]encode mentions:  72%|███████▏  | 104/145 [02:56<01:09,  1.70s/it]encode mentions:  72%|███████▏  | 105/145 [02:58<01:08,  1.70s/it]encode mentions:  73%|███████▎  | 106/145 [03:00<01:06,  1.70s/it]encode mentions:  74%|███████▍  | 107/145 [03:02<01:04,  1.70s/it]encode mentions:  74%|███████▍  | 108/145 [03:03<01:02,  1.70s/it]encode mentions:  75%|███████▌  | 109/145 [03:05<01:01,  1.70s/it]encode mentions:  76%|███████▌  | 110/145 [03:07<00:59,  1.70s/it]encode mentions:  77%|███████▋  | 111/145 [03:08<00:57,  1.70s/it]encode mentions:  77%|███████▋  | 112/145 [03:10<00:56,  1.70s/it]encode mentions:  78%|███████▊  | 113/145 [03:12<00:54,  1.70s/it]encode mentions:  79%|███████▊  | 114/145 [03:13<00:52,  1.70s/it]encode mentions:  79%|███████▉  | 115/145 [03:15<00:51,  1.70s/it]encode mentions:  80%|████████  | 116/145 [03:17<00:49,  1.70s/it]encode mentions:  81%|████████  | 117/145 [03:19<00:47,  1.70s/it]encode mentions:  81%|████████▏ | 118/145 [03:20<00:45,  1.70s/it]encode mentions:  82%|████████▏ | 119/145 [03:22<00:44,  1.70s/it]encode mentions:  83%|████████▎ | 120/145 [03:24<00:42,  1.70s/it]encode mentions:  83%|████████▎ | 121/145 [03:25<00:40,  1.70s/it]encode mentions:  84%|████████▍ | 122/145 [03:27<00:39,  1.70s/it]encode mentions:  85%|████████▍ | 123/145 [03:29<00:37,  1.70s/it]encode mentions:  86%|████████▌ | 124/145 [03:31<00:35,  1.70s/it]encode mentions:  86%|████████▌ | 125/145 [03:32<00:34,  1.70s/it]encode mentions:  87%|████████▋ | 126/145 [03:34<00:32,  1.70s/it]encode mentions:  88%|████████▊ | 127/145 [03:36<00:30,  1.70s/it]encode mentions:  88%|████████▊ | 128/145 [03:37<00:28,  1.70s/it]encode mentions:  89%|████████▉ | 129/145 [03:39<00:27,  1.70s/it]encode mentions:  90%|████████▉ | 130/145 [03:41<00:25,  1.70s/it]encode mentions:  90%|█████████ | 131/145 [03:42<00:23,  1.70s/it]encode mentions:  91%|█████████ | 132/145 [03:44<00:22,  1.70s/it]encode mentions:  92%|█████████▏| 133/145 [03:46<00:20,  1.70s/it]encode mentions:  92%|█████████▏| 134/145 [03:48<00:18,  1.70s/it]encode mentions:  93%|█████████▎| 135/145 [03:49<00:17,  1.70s/it]encode mentions:  94%|█████████▍| 136/145 [03:51<00:15,  1.70s/it]encode mentions:  94%|█████████▍| 137/145 [03:53<00:13,  1.70s/it]encode mentions:  95%|█████████▌| 138/145 [03:54<00:11,  1.70s/it]encode mentions:  96%|█████████▌| 139/145 [03:56<00:10,  1.70s/it]encode mentions:  97%|█████████▋| 140/145 [03:58<00:08,  1.70s/it]encode mentions:  97%|█████████▋| 141/145 [03:59<00:06,  1.70s/it]encode mentions:  98%|█████████▊| 142/145 [04:01<00:05,  1.70s/it]encode mentions:  99%|█████████▊| 143/145 [04:03<00:03,  1.70s/it]encode mentions:  99%|█████████▉| 144/145 [04:05<00:01,  1.70s/it]encode mentions: 100%|██████████| 145/145 [04:05<00:00,  1.28s/it]encode mentions: 100%|██████████| 145/145 [04:05<00:00,  1.69s/it]
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:208.)
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.710 R@10=0.941 R@100=0.988
+nyt: n=769 top1=0.100 R@10=0.294 R@100=0.524
+wrote runs/plan/ranks/uniform63_s0.npz (771s)
++ '[' 1 = 1 ']'
++ df -h /
++ tail -1
+/dev/root       193G  177G   16G  92% /
++ read -r NAME SEED KEEP ARGS
++ '[' -z allpool ']'
++ OUT=runs/plan/allpool_s0
++ '[' -f runs/plan/ranks/allpool_s0.npz ']'
++ echo '=== train allpool seed 0: --sampler allpool --negatives 999 ==='
+=== train allpool seed 0: --sampler allpool --negatives 999 ===
++ '[' '!' -f runs/plan/allpool_s0/pytorch_model.bin ']'
++ rm -rf runs/plan/allpool_s0
++ /usr/bin/time -v python blink/biencoder/train_biencoder.py --output_path runs/plan/allpool_s0 --seed 0 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 100000 --print_interval 50 --shuffle True --freeze_cand_encoder --skip_valid_eval --pools out/pools/train.npz --encoding out/pools/all_entities_fp16.npy --max_updates 1500 --learning_rate 1e-5 --sampler allpool --negatives 999
++ grep -E 'sampler |frozen|average loss|held-out|max_updates|Eval accuracy|training took|Elapsed|Maximum resident|Error|Traceback|^  File'
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:19:32 1541 MiB, 2 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:20:33 13069 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:21:33 13069 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:22:33 13069 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:23:33 13069 MiB, 84 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:24:33 13069 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:25:33 13069 MiB, 90 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:26:33 13069 MiB, 84 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:27:33 13069 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:28:33 13069 MiB, 95 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:29:33 13069 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:30:33 13069 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:31:33 13069 MiB, 80 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:32:33 13069 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:33:33 13069 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:34:33 13069 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:35:33 13069 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:36:33 13069 MiB, 79 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:37:33 13069 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:38:33 13069 MiB, 80 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:39:33 13069 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:40:33 13069 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:41:33 13069 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:42:33 13069 MiB, 100 % ram_used_gb 6'
++ sleep 60
+Namespace(silent=False, debug=False, data_parallel=False, no_cuda=False, top_k=10, seed=0, zeshel=False, max_seq_length=256, max_context_length=256, max_cand_length=256, path_to_model='models/biencoder/pytorch_model.bin', bert_model='bert-large-uncased', pull_from_layer=-1, lowercase=True, context_key='context', out_dim=1, add_linear=False, data_path='out', output_path='runs/plan/allpool_s0', evaluate=False, output_eval_file=None, train_batch_size=32, max_grad_norm=1.0, learning_rate=1e-05, num_train_epochs=1, print_interval=50, eval_interval=100000, save_interval=1, warmup_proportion=0.1, gradient_accumulation_steps=4, type_optimization='all_encoder_layers', shuffle=True, eval_batch_size=64, mode='valid', save_topk_result=False, encode_batch_size=8, cand_pool_path=None, cand_encode_path=None, sampler='allpool', band_lo=0, band_hi=75, skip_valid_eval=True, heldout=0, reward_interval=0, pools='out/pools/train.npz', encoding='out/pools/all_entities_fp16.npy', negatives=999, freeze_cand_encoder=True, max_updates=1500, resa2_stage1=500, resa2_stage2=75, resa2_tau=0.25)
+11/14/2026 17:19:43 - INFO - Blink -   cand_encoder frozen
+11/14/2026 17:19:54 - INFO - Blink -   sampler allpool: 66425 of 66425 mentions train, 0 are held out
+Batch:   2%|▏         | 199/8304 [01:16<50:18,  2.68it/s][A11/14/2026 17:21:20 - INFO - Blink -   Step 199 - epoch 0 average loss: 0.6854571292176843
+Batch:   5%|▍         | 399/8304 [02:33<49:07,  2.68it/s][A11/14/2026 17:22:37 - INFO - Blink -   Step 399 - epoch 0 average loss: 0.48979488484561445
+Batch:   7%|▋         | 599/8304 [03:50<47:53,  2.68it/s][A11/14/2026 17:23:54 - INFO - Blink -   Step 599 - epoch 0 average loss: 0.44587452316656706
+Batch:  10%|▉         | 799/8304 [05:07<46:37,  2.68it/s][A11/14/2026 17:25:11 - INFO - Blink -   Step 799 - epoch 0 average loss: 0.40098072461783885
+Batch:  12%|█▏        | 999/8304 [06:23<45:26,  2.68it/s][A11/14/2026 17:26:28 - INFO - Blink -   Step 999 - epoch 0 average loss: 0.3999202657677233
+Batch:  14%|█▍        | 1199/8304 [07:40<44:09,  2.68it/s][A11/14/2026 17:27:44 - INFO - Blink -   Step 1199 - epoch 0 average loss: 0.34506775146350266
+Batch:  17%|█▋        | 1399/8304 [08:57<42:55,  2.68it/s][A11/14/2026 17:29:01 - INFO - Blink -   Step 1399 - epoch 0 average loss: 0.3637105914764106
+Batch:  19%|█▉        | 1599/8304 [10:14<41:39,  2.68it/s][A11/14/2026 17:30:18 - INFO - Blink -   Step 1599 - epoch 0 average loss: 0.33813292033970355
+Batch:  22%|██▏       | 1799/8304 [11:31<40:26,  2.68it/s][A11/14/2026 17:31:35 - INFO - Blink -   Step 1799 - epoch 0 average loss: 0.3045098582468927
+Batch:  24%|██▍       | 1999/8304 [12:47<39:07,  2.69it/s][A11/14/2026 17:32:52 - INFO - Blink -   Step 1999 - epoch 0 average loss: 0.32361747793853285
+Batch:  26%|██▋       | 2199/8304 [14:04<37:55,  2.68it/s][A11/14/2026 17:34:08 - INFO - Blink -   Step 2199 - epoch 0 average loss: 0.30925214316695926
+Batch:  29%|██▉       | 2399/8304 [15:21<36:41,  2.68it/s][A11/14/2026 17:35:25 - INFO - Blink -   Step 2399 - epoch 0 average loss: 0.3254850329272449
+Batch:  31%|███▏      | 2599/8304 [16:38<35:25,  2.68it/s][A11/14/2026 17:36:42 - INFO - Blink -   Step 2599 - epoch 0 average loss: 0.2970015841536224
+Batch:  34%|███▎      | 2799/8304 [17:54<34:12,  2.68it/s][A11/14/2026 17:37:59 - INFO - Blink -   Step 2799 - epoch 0 average loss: 0.2664057363662869
+Batch:  36%|███▌      | 2999/8304 [19:11<32:58,  2.68it/s][A11/14/2026 17:39:15 - INFO - Blink -   Step 2999 - epoch 0 average loss: 0.28725411135703327
+Batch:  39%|███▊      | 3199/8304 [20:28<31:43,  2.68it/s][A11/14/2026 17:40:32 - INFO - Blink -   Step 3199 - epoch 0 average loss: 0.27676922906190154
+Batch:  41%|████      | 3399/8304 [21:45<30:28,  2.68it/s][A11/14/2026 17:41:49 - INFO - Blink -   Step 3399 - epoch 0 average loss: 0.2830379919568077
+Batch:  43%|████▎     | 3599/8304 [23:01<29:12,  2.68it/s][A11/14/2026 17:43:06 - INFO - Blink -   Step 3599 - epoch 0 average loss: 0.2+ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:43:33 13069 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:44:33 13069 MiB, 98 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:45:33 13069 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:46:33 13069 MiB, 79 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:47:33 13069 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:48:33 13069 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:49:34 13069 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:50:34 13069 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:51:34 13069 MiB, 83 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:52:34 13069 MiB, 80 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:53:34 13069 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:54:34 13069 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:55:34 13069 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:56:34 13069 MiB, 100 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:57:34 13069 MiB, 99 % ram_used_gb 6'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:58:34 13069 MiB, 0 % ram_used_gb 8'
++ sleep 60
+755955170188099
+Batch:  46%|████▌     | 3799/8304 [24:18<27:58,  2.68it/s][A11/14/2026 17:44:22 - INFO - Blink -   Step 3799 - epoch 0 average loss: 0.26624025869183243
+Batch:  48%|████▊     | 3999/8304 [25:35<26:45,  2.68it/s][A11/14/2026 17:45:39 - INFO - Blink -   Step 3999 - epoch 0 average loss: 0.27052563306409866
+Batch:  51%|█████     | 4199/8304 [26:52<25:29,  2.68it/s][A11/14/2026 17:46:56 - INFO - Blink -   Step 4199 - epoch 0 average loss: 0.2459552980028093
+Batch:  53%|█████▎    | 4399/8304 [28:09<24:15,  2.68it/s][A11/14/2026 17:48:13 - INFO - Blink -   Step 4399 - epoch 0 average loss: 0.24825531574431806
+Batch:  55%|█████▌    | 4599/8304 [29:25<23:01,  2.68it/s][A11/14/2026 17:49:30 - INFO - Blink -   Step 4599 - epoch 0 average loss: 0.26047017589211463
+Batch:  58%|█████▊    | 4799/8304 [30:42<21:47,  2.68it/s][A11/14/2026 17:50:46 - INFO - Blink -   Step 4799 - epoch 0 average loss: 0.25695584003347904
+Batch:  60%|██████    | 4999/8304 [31:59<20:32,  2.68it/s][A11/14/2026 17:52:03 - INFO - Blink -   Step 4999 - epoch 0 average loss: 0.25862328314222394
+Batch:  63%|██████▎   | 5199/8304 [33:16<19:18,  2.68it/s][A11/14/2026 17:53:20 - INFO - Blink -   Step 5199 - epoch 0 average loss: 0.23746818625368177
+Batch:  65%|██████▌   | 5399/8304 [34:33<18:04,  2.68it/s][A11/14/2026 17:54:37 - INFO - Blink -   Step 5399 - epoch 0 average loss: 0.2588651887187734
+Batch:  67%|██████▋   | 5599/8304 [35:50<16:49,  2.68it/s][A11/14/2026 17:55:54 - INFO - Blink -   Step 5599 - epoch 0 average loss: 0.26447603370994327
+Batch:  70%|██████▉   | 5799/8304 [37:06<15:34,  2.68it/s][A11/14/2026 17:57:11 - INFO - Blink -   Step 5799 - epoch 0 average loss: 0.23861062914133072
+Batch:  72%|███████▏  | 5999/8304 [38:23<14:19,  2.68it/s][A11/14/2026 17:58:27 - INFO - Blink -   Step 5999 - epoch 0 average loss: 0.2490268413722515
+11/14/2026 17:58:28 - INFO - Blink -   max_updates 1500 reached
+11/14/2026 17:58:30 - INFO - Blink -   The training took 38.46491884787877 minutes
+	Command being timed: "python blink/biencoder/train_biencoder.py --output_path runs/plan/allpool_s0 --seed 0 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 100000 --print_interval 50 --shuffle True --freeze_cand_encoder --skip_valid_eval --pools out/pools/train.npz --encoding out/pools/all_entities_fp16.npy --max_updates 1500 --learning_rate 1e-5 --sampler allpool --negatives 999"
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 39:40.24
+	Maximum resident set size (kbytes): 22639080
++ rm -rf runs/plan/allpool_s0/epoch_0
++ '[' 0 = 1 ']'
++ echo '=== ranks of allpool seed 0 on valid and NYT ==='
+=== ranks of allpool seed 0 on valid and NYT ===
++ mkdir -p runs/plan/ranks
++ python ../../scripts/eval_ranks.py --model runs/plan/allpool_s0/pytorch_model.bin --out runs/plan/ranks/allpool_s0.npz
++ grep -v 'it/s]$'
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '17:59:34 2823 MiB, 0 % ram_used_gb 2'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '18:00:34 2823 MiB, 0 % ram_used_gb 2'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '18:01:34 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '18:02:34 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '18:03:34 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '18:04:34 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '18:05:34 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '18:06:34 2823 MiB, 0 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '18:07:34 5697 MiB, 100 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '18:08:34 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '18:09:34 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '18:10:34 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '18:11:34 5817 MiB, 100 % ram_used_gb 3'
++ sleep 60
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (122s)
+encode mentions:   0%|          | 0/145 [00:00<?, ?it/s]encode mentions:   1%|          | 1/145 [00:01<04:17,  1.79s/it]encode mentions:   1%|▏         | 2/145 [00:03<04:07,  1.73s/it]encode mentions:   2%|▏         | 3/145 [00:05<04:03,  1.71s/it]encode mentions:   3%|▎         | 4/145 [00:06<04:00,  1.70s/it]encode mentions:   3%|▎         | 5/145 [00:08<03:58,  1.70s/it]encode mentions:   4%|▍         | 6/145 [00:10<03:56,  1.70s/it]encode mentions:   5%|▍         | 7/145 [00:11<03:54,  1.70s/it]encode mentions:   6%|▌         | 8/145 [00:13<03:52,  1.70s/it]encode mentions:   6%|▌         | 9/145 [00:15<03:50,  1.70s/it]encode mentions:   7%|▋         | 10/145 [00:17<03:49,  1.70s/it]encode mentions:   8%|▊         | 11/145 [00:18<03:47,  1.70s/it]encode mentions:   8%|▊         | 12/145 [00:20<03:46,  1.70s/it]encode mentions:   9%|▉         | 13/145 [00:22<03:44,  1.70s/it]encode mentions:  10%|▉         | 14/145 [00:23<03:42,  1.70s/it]encode mentions:  10%|█         | 15/145 [00:25<03:40,  1.69s/it]encode mentions:  11%|█         | 16/145 [00:27<03:38,  1.69s/it]encode mentions:  12%|█▏        | 17/145 [00:28<03:36,  1.69s/it]encode mentions:  12%|█▏        | 18/145 [00:30<03:34,  1.69s/it]encode mentions:  13%|█▎        | 19/145 [00:32<03:33,  1.69s/it]encode mentions:  14%|█▍        | 20/145 [00:33<03:31,  1.69s/it]encode mentions:  14%|█▍        | 21/145 [00:35<03:29,  1.69s/it]encode mentions:  15%|█▌        | 22/145 [00:37<03:28,  1.69s/it]encode mentions:  16%|█▌        | 23/145 [00:39<03:26,  1.69s/it]encode mentions:  17%|█▋        | 24/145 [00:40<03:24,  1.69s/it]encode mentions:  17%|█▋        | 25/145 [00:42<03:23,  1.69s/it]encode mentions:  18%|█▊        | 26/145 [00:44<03:21,  1.69s/it]encode mentions:  19%|█▊        | 27/145 [00:45<03:20,  1.70s/it]encode mentions:  19%|█▉        | 28/145 [00:47<03:18,  1.70s/it]encode mentions:  20%|██        | 29/145 [00:49<03:16,  1.70s/it]encode mentions:  21%|██        | 30/145 [00:50<03:15,  1.70s/it]encode mentions:  21%|██▏       | 31/145 [00:52<03:13,  1.70s/it]encode mentions:  22%|██▏       | 32/145 [00:54<03:12,  1.70s/it]encode mentions:  23%|██▎       | 33/145 [00:56<03:10,  1.70s/it]encode mentions:  23%|██▎       | 34/145 [00:57<03:08,  1.70s/it]encode mentions:  24%|██▍       | 35/145 [00:59<03:07,  1.70s/it]encode mentions:  25%|██▍       | 36/145 [01:01<03:05,  1.70s/it]encode mentions:  26%|██▌       | 37/145 [01:02<03:03,  1.70s/it]encode mentions:  26%|██▌       | 38/145 [01:04<03:02,  1.70s/it]encode mentions:  27%|██▋       | 39/145 [01:06<03:00,  1.70s/it]encode mentions:  28%|██▊       | 40/145 [01:07<02:58,  1.70s/it]encode mentions:  28%|██▊       | 41/145 [01:09<02:57,  1.70s/it]encode mentions:  29%|██▉       | 42/145 [01:11<02:55,  1.70s/it]encode mentions:  30%|██▉       | 43/145 [01:13<02:53,  1.70s/it]encode mentions:  30%|███       | 44/145 [01:14<02:52,  1.70s/it]encode mentions:  31%|███       | 45/145 [01:16<02:50,  1.70s/it]encode mentions:  32%|███▏      | 46/145 [01:18<02:48,  1.70s/it]encode mentions:  32%|███▏      | 47/145 [01:19<02:47,  1.71s/it]encode mentions:  33%|███▎      | 48/145 [01:21<02:45,  1.71s/it]encode mentions:  34%|███▍      | 49/145 [01:23<02:43,  1.71s/it]encode mentions:  34%|███▍      | 50/145 [01:25<02:42,  1.71s/it]encode mentions:  35%|███▌      | 51/145 [01:26<02:40,  1.71s/it]encode mentions:  36%|███▌      | 52/145 [01:28<02:38,  1.71s/it]encode mentions:  37%|███▋      | 53/145 [01:30<02:37,  1.71s/it]encode mentions:  37%|███▋      | 54/145 [01:31<02:35,  1.71s/it]encode mentions:  38%|███▊      | 55/145 [01:33<02:33,  1.70s/it]encode mentions:  39%|███▊      | 56/145 [01:35<02:31,  1.70s/it]encode mentions:  39%|███▉      | 57/145 [01:36<02:29,  1.70s/it]encode mentions:  40%|████      | 58/145 [01:38<02:28,  1.70s/it]encode mentions:  41%|████      | 59/145 [01:40<02:26,  1.70s/it]encode mentions:  41%|████▏     | 60/145 [01:42<02:24,  1.70s/it]encode mentions:  42%|████▏     | 61/145 [01:43<02:23,  1.70s/it]encode mentions:  43%|████▎     | 62/145 [01:45<02:21,  1.70s/it]encode mentions:  43%|████▎     | 63/145 [01:47<02:19,  1.70s/it]encode mentions:  44%|████▍     | 64/145 [01:48<02:17,  1.70s/it]encode mentions:  45%|████▍     | 65/145 [01:50<02:16,  1.70s/it]encode mentions:  46%|████▌     | 66/145 [01:52<02:14,  1.70s/it]encode mentions:  46%|████▌     | 67/145 [01:53<02:12,  1.70s/it]encode mentions:  47%|████▋     | 68/145 [01:55<02:11,  1.70s/it]encode mentions:  48%|████▊     | 69/145 [01:57<02:09,  1.70s/it]encode mentions:  48%|████▊     | 70/145 [01:59<02:07,  1.70s/it]encode mentions:  49%|████▉     | 71/145 [02:00<02:06,  1.70s/it]encode mentions:  50%|████▉     | 72/145 [02:02<02:04,  1.70s/it]encode mentions:  50%|█████     | 73/145 [02:04<02:02,  1.71s/it]encode mentions:  51%|█████     | 74/145 [02:05<02:01,  1.70s/it]encode mentions:  52%|█████▏    | 75/145 [02:07<01:59,  1.70s/it]encode mentions:  52%|█████▏    | 76/145 [02:09<01:57,  1.71s/it]encode mentions:  53%|█████▎    | 77/145 [02:11<01:55,  1.71s/it]encode mentions:  54%|█████▍    | 78/145 [02:12<01:54,  1.71s/it]encode mentions:  54%|█████▍    | 79/145 [02:14<01:52,  1.71s/it]encode mentions:  55%|█████▌    | 80/145 [02:16<01:50,  1.71s/it]encode mentions:  56%|█████▌    | 81/145 [02:17<01:49,  1.71s/it]encode mentions:  57%|█████▋    | 82/145 [02:19<01:47,  1.71s/it]encode mentions:  57%|█████▋    | 83/145 [02:21<01:45,  1.71s/it]encode mentions:  58%|█████▊    | 84/145 [02:22<01:44,  1.71s/it]encode mentions:  59%|█████▊    | 85/145 [02:24<01:42,  1.71s/it]encode mentions:  59%|█████▉    | 86/145 [02:26<01:40,  1.71s/it]encode mentions:  60%|██████    | 87/145 [02:28<01:38,  1.71s/it]encode mentions:  61%|██████    | 88/145 [02:29<01:37,  1.71s/it]encode mentions:  61%|██████▏   | 89/145 [02:31<01:35,  1.71s/it]encode mentions:  62%|██████▏   | 90/145 [02:33<01:33,  1.71s/it]encode mentions:  63%|██████▎   | 91/145 [02:34<01:32,  1.71s/it]encode mentions:  63%|██████▎   | 92/145 [02:36<01:30,  1.71s/it]encode mentions:  64%|██████▍   | 93/145 [02:38<01:28,  1.71s/it]encode mentions:  65%|██████▍   | 94/145 [02:40<01:27,  1.71s/it]encode mentions:  66%|██████▌   | 95/145 [02:41<01:25,  1.71s/it]encode mentions:  66%|██████▌   | 96/145 [02:43<01:23,  1.71s/it]encode mentions:  67%|██████▋   | 97/145 [02:45<01:21,  1.71s/it]encode mentions:  68%|██████▊   | 98/145 [02:46<01:20,  1.71s/it]encode mentions:  68%|██████▊   | 99/145 [02:48<01:18,  1.71s/it]encode mentions:  69%|██████▉   | 100/145 [02:50<01:16,  1.71s/it]encode mentions:  70%|██████▉   | 101/145 [02:51<01:15,  1.71s/it]encode mentions:  70%|███████   | 102/145 [02:53<01:13,  1.71s/it]encode mentions:  71%|███████   | 103/145 [02:55<01:11,  1.71s/it]encode mentions:  72%|███████▏  | 104/145 [02:57<01:10,  1.71s/it]encode mentions:  72%|███████▏  | 105/145 [02:58<01:08,  1.71s/it]encode mentions:  73%|███████▎  | 106/145 [03:00<01:06,  1.71s/it]encode mentions:  74%|███████▍  | 107/145 [03:02<01:04,  1.71s/it]encode mentions:  74%|███████▍  | 108/145 [03:03<01:03,  1.71s/it]encode mentions:  75%|███████▌  | 109/145 [03:05<01:01,  1.71s/it]encode mentions:  76%|███████▌  | 110/145 [03:07<00:59,  1.71s/it]encode mentions:  77%|███████▋  | 111/145 [03:09<00:58,  1.71s/it]encode mentions:  77%|███████▋  | 112/145 [03:10<00:56,  1.71s/it]encode mentions:  78%|███████▊  | 113/145 [03:12<00:54,  1.71s/it]encode mentions:  79%|███████▊  | 114/145 [03:14<00:52,  1.71s/it]encode mentions:  79%|███████▉  | 115/145 [03:15<00:51,  1.71s/it]encode mentions:  80%|████████  | 116/145 [03:17<00:49,  1.71s/it]encode mentions:  81%|████████  | 117/145 [03:19<00:47,  1.71s/it]encode mentions:  81%|████████▏ | 118/145 [03:21<00:46,  1.71s/it]encode mentions:  82%|████████▏ | 119/145 [03:22<00:44,  1.71s/it]encode mentions:  83%|████████▎ | 120/145 [03:24<00:42,  1.71s/it]encode mentions:  83%|████████▎ | 121/145 [03:26<00:40,  1.71s/it]encode mentions:  84%|████████▍ | 122/145 [03:27<00:39,  1.71s/it]encode mentions:  85%|████████▍ | 123/145 [03:29<00:37,  1.71s/it]encode mentions:  86%|████████▌ | 124/145 [03:31<00:35,  1.71s/it]encode mentions:  86%|████████▌ | 125/145 [03:32<00:34,  1.71s/it]encode mentions:  87%|████████▋ | 126/145 [03:34<00:32,  1.71s/it]encode mentions:  88%|████████▊ | 127/145 [03:36<00:30,  1.71s/it]encode mentions:  88%|████████▊ | 128/145 [03:38<00:29,  1.71s/it]encode mentions:  89%|████████▉ | 129/145 [03:39<00:27,  1.71s/it]encode mentions:  90%|████████▉ | 130/145 [03:41<00:25,  1.71s/it]encode mentions:  90%|█████████ | 131/145 [03:43<00:23,  1.71s/it]encode mentions:  91%|█████████ | 132/145 [03:44<00:22,  1.71s/it]encode mentions:  92%|█████████▏| 133/145 [03:46<00:20,  1.71s/it]encode mentions:  92%|█████████▏| 134/145 [03:48<00:18,  1.71s/it]encode mentions:  93%|█████████▎| 135/145 [03:50<00:17,  1.71s/it]encode mentions:  94%|█████████▍| 136/145 [03:51<00:15,  1.71s/it]encode mentions:  94%|█████████▍| 137/145 [03:53<00:13,  1.71s/it]encode mentions:  95%|█████████▌| 138/145 [03:55<00:11,  1.71s/it]encode mentions:  96%|█████████▌| 139/145 [03:56<00:10,  1.71s/it]encode mentions:  97%|█████████▋| 140/145 [03:58<00:08,  1.71s/it]encode mentions:  97%|█████████▋| 141/145 [04:00<00:06,  1.71s/it]encode mentions:  98%|█████████▊| 142/145 [04:01<00:05,  1.71s/it]encode mentions:  99%|█████████▊| 143/145 [04:03<00:03,  1.71s/it]encode mentions:  99%|█████████▉| 144/145 [04:05<00:01,  1.71s/it]encode mentions: 100%|██████████| 145/145 [04:05<00:00,  1.29s/it]encode mentions: 100%|██████████| 145/145 [04:05<00:00,  1.69s/it]
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:208.)
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.760 R@10=0.947 R@100=0.988
+nyt: n=769 top1=0.103 R@10=0.317 R@100=0.566
+wrote runs/plan/ranks/allpool_s0.npz (785s)
++ '[' 1 = 1 ']'
++ df -h /
++ tail -1
+/dev/root       193G  180G   14G  94% /
++ read -r NAME SEED KEEP ARGS
++ ls -la runs/plan/ranks
+total 28344
+drwxrwxr-x 2 ubuntu ubuntu    4096 Nov 14 18:12 .
+drwxrwxr-x 7 ubuntu ubuntu    4096 Nov 14 17:19 ..
+-rw-rw-r-- 1 ubuntu ubuntu 7295435 Nov 14 18:12 allpool_s0.npz
+-rw-rw-r-- 1 ubuntu ubuntu 7290177 Nov 14 16:28 goldrand63_s0.npz
+-rw-rw-r-- 1 ubuntu ubuntu 7117673 Nov 14 15:37 goldrand7_s0.npz
+-rw-rw-r-- 1 ubuntu ubuntu 7306350 Nov 14 17:19 uniform63_s0.npz
++ date
+Sat Nov 14 18:12:01 UTC 2026
++ echo PLAN_OK
+PLAN_OK
++ rc=0
++ echo
+
++ echo PLAN_EXIT=0
+PLAN_EXIT=0
++ date
+Sat Nov 14 18:12:01 UTC 2026
++ '[' 0 = 1 ']'
++ sudo shutdown -h +2
+Shutdown scheduled for Sat 2026-11-14 18:14:01 UTC, use 'shutdown -c' to cancel.
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '18:12:34 0 MiB, 0 % ram_used_gb 1'
++ sleep 60
++ true
+++ date +%T
+++ nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader
+++ free -g
+++ awk '/Mem/{print $3}'
++ echo '18:13:34 0 MiB, 0 % ram_used_gb 1'
++ sleep 60
