@@ -7,7 +7,8 @@
 BACKSTOP=${1:-300}
 RUNS=${2:-~/plan_runs.txt}
 sudo shutdown -h +$BACKSTOP
-trap 'echo; echo PLAN_EXIT=$?; date; sudo shutdown -h +2' EXIT
+# NO_SHUTDOWN=1: do not stop the machine at the end (the backstop above still holds)
+trap 'rc=$?; echo; echo PLAN_EXIT=$rc; date; [ "${NO_SHUTDOWN:-0}" = 1 ] || sudo shutdown -h +2' EXIT
 set -ex -o pipefail
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 date
@@ -16,9 +17,9 @@ cd ~/resa2el/third_party/event-linking
 export PYTHONPATH=.
 cat out/pools/all_entities_fp16.npy > /dev/null   # page vectors into the file cache (12 GB)
 ( while true; do echo "$(date +%T) $(nvidia-smi --query-gpu=memory.used,utilization.gpu --format=csv,noheader) ram_used_gb $(free -g | awk '/Mem/{print $3}')" >> ~/gpu_plan.log; sleep 60; done ) &
-RUNDIR=runs/plan
+RUNDIR=${RUNDIR:-runs/plan}
 mkdir -p $RUNDIR
-COMMON="--data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 100000 --print_interval 50 --shuffle True --freeze_cand_encoder --pools out/pools/train.npz --encoding out/pools/all_entities_fp16.npy --max_updates ${UPDATES:-1500} --learning_rate 1e-5"
+COMMON="--data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 100000 --print_interval 50 --shuffle True --freeze_cand_encoder --skip_valid_eval --pools out/pools/train.npz --encoding out/pools/all_entities_fp16.npy --max_updates ${UPDATES:-1500} --learning_rate 1e-5"
 grep -v '^#' $RUNS | while read -r NAME SEED KEEP ARGS; do
   [ -z "$NAME" ] && continue
   OUT=$RUNDIR/${NAME}_s${SEED}

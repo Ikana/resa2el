@@ -1,0 +1,5 @@
+# Steps 2 and 3 of the results plan. NAME SEED KEEP SAMPLER_ARGS
+goldrand7 0 1 --sampler gold_random --negatives 7
+goldrand63 0 1 --sampler gold_random --negatives 63
+uniform63 0 1 --sampler uniform --negatives 63
+allpool 0 1 --sampler allpool --negatives 999

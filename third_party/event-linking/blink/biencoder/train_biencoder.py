@@ -276,10 +276,11 @@ def main(params):
         valid_tensor_data, sampler=valid_sampler, batch_size=eval_batch_size
     )
 
-    # evaluate before training
-    results = evaluate(
-        reranker, valid_dataloader, params, device=device, logger=logger,
-    )
+    # evaluate before training (--skip_valid_eval: the in-batch validation accuracy is not used by the sampler runs)
+    if not params.get("skip_valid_eval"):
+        results = evaluate(
+            reranker, valid_dataloader, params, device=device, logger=logger,
+        )
 
     number_of_samples_per_dataset = {}
 
@@ -386,9 +387,12 @@ def main(params):
         utils.save_model(model, tokenizer, epoch_output_folder_path)
 
         output_eval_file = os.path.join(epoch_output_folder_path, "eval_results.txt")
-        results = evaluate(
-            reranker, valid_dataloader, params, device=device, logger=logger,
-        )
+        if params.get("skip_valid_eval"):
+            results = {"normalized_accuracy": 0.0}
+        else:
+            results = evaluate(
+                reranker, valid_dataloader, params, device=device, logger=logger,
+            )
 
         ls = [best_score, results["normalized_accuracy"]]
         li = [best_epoch_idx, epoch_idx]
@@ -429,6 +433,7 @@ if __name__ == "__main__":
     parser.add_argument("--sampler", default="in_batch", choices=["in_batch", "uniform", "topscore", "resa2", "band", "stage2_only", "allpool", "gold_random"])
     parser.add_argument("--band_lo", type=int, default=0, help="sampler band: first similarity rank of the band")
     parser.add_argument("--band_hi", type=int, default=75, help="sampler band: end of the band (not included); 0 means the end of the pool")
+    parser.add_argument("--skip_valid_eval", action="store_true", help="skip the two in-batch evaluations on the validation set (7.5 minutes each)")
     parser.add_argument("--heldout", type=int, default=0, help="training mentions held out for the reward log")
     parser.add_argument("--reward_interval", type=int, default=0, help="write the held-out loss every this many updates (0: off)")
     parser.add_argument("--pools", default=None, help="<split>.npz from scripts/build_pools.py")
