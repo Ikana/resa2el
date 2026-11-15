@@ -1,0 +1,1 @@
+bandit 0 0 --sampler bandit --negatives 7 --heldout 128 --reward_interval 10

@@ -229,6 +229,17 @@ def main(params):
         if sampler_name == "band":
             sampler_kw = dict(lo=params["band_lo"], hi=params["band_hi"] if params["band_hi"] > 0 else None)
         sampler_rng = np.random.default_rng(params["seed"])
+    # Bandit (added for resa2el): EXP3 picks one similarity band for each reward interval.
+    bandit, arm, arm_bands = None, None, None
+    if sampler_name == "bandit":
+        if not (params.get("heldout") and params.get("reward_interval") and params.get("max_updates")):
+            raise ValueError("--sampler bandit needs --heldout, --reward_interval and --max_updates")
+        arm_bands = list(_resa2el("samplers").BANDS.items())
+        bandit = _resa2el("bandit").Exp3(len(arm_bands), params["max_updates"] // params["reward_interval"])
+        bandit_rng = np.random.default_rng(params["seed"] + 1000)
+        arm = bandit.pick(bandit_rng)
+        sampler_name, sampler_kw = "band", dict(lo=arm_bands[arm][1][0], hi=arm_bands[arm][1][1])
+        logger.info("bandit: {} arms, gamma {:.4f}, eta {:.4f}".format(len(arm_bands), bandit.gamma, bandit.eta))
 
     if params["gradient_accumulation_steps"] < 1:
         raise ValueError(
@@ -365,7 +376,13 @@ def main(params):
                 n_updates += 1
                 if reward_file is not None and n_updates % reward_interval == 0:
                     cur = _heldout_loss(reranker, heldout, pools, encoding, device)
-                    reward_file.write(json.dumps({"update": n_updates, "heldout_loss": cur, "reward": prev_heldout - cur}) + "\n")
+                    row = {"update": n_updates, "heldout_loss": cur, "reward": prev_heldout - cur}
+                    if bandit is not None:
+                        row.update(arm=arm_bands[arm][0], probs=[round(float(x), 4) for x in bandit.probs()],
+                                   scaled=bandit.update(arm, prev_heldout - cur))
+                        arm = bandit.pick(bandit_rng)
+                        sampler_kw = dict(lo=arm_bands[arm][1][0], hi=arm_bands[arm][1][1])
+                    reward_file.write(json.dumps(row) + "\n")
                     reward_file.flush()
                     prev_heldout = cur
                 if max_updates and n_updates >= max_updates:
@@ -430,7 +447,7 @@ if __name__ == "__main__":
     parser.add_training_args()
     parser.add_eval_args()
     # Sampler training (added for resa2el)
-    parser.add_argument("--sampler", default="in_batch", choices=["in_batch", "uniform", "topscore", "resa2", "band", "stage2_only", "allpool", "gold_random"])
+    parser.add_argument("--sampler", default="in_batch", choices=["in_batch", "uniform", "topscore", "resa2", "band", "stage2_only", "allpool", "gold_random", "bandit"])
     parser.add_argument("--band_lo", type=int, default=0, help="sampler band: first similarity rank of the band")
     parser.add_argument("--band_hi", type=int, default=75, help="sampler band: end of the band (not included); 0 means the end of the pool")
     parser.add_argument("--skip_valid_eval", action="store_true", help="skip the two in-batch evaluations on the validation set (7.5 minutes each)")
