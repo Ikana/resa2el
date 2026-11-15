@@ -40,6 +40,7 @@ def main():
     ap.add_argument("--encoding", default="out/pools/all_entities_fp16.npy")
     ap.add_argument("--lowmem", default="out/lowmem")
     ap.add_argument("--device", default="cuda")
+    ap.add_argument("--test", action="store_true", help="rank the Wikipedia test mentions (out/test.jsonl, split 2) in place of validation and NYT")
     args = ap.parse_args()
     t0 = time.time()
 
@@ -50,18 +51,23 @@ def main():
     biencoder = load_biencoder(params)
     biencoder.model.eval()
 
-    valid = read_jsonl("out/valid.jsonl")
-    nyt = read_jsonl("data/nyt/nyt_test.jsonl")
-    # type and status of the validation mentions live in the preprocessed
-    # clusters, in the same order as out/valid.jsonl (see data_processing.py)
-    with open("data/wikipedia/preprocessed/wiki_valid.json") as f:
-        clusters = json.load(f)
-    flat = [m for title in clusters for m in clusters[title]]
-    assert len(flat) == len(valid), (len(flat), len(valid))
-    for s, m in zip(valid, flat):
-        s["type"], s["status"] = m.get("type", ""), m.get("status", "")
-    samples = valid + nyt
-    split = np.array([0] * len(valid) + [1] * len(nyt), dtype=np.int8)
+    if args.test:
+        valid, nyt = [], []
+        samples = read_jsonl("out/test.jsonl")
+        split = np.full(len(samples), 2, dtype=np.int8)
+    else:
+        valid = read_jsonl("out/valid.jsonl")
+        nyt = read_jsonl("data/nyt/nyt_test.jsonl")
+        # type and status of the validation mentions live in the preprocessed
+        # clusters, in the same order as out/valid.jsonl (see data_processing.py)
+        with open("data/wikipedia/preprocessed/wiki_valid.json") as f:
+            clusters = json.load(f)
+        flat = [m for title in clusters for m in clusters[title]]
+        assert len(flat) == len(valid), (len(flat), len(valid))
+        for s, m in zip(valid, flat):
+            s["type"], s["status"] = m.get("type", ""), m.get("status", "")
+        samples = valid + nyt
+        split = np.array([0] * len(valid) + [1] * len(nyt), dtype=np.int8)
 
     store = lowmem.LowMemStore(args.lowmem)
     t2l = title_to_local(store)
@@ -86,7 +92,7 @@ def main():
     titles10 = np.array([[store.title[int(i)] for i in row] for row in top10], dtype=object)
     gold_title = np.array([store.title[int(g)] if g >= 0 else "" for g in gold], dtype=object)
     ok = gold >= 0
-    for name, m in (("valid", split == 0), ("nyt", split == 1)):
+    for name, m in ((("test", split == 2),) if args.test else (("valid", split == 0), ("nyt", split == 1))):
         mm = m & ok
         print("{}: n={} top1={:.3f} R@10={:.3f} R@100={:.3f}".format(
             name, int(mm.sum()), float((rank[mm] == 0).mean()), float(((rank[mm] >= 0) & (rank[mm] < 10)).mean()), float((rank[mm] >= 0).mean())), flush=True)
