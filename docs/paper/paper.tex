@@ -41,7 +41,7 @@ A news story says that a player won the Rising Star award in 1996. A reader who 
 
 I test four rules for choosing the wrong pages in EVELINK, the event linking system of Yu et al., and I give each rule the same amount of training. One rule uses the right pages of other examples, as EVELINK does. One takes random pages from the 1,000 that the system already ranks highest. One takes only the seven highest. The last is ReSa2, a recent rule that picks pages that score close to the right page and resemble it.
 
-First, ReSa2 works best. The right page is among the first ten results for 93.3\% of held-out mentions, compared with 92.2\% for random pages from the 1,000 and 69.6\% for EVELINK's rule. Second, I measure which pages each rule picks and how much its picks change from run to run. Third, I prove how little an obviously wrong page can teach, and I check the proof in Lean 4. Fourth, the seven highest pages are the worst of the three new rules, and with faster training they break the system. No rule reduces wrong-year mistakes, and none improves the results on news text.
+First, among rules that show seven wrong pages, ReSa2 works best. The right page is among the first ten results for 93.3\% of held-out mentions, compared with 92.2\% for random pages from the 1,000 and 69.6\% for EVELINK's rule. Second, the number of wrong pages matters more than the rule. When the system sees all 999 pages for each example and no rule picks among them, the right page comes first 76.0\% of the time, compared with 69.5\% for ReSa2. Third, I measure which pages each rule picks, and I prove how little an obviously wrong page can teach, with the proof checked in Lean 4. Fourth, every trained system gets worse on news text. A system whose weights are half ReSa2 and half the original is better than the original on both kinds of text: 37.0\% against 33.6\% on news. No rule reduces wrong-year mistakes.
 \end{abstract}
 
 \section{Introduction}
@@ -60,7 +60,7 @@ That is where this project starts. During training, the retriever sees the corre
   \item With the same amount of training, does ReSa2 put the correct page higher in the results than EVELINK's own sampler does?
 \end{enumerate}
 
-The paper has four results. First, I train the EVELINK retriever with four samplers, three times each, and compare them. Second, I measure what each sampler picks. Third, I prove a bound on the training loss and three counting facts about the samplers, and I check the proofs in Lean 4. Fourth, I describe a failure: with the hardest wrong pages and faster training, the retriever stops working and does not recover. The code and the logs are in the project repository.
+The paper has five results. First, I train the EVELINK retriever with four samplers, three times each, and compare them. Second, I repeat the comparison with more wrong pages, up to the whole set of candidates, and find that their number matters more than the sampler. Third, I measure what each sampler picks, and I test which part of ReSa2 does the work. Fourth, I prove a bound on the training loss and three counting facts about the samplers, and I check the proofs in Lean 4. Fifth, I mix the weights of the trained retriever with the released one, and the mix is better than both on news text. The code and the logs are in the project repository.
 
 \section{Event linking: task, system, and evaluation}
 \label{sec:task}
@@ -179,7 +179,7 @@ With the page vectors fixed, the gradient of $L$ with respect to the mention vec
 By the chain rule through equation~\ref{eq:score}, $\nabla_{u_m} L = \sum_i (\partial L/\partial s_i)\, v_{e_i} + (\partial L/\partial s^{+})\, v_{e^{+}} = \sum_i p_i v_{e_i} - \bigl(\sum_i p_i\bigr) v_{e^{+}}$ by Lemma~\ref{lem:push}.
 \end{proof}
 
-Equation~\ref{eq:grad} is a weighted sum of the differences between each negative's page vector and the correct page vector. A negative that scores far below the correct page has $p_i \approx 0$ and moves nothing. A negative that scores close to it has a large $p_i$, and the step is along $v_{e_i} - v_{e^{+}}$. If the two pages are near-duplicates, that difference is small. Section~\ref{sec:collapse} returns to this.
+Equation~\ref{eq:grad} is a weighted sum of the differences between each negative's page vector and the correct page vector. A negative that scores far below the correct page has $p_i \approx 0$ and moves nothing. A negative that scores close to it has a large $p_i$, and the step is along $v_{e_i} - v_{e^{+}}$. If the two pages are near-duplicates, that difference is small.
 
 In the experiment, I keep the loss and the number of negatives fixed. I change which seven pages the model sees.
 
@@ -195,7 +195,7 @@ First, ReSa2 draws 500 pages without replacement. It gives the most weight to pa
   w_i = \exp\!\left(-\tau\,(s_i - s^{+})^2\right), \qquad \tau = 0.25 .
   \label{eq:weight}
 \end{equation}
-It draws one page with probability $w_i / \sum_j w_j$, removes it, and draws again from the pages that are left. The weight drops as the score moves away from $s^{+}$ in either direction. Figure~\ref{fig:weight} shows the weight next to the real scores. The scores are about 550, and most pool pages are 5 to 20 points below the correct page. The weight is close to zero for any page more than 4 points away. So stage 1 first takes the few pages near $s^{+}$, and then fills up to 500 with nearly random pages from the rest. Then ReSa2 compares the 500 pages that are left with the correct page itself. It keeps the 75 pages whose vectors are most similar to the correct page vector and draws seven of those uniformly.
+It draws one page with probability $w_i / \sum_j w_j$, removes it, and draws again from the pages that are left. The weight drops as the score moves away from $s^{+}$ in either direction. Figure~\ref{fig:weight} shows the weight next to the real scores. The scores are about 550, and most pool pages are 5 to 20 points below the correct page. The weight is close to zero for any page more than 4 points away. So stage 1 is close to a fixed rule. It keeps the 500 pages whose scores are closest to $s^{+}$. On 200 stored pools, 96\% of the pages it kept were among those 500, and two draws shared 95\% of their pages. Then ReSa2 compares the 500 pages that are left with the correct page itself. It keeps the 75 pages whose vectors are most similar to the correct page vector and draws seven of those uniformly. After both stages, 89\% of the 75 pages are among the 75 pool pages most similar to the correct page. ReSa2 is therefore close to a simpler rule, which I call \emph{stage 2 only}: seven uniform picks from the 75 most similar pool pages. I test that rule in section~\ref{sec:parts}.
 
 \begin{figure}[t]
 \centering
@@ -267,9 +267,9 @@ The loss bound uses Mathlib, the Lean library of mathematics. The other three cl
 
 I started each run from the released EVELINK model. I kept the page encoder fixed and trained only the mention encoder. Since the page vectors never change, the pool of each mention and its scores can be computed once, before training.
 
-Each run made 1,500 updates. One update uses 32 mentions, each with seven negatives. The learning rate, which sets the size of each update, was $10^{-5}$. It rises from zero over the first 10\% of the updates. The other settings are those of EVELINK. Training has some randomness, so I ran each of the four samplers three times with different random seeds. That gives twelve runs. Each run took about 56 minutes on one NVIDIA A10G GPU.
+Each run made 1,500 updates. One update uses 32 mentions, each with seven negatives. The learning rate, which sets the size of each update, was $10^{-5}$. It rises from zero over about the first 207 updates and then falls slowly. The schedule is sized for one pass over the training data, about 2,075 updates, and not for the 1,500 that I ran. The other settings are those of EVELINK. Training has some randomness, so I ran each of the four samplers three times with different random seeds. That gives twelve runs. Each run took about 56 minutes on one NVIDIA A10G GPU. After these I made twelve more runs to test the result, each with the same settings (sections~\ref{sec:rankings} and~\ref{sec:parts}). Eleven of them use a rule once, and one rule has three runs.
 
-Then I ranked all 5.87 million pages for each of the 16,692 validation mentions and computed recall at 1, 10, and 100 (equation~\ref{eq:recall}). The measure I focus on is recall at ten. If the correct page appears anywhere in the first ten results, I count that mention as a hit.
+Then I ranked all 5.87 million pages for each of the 16,692 validation mentions and computed recall at 1, 10, and 100 (equation~\ref{eq:recall}). The measure I focus on is recall at ten. If the correct page appears anywhere in the first ten results, I count that mention as a hit. I did the same for the 769 New York Times mentions that have a page. Where I give an interval, it is a 95\% bootstrap interval over mentions, with the three runs averaged first.
 
 Before the experiments I checked that I could repeat the published results. The released retriever and reranker gave me an accuracy of 82.88\% on the Wikipedia test set, and the paper reports 82.87\%. On the New York Times set I got 55.33\%, the same as the paper. I did not use the test set for anything else.
 
@@ -281,25 +281,35 @@ Table~\ref{tab:main} gives the results. The released retriever got 77.7 percent 
 \begin{table}[t]
 \centering
 \footnotesize
-\setlength{\tabcolsep}{2.5pt}
-\caption{Recall on the 16,692 validation mentions after 1,500 updates. Each cell is the mean of three runs $\pm$ their standard deviation. ``Released'' is the model before my training. The three runs are listed one by one in Appendix~\ref{app:seeds}.}
+\setlength{\tabcolsep}{4pt}
+\caption{Recall after 1,500 updates on the 16,692 validation mentions, and recall at 10 on the 769 New York Times mentions. $k$ is the number of negatives for each mention. A cell with $\pm$ is the mean of three runs and their standard deviation. The other rows are one run. ``Released'' is the model before my training. The runs are listed one by one in Appendix~\ref{app:seeds} and in \texttt{docs/results/plan} in the repository.}
 \label{tab:main}
-\begin{tabular}{@{}lccc@{}}
+\begin{tabular}{@{}lrcccc@{}}
 \toprule
-Sampler & Top-1 & R@10 & R@100 \\
+Sampler & $k$ & Top-1 & R@10 & R@100 & News R@10 \\
 \midrule
-Released & 42.6 & 77.7 & 93.1 \\
-In-batch & 33.6 $\pm$ 1.9 & 69.6 $\pm$ 1.8 & 89.8 $\pm$ 1.3 \\
-Uniform & 64.3 $\pm$ 0.2 & 92.2 $\pm$ 0.1 & 98.4 $\pm$ 0.1 \\
-Top-score & 65.3 $\pm$ 1.2 & 87.2 $\pm$ 0.9 & 95.9 $\pm$ 0.6 \\
-ReSa2 & \textbf{69.5} $\pm$ 0.3 & \textbf{93.3} $\pm$ 0.1 & \textbf{98.5} $\pm$ 0.1 \\
+Released & & 42.6 & 77.7 & 93.1 & 33.6 \\
+In-batch & 7 & 33.6 $\pm$ 1.9 & 69.6 $\pm$ 1.8 & 89.8 $\pm$ 1.3 & 24.4 \\
+Uniform & 7 & 64.3 $\pm$ 0.2 & 92.2 $\pm$ 0.1 & 98.4 $\pm$ 0.1 & 27.4 \\
+Top-score & 7 & 65.3 $\pm$ 1.2 & 87.2 $\pm$ 0.9 & 95.9 $\pm$ 0.6 & 14.4 \\
+ReSa2 & 7 & 69.5 $\pm$ 0.3 & 93.3 $\pm$ 0.1 & 98.5 $\pm$ 0.1 & 30.9 \\
+\midrule
+Correct pages of other mentions & 7 & 32.9 & 68.2 & 88.7 & 21.5 \\
+Correct pages of other mentions & 63 & 42.9 & 79.4 & 94.3 & 23.1 \\
+Uniform & 63 & 71.0 & 94.1 & 98.8 & 29.4 \\
+All pool pages & 999 & \textbf{76.0} & \textbf{94.7} & \textbf{98.8} & 31.7 \\
+Stage 2 only & 7 & 69.2 $\pm$ 0.4 & 92.9 $\pm$ 0.3 & 98.3 $\pm$ 0.1 & 27.0 \\
+\midrule
+ReSa2 mixed 50\% with released & 7 & 62.4 $\pm$ 0.4 & 91.0 $\pm$ 0.1 & 97.9 $\pm$ 0.1 & \textbf{37.0} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Most of the improvement came from drawing negatives from the pool. ReSa2 added 1.1 percentage points over uniform sampling at ten. The difference was larger at rank one. With uniform sampling, the correct page came first 64.3 percent of the time. With ReSa2, it came first 69.5 percent of the time. For both samplers the three runs differ by 0.1 to 0.3 points, so the gap between them is much larger than the differences between runs.
+Most of the improvement came from drawing negatives from the pool. ReSa2 added 1.1 percentage points over uniform sampling at ten (interval 0.9 to 1.3). The difference was larger at rank one. With uniform sampling, the correct page came first 64.3 percent of the time. With ReSa2, it came first 69.5 percent of the time. For both samplers the three runs differ by 0.1 to 0.3 points, so the gap between them is much larger than the differences between runs.
 
-In-batch sampling finished below the released model. I think the reason is the small number of negatives. Seven random pages are almost always easy, and by Lemma~\ref{lem:bound} easy pages add almost nothing to the loss. The original training of EVELINK used many more pages at each update and ran for longer.
+In-batch sampling finished below the released model. I first suspected my code. So I ran the rule again in a cleaner way, with the stored page vectors, the same mentions as the pool runs, and random correct pages of other mentions as the negatives. With seven such pages recall at ten was 68.2, about the same as before. With 63, the number that EVELINK's own training used, it was 79.4, close to the released model. So the low row is real. Seven random pages are almost always easy, and by Lemma~\ref{lem:bound} easy pages add almost nothing to the loss.
+
+The number of negatives matters more than the sampler. Uniform sampling with 63 negatives put the correct page first 71.0 percent of the time, 1.5 points above ReSa2 with seven (interval 1.1 to 1.9). With all 999 pool pages for each mention there is no sampler at all, and the correct page came first 76.0 percent of the time, 6.4 points above ReSa2 (6.0 to 6.8). The stored page vectors make this cheap, because one more negative costs one more dot product. ReSa2 is the best rule I tested when only seven negatives are used. It is not better than the whole pool.
 
 \subsection{Which pages the samplers pick}
 \label{sec:picks}
@@ -331,7 +341,7 @@ ReSa2     & 2.15 / 3.98 / 0.87 / 0.00 & 84  & 0.05 & $-8.6$ \\
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.8\textwidth]{figures/draws_one_mention.pdf}
+\includegraphics[width=0.72\textwidth]{figures/draws_one_mention.pdf}
 \caption{Twenty draws of seven negatives for one validation mention. Each row is one draw. Top-score picks the same seven pages every time. Uniform spreads over the whole pool. ReSa2 stays among the pages most like the correct page and changes from draw to draw.}
 \label{fig:draws}
 \end{figure}
@@ -340,10 +350,19 @@ ReSa2 picked about six of its seven negatives from the 75 pages most similar to 
 
 The last column says how hard the negatives are. On average, ReSa2's negatives score 8.6 points below the correct page. Uniform negatives score 13.3 points below it, so they are easier. Top-score negatives score only 1.4 points below it, so they are the hardest. Figure~\ref{fig:incl} shows the same picture page by page. Top-score puts most of its picks on the first few pages, which are the near-copies of the correct page.
 
+\subsection{Which part of ReSa2 does the work}
+\label{sec:parts}
+
+ReSa2 has two stages, and I wanted to know which one matters. I split the pool of each mention into four bands by similarity to the correct page: the 25 most similar pages, the next 50, the next 225, and the rest. I trained one model for each band, with seven uniform picks from that band. The correct page came first for 69.5, 66.6, 63.3, and 59.9 percent of the validation mentions. Each step away from the correct page costs about three points, and the interval of each step is about half a point on each side. Recall at 100 was the same for all four bands (98.3 to 98.4). The similar pages decide which page comes first.
+
+Stage 2 only got 69.2 / 92.9 / 98.3 over three runs. Before the runs I set the margin for ``equal to ReSa2'' at 0.5 points at rank one and 0.3 points of recall at ten. The differences were 0.30 and 0.42 points, so the second is outside the margin. On news text the gap is larger. Recall at ten was 27.0, against 30.9 for ReSa2. Stage 1 changes few pages, but those pages matter, most of all on text that differs from the training data.
+
+Last, I let a bandit choose the band. The EXP3 rule~\cite{auer2002exp3} picked one band for each ten updates. Its reward was the fall of the loss on 128 held-out training mentions, measured against the whole pool. After 150 rounds the probabilities of the four bands were 0.25, 0.35, 0.26, and 0.14. The bandit learned to use the far band less, and no more than that. Its model put the correct page first 68.5 percent of the time, one point below ReSa2. The reward is too noisy for 150 rounds. In the fixed-band runs its standard deviation was about eight times its mean.
+
 \subsection{Mention types, error types, and news text}
 \label{sec:gaps}
 
-The proposal included three checks: performance by mention type, time and hierarchy mistakes, and transfer to news text. ReSa2 improves the first check. It does not reduce time mistakes or improve retrieval on news text relative to the released model.
+The proposal included three checks: performance by mention type, time and hierarchy mistakes, and transfer to news text. ReSa2 improves the first check. It does not reduce time mistakes. On news text it is worse than the released model, unless its weights are mixed with the released ones.
 
 Figure~\ref{fig:class} gives recall at 10 by mention type. Hard noun mentions are the weakest category for the released retriever, with 68.9\%. ReSa2 raises this to 90.3\%. Uniform sampling reaches 88.8\%, while top-score reaches 84.9\%.
 
@@ -358,8 +377,6 @@ ReSa2 leads uniform sampling in every mention category. Its largest lead is on u
 
 The error breakdown in Figure~\ref{fig:errors} is less favorable to the original motivation. Time mistakes remain close to 2\% of all validation mentions. The released model has 1.8\%, uniform and top-score have 2.1\%, and ReSa2 has 2.0\%. There is no reduction here.
 
-One possible reason concerns where wrong-year pages score. A wrong-year page can score above the correct page. ReSa2's first step prefers scores near the positive score, so it can reduce selection of pages far above it. If those pages need correction, selecting them less often can leave the mistake unresolved. This is a possible mechanism, not proof that it explains the observed result.
-
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.8\textwidth]{figures/mistakes.pdf}
@@ -371,9 +388,11 @@ Top-score produces the fewest hierarchy mistakes: 3.0\% of validation mentions, 
 
 The news results in Figure~\ref{fig:beforeafter} show a transfer limit. On the 769 New York Times mentions with a page, the released retriever gets 33.6\% recall at 10. ReSa2 gets 30.9\%. Recall at 100 also falls, from 57.3\% to 55.9\%. ReSa2 performs better than the other retrained rules on this dataset, but it does not beat the released model. The gains after 1,500 Wikipedia training updates do not carry over to news text.
 
+Weight mixing changes this. I averaged the weights of the released mention encoder and a ReSa2 mention encoder, as in WiSE-FT~\cite{wortsman2022wiseft}. I named the half-and-half mix as the main result before I looked at any number. Over the three ReSa2 runs, the mix got 37.0\% recall at 10 on the news mentions, 3.4 points above the released model (interval 1.4 to 5.5), and 61.6\% recall at 100. On validation it got 91.0\%, which is 2.3 points below ReSa2 and 13.3 above the released model. A mix with 25\% ReSa2 also gave 37.0\% on news, with 86.7\% on validation. A mix with 75\% gave 34.1\% and 92.9\%.
+
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.8\textwidth]{figures/before_after.pdf}
+\includegraphics[width=0.66\textwidth]{figures/before_after.pdf}
 \caption{Recall at 10 before and after training. On Wikipedia three samplers improve the released retriever. On news text every sampler makes it worse.}
 \label{fig:beforeafter}
 \end{figure}
@@ -383,22 +402,11 @@ The error labels are approximate. A title rule identifies the same title with a 
 \subsection{What happened at the higher learning rate}
 \label{sec:collapse}
 
-My first twelve runs used a learning rate three times higher, $3 \times 10^{-5}$. One ReSa2 run and one top-score run collapsed. Figure~\ref{fig:loss} shows the training loss. It jumped once, just after the learning rate reached its highest value, from about 0.13 to about 0.3, and it stayed there. When I looked at the scores, I found that the mention encoder gave almost every page a score of about two. It gave roughly the same score to the correct page and to a random page. A healthy model gives about 550 to the correct page and 545 to a random one. The weights stayed finite. The loss over the eight training pages could still look modest while the ranking across millions of pages had fallen apart.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.8\textwidth]{figures/loss_curves.pdf}
-\caption{Training loss at the higher learning rate for two healthy runs (solid) and the two collapsed runs (dashed). The dotted line marks the update at which the learning rate reaches its highest value. The collapsed runs jump once and stay at about 0.3.}
-\label{fig:loss}
-\end{figure}
-
-One possible explanation is in Corollary~\ref{cor:grad}. When a negative scores close to the correct page, it gets a substantial share of the training signal. If the two page vectors are also similar, the update depends on the small difference between them. My hypothesis is that repeated updates at the higher learning rate weakened the part of the mention vector that lined up with the page vectors. The scores are consistent with that explanation. Uniform and in-batch runs, whose negatives are far from the correct page, never jumped.
-
-I tried training the collapsed model for another 1,500 updates. I tried ReSa2 negatives in one run and uniform negatives in another. Recall at ten stayed at zero in both. Then I started again from the released model with a learning rate of $10^{-5}$. All twelve runs trained without collapsing, and every sampler scored better than at the higher rate (Appendix~\ref{app:seeds}). Those twelve runs are the ones reported above.
+My first twelve runs used a learning rate three times higher, $3 \times 10^{-5}$. One ReSa2 run and one top-score run collapsed soon after the learning rate reached its highest value: the mention encoder gave almost every page the same score, recall at ten fell to 0.1\%, and 1,500 more updates did not bring it back. At $10^{-5}$ no run collapsed and every sampler scored better (Appendix~\ref{app:seeds}), so those are the runs I report.
 
 \section{Conclusion}
 
-I started with the difference between the 1996 award and the 1998 award. The results make that example more specific for me. I want the retriever to see pages that are close enough to make it pay attention to the year. I also want it to see a different set of pages the next time it trains on that mention. In these runs, ReSa2 gave me that variety and put the correct page first more often than any of the other samplers I tested. It did not fix everything. The wrong-year errors that started this paper are as frequent after training as before, with every sampler, and on news text the released model still retrieves better than any of the fine-tuned ones.
+I started with the difference between the 1996 award and the 1998 award. The results make that example more specific for me. I want the retriever to see pages that are close enough to make it pay attention to the year. I also want it to see a different set of pages the next time it trains on that mention. In these runs, ReSa2 gave me that variety and put the correct page first more often than any other sampler with seven negatives. The larger lesson was about the number seven. When the page vectors are stored, the retriever can train against the whole pool, and that was better than any sampler. A sampler matters when negatives are expensive. None of this fixed everything. The wrong-year errors that started this paper are as frequent after training as before, with every sampler. On news text every fine-tuned model is worse than the released one, and only the mix of the two is better than both.
 
 \section*{Limitations}
 
@@ -406,27 +414,25 @@ The new comparisons use validation data. I did not use the test set to evaluate 
 
 The page encoder is frozen, and each mention's candidate pool comes from the released model's first 1,000 results. The page vectors and candidate membership stay fixed. Mention-side training can still change their scores. Training both encoders or refreshing the pools could produce different results.
 
-Each rule receives 1,500 updates with seven negatives per example. The study uses three runs for each rule and two learning rates. This supports a comparison under one training budget. It does not establish the best rule across tasks, budgets, or model settings.
+Each run receives 1,500 updates. The four main rules and stage 2 only have three runs each. The later runs (63 negatives, the whole pool, the four bands, the bandit) have one run each, so for them I can give the noise over mentions but not the noise over runs. The news set has 769 mentions with a page, and I looked at it more than once. The half-and-half mix was named before its numbers were seen. The other two mixes are there to show the trend.
 
-Two runs failed at the higher learning rate. Their failure does not, by itself, establish the cause. Any explanation of those failures must remain separate from the observed result.
+Two runs failed at the higher learning rate. I did not find the cause.
 
 The fixed candidate pools also limit what training can address. For about 2\% of mentions, the correct page is absent from the first 1,000 candidates. The experiments do not explore negatives outside those pools.
 
 The Lean proofs cover specific mathematical claims. They do not verify the training code, the data, the experimental results, or the assumption that an above-positive page is a false negative. The derivative and gradient arguments remain outside Lean.
 
-Finally, the error analysis uses title rules rather than a full human review. Its categories are useful for an initial comparison, but they are not a complete account of event relationships.
-
 \section*{How I used AI}
 
 AI assistance was a large part of this project. Before the proposal, I used Codex to search for papers from researchers in the instructor's academic circle about linking documents, which led to Event Linking, and then for a more recent negative sampler, which led to ReSa2 and SimANS. It also wrote ``learning versions'' of the papers that explained them through the concepts of this course (conditional probability, indicator variables, expectation) with small examples; I read those first and the full papers second.
 
-During the project I used Claude, through an agent that ran on my computer and on a cloud GPU. The agent did substantial implementation work. It set up the cloud environment, changed the implementation to fit a 24 GB GPU, implemented the sampling rules, ran the 24 training runs, and produced tables, figures, and Lean proofs.
+During the project I used Claude, through an agent that ran on my computer and on a cloud GPU. The agent did substantial implementation work. It set up the cloud environment, changed the implementation to fit a 24 GB GPU, implemented the sampling rules, ran the 36 training runs, and produced tables, figures, and Lean proofs.
 
 That work had failures. These included out-of-memory errors, a full disk, a run that reached its time limit, and a bug in the original validation code. The process required checks and corrections.
 
 The checks included reproducing the released system's accuracy, tests for the sampling rules, three runs for each rule, and Lean checks for the formal claims. These checks cover different parts of the work. Reproducing the baseline does not verify every later experiment, and Lean does not verify the training implementation.
 
-AI also helped write the paper. I narrated the introduction, sections~\ref{sec:math} and~\ref{sec:samplers}, the main results, and the conclusion, and the agent turned the narration into plain technical English. Sections~\ref{sec:task}, \ref{sec:lean} and~\ref{sec:gaps}, the related work, the limitations, and this section were generated from a sheet of questions, facts, and results. I asked an agent to turn that material into prose in my voice. They were not transcribed from my spoken narration.
+AI also helped write the paper. I narrated the introduction, sections~\ref{sec:math} and~\ref{sec:samplers}, the main results, and the conclusion, and the agent turned the narration into plain technical English. Sections~\ref{sec:task}, \ref{sec:lean} and~\ref{sec:gaps}, the related work, the limitations, and this section were generated from a sheet of questions, facts, and results. I asked an agent to turn that material into prose in my voice. They were not transcribed from my spoken narration. The paragraphs on the later runs (more negatives, the bands, the bandit, and weight mixing) were drafted by the agent from the result tables.
 
 The repository contains an AI-usage log with an entry for each session. The prompts and outputs are also retained.
 
@@ -438,6 +444,8 @@ The repository contains an AI-usage log with an entry for each session. The prom
 \bibitem[Xiong et al.(2021)]{xiong2021ance} Lee Xiong, Chenyan Xiong, Ye Li, Kwok-Fung Tang, Jialin Liu, Paul Bennett, Junaid Ahmed, and Arnold Overwijk. 2021. Approximate Nearest Neighbor Negative Contrastive Learning for Dense Text Retrieval. In \emph{Proceedings of ICLR}.
 \bibitem[Qu et al.(2021)]{qu2021rocketqa} Yingqi Qu, Yuchen Ding, Jing Liu, Kai Liu, Ruiyang Ren, Wayne Xin Zhao, Daxiang Dong, Hua Wu, and Haifeng Wang. 2021. RocketQA: An Optimized Training Approach to Dense Passage Retrieval for Open-Domain Question Answering. In \emph{Proceedings of NAACL}.
 \bibitem[Zhou et al.(2022)]{zhou2022simans} Kun Zhou, Yeyun Gong, Xiao Liu, Wayne Xin Zhao, Yelong Shen, Anlei Dong, Jingwen Lu, Rangan Majumder, Ji-Rong Wen, and Nan Duan. 2022. SimANS: Simple Ambiguous Negatives Sampling for Dense Text Retrieval. In \emph{Proceedings of EMNLP Industry Track}.
+\bibitem[Auer et al.(2002)]{auer2002exp3} Peter Auer, Nicol\`o Cesa-Bianchi, Yoav Freund, and Robert E. Schapire. 2002. The Nonstochastic Multiarmed Bandit Problem. \emph{SIAM Journal on Computing}, 32(1).
+\bibitem[Wortsman et al.(2022)]{wortsman2022wiseft} Mitchell Wortsman, Gabriel Ilharco, Jong Wook Kim, Mike Li, Simon Kornblith, Rebecca Roelofs, Raphael Gontijo Lopes, Ali Farhadi, Hongseok Namkoong, and Ludwig Schmidt. 2022. Robust Fine-Tuning of Zero-Shot Models. In \emph{Proceedings of CVPR}.
 \end{thebibliography}
 
 \appendix
@@ -493,8 +501,8 @@ The opening comment, the proof of \texttt{loss\_eq\_log\_gaps}, and \texttt{loss
 \lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={28-35,60-78}]{../../lean/LossBound.lean}
 
 \subsection*{FalseNegatives.lean}
-The opening comment, the proof of the helper \texttt{countP\_take\_append}, and the three examples at the end of the file are left out here.
+The opening comment, the helper \texttt{countP\_take\_append}, and the three examples at the end of the file are left out here.
 
-\lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={17-30,37-43,61-66,72-81}]{../../lean/FalseNegatives.lean}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={17-30,37-38,61-66,74-81}]{../../lean/FalseNegatives.lean}
 
 \end{document}
