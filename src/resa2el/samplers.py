@@ -98,5 +98,48 @@ def gold_random(gold_of_mentions, own_gold, k, rng):
     return np.asarray(out)
 
 
+def mixed(scores, s_pos, sims, k, rng, n_hard=4, n_near=25):
+    """Hard and random together (the recipe of DPR and RocketQA): n_hard uniform picks
+    from the n_near pool pages most similar to the correct page, and k - n_hard uniform
+    picks from the other pool pages."""
+    order = np.argsort(-np.asarray(sims), kind="stable")
+    near, far = order[:n_near], order[n_near:]
+    n_hard = min(n_hard, k, len(near))
+    return np.concatenate([rng.choice(near, n_hard, replace=False),
+                           rng.choice(far, k - n_hard, replace=False)])
+
+
+def top_below(scores, s_pos, sims, k, rng):
+    """The k highest-scoring pages among the pages that score below the correct page.
+    A page that scores above the correct page is often a second correct answer or a
+    near copy (a false negative), so it is skipped. If fewer than k pages are below,
+    the pages just above the correct page fill the rest. No randomness."""
+    order = np.argsort(-np.asarray(scores), kind="stable")  # highest score first
+    n_above = int((np.asarray(scores) >= s_pos).sum())
+    below, above = order[n_above:], order[:n_above]
+    sel = below[:k]
+    if len(sel) < k:
+        sel = np.concatenate([sel, above[::-1][:k - len(sel)]])
+    return sel
+
+
+def score_prop(scores, k, rng, temp=1.0):
+    """Sampled softmax with a correction. Draw k pages WITH replacement, page i with
+    probability q_i = softmax(scores / temp)_i. Returns (indices, log q of each pick).
+
+    The training loss subtracts log(k * q_i) from the logit of each pick. Then
+    (1/k) * sum_i exp(s_i) / q_i is an unbiased estimate of the sum of exp(s_j) over
+    all wrong pages of the pool, so the loss with k picks estimates the loss with the
+    whole pool. With temp = 1 every pick gives the exact sum."""
+    z = np.asarray(scores, dtype=np.float64) / temp
+    z = z - z.max()
+    logq = z - np.log(np.exp(z).sum())
+    idx = rng.choice(len(z), k, replace=True, p=np.exp(logq))
+    return idx, logq[idx]
+
+
 SAMPLERS = {"uniform": uniform, "topscore": topscore, "resa2": resa2,
-            "band": band, "stage2_only": stage2_only, "allpool": allpool}
+            "band": band, "stage2_only": stage2_only, "allpool": allpool, "mixed": mixed}
+
+# Samplers that use the scores of the model in training (live scores), not the stored scores.
+LIVE = ("live_top", "live_top_below", "score_prop")

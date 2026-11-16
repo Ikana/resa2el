@@ -33,3 +33,25 @@ def batch_candidates(sample_idx, pools, sampler_name, k, rng, sampler_kw=None, g
                                        sims[i][not_gold].astype(np.float64), k, rng, **(sampler_kw or {}))
         cand[r, 1:] = pool_ids[np.asarray(sel)]
     return cand
+
+
+def live_select(live_scores, live_pos, name, k, rng, temp=1.0):
+    """Negatives chosen from live scores. `live_scores` has shape (B, N): the score of
+    each wrong pool page under the model in training. `live_pos` (B,) is the live score
+    of the correct page. Returns (sel, corr), both of shape (B, k): the columns picked,
+    and the number to subtract from the logit of each pick (zero unless score_prop)."""
+    B = len(live_scores)
+    sel = np.empty((B, k), dtype=np.int64)
+    corr = np.zeros((B, k), dtype=np.float32)
+    for r in range(B):
+        sc = np.asarray(live_scores[r], dtype=np.float64)
+        if name == "live_top":
+            sel[r] = S.topscore(sc, float(live_pos[r]), None, k, rng)
+        elif name == "live_top_below":
+            sel[r] = S.top_below(sc, float(live_pos[r]), None, k, rng)
+        elif name == "score_prop":
+            sel[r], logq = S.score_prop(sc, k, rng, temp)
+            corr[r] = np.log(k) + logq
+        else:
+            raise ValueError(name)
+    return sel, corr

@@ -48,3 +48,23 @@ def test_heldout_is_fixed_and_removed_from_training():
     assert not set(tr1.tolist()) & set(h1.tolist())
     tr, h = C.split_heldout(keep, 0)
     assert len(h) == 0 and np.array_equal(tr, keep)
+
+
+def test_live_select_shapes_and_correction():
+    import numpy as np
+    from resa2el import candidates as C
+    rng = np.random.default_rng(0)
+    live = rng.normal(size=(4, 999)) * 3
+    pos = np.zeros(4)
+    for name in ("live_top", "live_top_below", "score_prop"):
+        sel, corr = C.live_select(live, pos, name, 7, rng)
+        assert sel.shape == (4, 7) and corr.shape == (4, 7)
+        assert sel.min() >= 0 and sel.max() < 999
+    sel, _ = C.live_select(live, pos, "live_top", 7, rng)
+    assert set(sel[0].tolist()) == set(np.argsort(live[0])[-7:].tolist())
+    sel, _ = C.live_select(live, pos, "live_top_below", 7, rng)
+    assert (np.take_along_axis(live, sel, 1) < 0).all()
+    # score_prop at temp 1: corrected logits give the exact whole-pool sum
+    sel, corr = C.live_select(live, pos, "score_prop", 7, rng)
+    est = np.exp(np.take_along_axis(live, sel, 1) - corr).sum(1)
+    assert np.allclose(est, np.exp(live).sum(1), rtol=1e-4)

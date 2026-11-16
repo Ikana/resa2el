@@ -122,3 +122,47 @@ def test_gold_random_never_returns_the_own_page():
             sel = S.gold_random(gold_ids, own, k, rng)
             assert len(sel) == k and len(set(sel.tolist())) == k and own not in sel.tolist()
             assert set(sel.tolist()) <= set(gold_ids.tolist())
+
+
+# --- samplers added on 2026-11-16 ---
+
+def test_mixed_takes_hard_and_far_pages():
+    rng = np.random.default_rng(0)
+    sims = rng.normal(size=999)
+    near = set(np.argsort(-sims)[:25].tolist())
+    for _ in range(50):
+        sel = S.mixed(None, 0.0, sims, 7, rng)
+        assert len(set(sel.tolist())) == 7
+        assert sum(int(i) in near for i in sel) == 4
+
+
+def test_top_below_skips_pages_above_the_correct_page():
+    scores = np.array([9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0])
+    sel = S.top_below(scores, 6.5, None, 3, None)
+    assert sorted(sel.tolist()) == [3, 4, 5]
+
+
+def test_top_below_fills_from_just_above():
+    scores = np.array([9.0, 8.0, 7.0, 1.0, 0.0])
+    sel = S.top_below(scores, 6.5, None, 3, None)
+    assert sorted(sel.tolist()) == [2, 3, 4]  # two below, then the page just above
+
+
+def test_score_prop_estimate_is_exact_at_temp_1():
+    rng = np.random.default_rng(1)
+    scores = rng.normal(size=200) * 3
+    total = np.exp(scores).sum()
+    idx, logq = S.score_prop(scores, 7, rng, temp=1.0)
+    est = np.mean(np.exp(scores[idx]) / np.exp(logq))
+    assert abs(est - total) / total < 1e-9
+
+
+def test_score_prop_estimate_is_unbiased_at_other_temp():
+    rng = np.random.default_rng(2)
+    scores = rng.normal(size=50)
+    total = np.exp(scores).sum()
+    est = []
+    for _ in range(4000):
+        idx, logq = S.score_prop(scores, 7, rng, temp=2.0)
+        est.append(np.mean(np.exp(scores[idx]) / np.exp(logq)))
+    assert abs(np.mean(est) - total) / total < 0.01

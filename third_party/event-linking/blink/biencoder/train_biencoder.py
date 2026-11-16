@@ -125,6 +125,17 @@ def _logits(reranker, context_input, cand, encoding, device):
 
 def _sampled_loss(reranker, context_input, sample_idx, pools, encoding, sampler_name, k, rng, device, sampler_kw):
     """Cross-entropy of the correct page against k sampled negatives."""
+    if sampler_name in _resa2el("samplers").LIVE:
+        # Live scores: score the whole pool with the model in training, then pick k columns.
+        C = _resa2el("candidates")
+        cand = C.batch_candidates(sample_idx, pools, "allpool", 999, None)
+        full = _logits(reranker, context_input, cand, encoding, device)  # batch x 1000, column 0 is the correct page
+        live = full.detach().float().cpu().numpy()
+        sel, corr = C.live_select(live[:, 1:], live[:, 0], sampler_name, k, rng, **sampler_kw)
+        neg = full[:, 1:].gather(1, torch.from_numpy(sel).to(device)) - torch.from_numpy(corr).to(device)
+        logits = torch.cat([full[:, :1], neg], dim=1)
+        target = torch.zeros(len(sample_idx), dtype=torch.long, device=device)
+        return F.cross_entropy(logits, target, reduction="mean")
     cand = _resa2el("candidates").batch_candidates(sample_idx, pools, sampler_name, k, rng, sampler_kw, pools["gold_ids"])
     logits = _logits(reranker, context_input, cand, encoding, device)
     target = torch.zeros(len(sample_idx), dtype=torch.long, device=device)
@@ -226,6 +237,10 @@ def main(params):
         sampler_kw = {}
         if sampler_name == "resa2":
             sampler_kw = dict(n_stage1=params["resa2_stage1"], n_stage2=params["resa2_stage2"], tau=params["resa2_tau"])
+        if sampler_name == "mixed":
+            sampler_kw = dict(n_hard=params["mixed_hard"], n_near=params["mixed_near"])
+        if sampler_name == "score_prop":
+            sampler_kw = dict(temp=params["temp"])
         if sampler_name == "band":
             sampler_kw = dict(lo=params["band_lo"], hi=params["band_hi"] if params["band_hi"] > 0 else None)
         sampler_rng = np.random.default_rng(params["seed"])
@@ -447,7 +462,10 @@ if __name__ == "__main__":
     parser.add_training_args()
     parser.add_eval_args()
     # Sampler training (added for resa2el)
-    parser.add_argument("--sampler", default="in_batch", choices=["in_batch", "uniform", "topscore", "resa2", "band", "stage2_only", "allpool", "gold_random", "bandit"])
+    parser.add_argument("--sampler", default="in_batch", choices=["in_batch", "uniform", "topscore", "resa2", "band", "stage2_only", "allpool", "gold_random", "bandit", "mixed", "live_top", "live_top_below", "score_prop"])
+    parser.add_argument("--mixed_hard", type=int, default=4, help="sampler mixed: picks from the most similar pages")
+    parser.add_argument("--mixed_near", type=int, default=25, help="sampler mixed: number of most similar pages")
+    parser.add_argument("--temp", type=float, default=1.0, help="sampler score_prop: temperature of the proposal")
     parser.add_argument("--band_lo", type=int, default=0, help="sampler band: first similarity rank of the band")
     parser.add_argument("--band_hi", type=int, default=75, help="sampler band: end of the band (not included); 0 means the end of the pool")
     parser.add_argument("--skip_valid_eval", action="store_true", help="skip the two in-batch evaluations on the validation set (7.5 minutes each)")

@@ -1,0 +1,5 @@
+# Four new samplers (2026-11-16). NAME SEED KEEP SAMPLER_ARGS
+scoreprop 0 0 --sampler score_prop --temp 1.0 --negatives 7
+mixed 0 0 --sampler mixed --mixed_hard 4 --mixed_near 25 --negatives 7
+livetop 0 0 --sampler live_top --negatives 7
+livetopbelow 0 0 --sampler live_top_below --negatives 7
