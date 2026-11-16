@@ -1,0 +1,216 @@
+Shutdown scheduled for Mon 2026-11-16 20:54:00 UTC, use 'shutdown -c' to cancel.
+Shutdown scheduled for Mon 2026-11-16 20:54:00 UTC, use 'shutdown -c' to cancel.
+Mon Nov 16 16:14:00 UTC 2026
+=== train livetop seed 1: --sampler live_top --negatives 7 ===
+Namespace(silent=False, debug=False, data_parallel=False, no_cuda=False, top_k=10, seed=1, zeshel=False, max_seq_length=256, max_context_length=256, max_cand_length=256, path_to_model='models/biencoder/pytorch_model.bin', bert_model='bert-large-uncased', pull_from_layer=-1, lowercase=True, context_key='context', out_dim=1, add_linear=False, data_path='out', output_path='runs/plan/livetop_s1', eval
+11/16/2026 16:16:16 - INFO - Blink -   cand_encoder frozen
+11/16/2026 16:16:26 - INFO - Blink -   sampler live_top: 66425 of 66425 mentions train, 0 are held out
+tep 3599 - epoch 0 average loss: 0.28488397009670735
+11/16/2026 16:54:50 - INFO - Blink -   max_updates 1500 reached
+11/16/2026 16:54:52 - INFO - Blink -   The training took 38.284058316548666 minutes
+	Command being timed: "python blink/biencoder/train_biencoder.py --output_path runs/plan/livetop_s1 --seed 1 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 39:59.59
+	Maximum resident set size (kbytes): 22673180
+=== ranks of livetop seed 1 on valid and NYT ===
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (125s)
+  | 109/145 [03:03<01:00,  1.69s/it]encode mentions:  76%|███████▌  | 110/145 [03:05<00:59,  1.69s/it]encode mentions:  77%|███████▋  | 111/145 [03:07<00:57,  1.69s/it]encode mentions:  77%|███████▋  | 112/145 [03:08<00:55,  1.69s/it]encode mentions:  78%|███████▊  | 113/145 [03:10<00:54,  1.69s/it]encode mentions:  79%|███
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.756 R@10=0.946 R@100=0.987
+nyt: n=769 top1=0.103 R@10=0.287 R@100=0.541
+wrote runs/plan/ranks/livetop_s1.npz (791s)
+/dev/root       193G  187G  6.0G  97% /
+total 193188
+drwxrwxr-x  2 ubuntu ubuntu    4096 Nov 16 17:08 .
+drwxrwxr-x 22 ubuntu ubuntu    4096 Nov 16 16:15 ..
+-rw-rw-r--  1 ubuntu ubuntu 7295435 Nov 14 18:12 allpool_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7320873 Nov 14 20:29 band_25to75_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7361884 Nov 14 21:25 band_75to300_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7386118 Nov 14 22:21 band_rest_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7290221 Nov 14 19:33 band_top25_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7303307 Nov 15 02:06 bandit_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7290177 Nov 14 16:28 goldrand63_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7117673 Nov 14 15:37 goldrand7_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7287439 Nov 16 14:47 livetop_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7287418 Nov 16 17:08 livetop_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7339943 Nov 16 15:39 livetopbelow_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7373626 Nov 15 03:01 mix25_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7374925 Nov 15 03:14 mix25_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7383211 Nov 15 03:28 mix25_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7368317 Nov 15 02:19 mix50_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7381612 Nov 15 02:33 mix50_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7391715 Nov 15 02:47 mix50_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7345924 Nov 15 03:42 mix75_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7370951 Nov 15 03:55 mix75_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7379845 Nov 15 04:09 mix75_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7286709 Nov 16 13:54 mixed_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7290799 Nov 16 13:03 scoreprop_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7341498 Nov 15 04:24 soup_s012.npz
+-rw-rw-r--  1 ubuntu ubuntu 7293075 Nov 14 23:11 stage2only_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7293914 Nov 15 00:01 stage2only_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7300091 Nov 15 00:51 stage2only_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7306350 Nov 14 17:19 uniform63_s0.npz
+Mon Nov 16 17:08:44 UTC 2026
+PLAN_OK
+
+PLAN_EXIT=0
+Mon Nov 16 17:08:44 UTC 2026
+mixed 1 model(s) at alpha 0.50: 384 of 782 tensors differ from the start model
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (131s)
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.678 R@10=0.924 R@100=0.981
+nyt: n=769 top1=0.121 R@10=0.360 R@100=0.612
+wrote runs/plan/ranks/livetopmix50_s1.npz (796s)
+Shutdown scheduled for Mon 2026-11-16 22:02:56 UTC, use 'shutdown -c' to cancel.
+Mon Nov 16 17:22:56 UTC 2026
+=== train livetop seed 2: --sampler live_top --negatives 7 ===
+Namespace(silent=False, debug=False, data_parallel=False, no_cuda=False, top_k=10, seed=2, zeshel=False, max_seq_length=256, max_context_length=256, max_cand_length=256, path_to_model='models/biencoder/pytorch_model.bin', bert_model='bert-large-uncased', pull_from_layer=-1, lowercase=True, context_key='context', out_dim=1, add_linear=False, data_path='out', output_path='runs/plan/livetop_s2', eval
+11/16/2026 17:23:29 - INFO - Blink -   cand_encoder frozen
+11/16/2026 17:23:41 - INFO - Blink -   sampler live_top: 66425 of 66425 mentions train, 0 are held out
+ep 3599 - epoch 0 average loss: 0.259056705981493
+11/16/2026 18:02:03 - INFO - Blink -   max_updates 1500 reached
+11/16/2026 18:02:05 - INFO - Blink -   The training took 38.27752540111542 minutes
+	Command being timed: "python blink/biencoder/train_biencoder.py --output_path runs/plan/livetop_s2 --seed 2 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 39:51.32
+	Maximum resident set size (kbytes): 22679460
+=== ranks of livetop seed 2 on valid and NYT ===
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (123s)
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 cand+ true
+idates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.756 R@10=0.947 R@100=0.988
+nyt: n=769 top1=0.103 R@10=0.299 R@100=0.540
+wrote runs/plan/ranks/livetop_s2.npz (789s)
+/dev/root       193G  187G  6.0G  97% /
+total 207516
+drwxrwxr-x  2 ubuntu ubuntu    4096 Nov 16 18:16 .
+drwxrwxr-x 23 ubuntu ubuntu    4096 Nov 16 17:22 ..
+-rw-rw-r--  1 ubuntu ubuntu 7295435 Nov 14 18:12 allpool_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7320873 Nov 14 20:29 band_25to75_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7361884 Nov 14 21:25 band_75to300_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7386118 Nov 14 22:21 band_rest_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7290221 Nov 14 19:33 band_top25_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7303307 Nov 15 02:06 bandit_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7290177 Nov 14 16:28 goldrand63_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7117673 Nov 14 15:37 goldrand7_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7287439 Nov 16 14:47 livetop_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7287418 Nov 16 17:08 livetop_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7309640 Nov 16 18:16 livetop_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7339943 Nov 16 15:39 livetopbelow_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7358768 Nov 16 17:22 livetopmix50_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7373626 Nov 15 03:01 mix25_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7374925 Nov 15 03:14 mix25_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7383211 Nov 15 03:28 mix25_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7368317 Nov 15 02:19 mix50_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7381612 Nov 15 02:33 mix50_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7391715 Nov 15 02:47 mix50_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7345924 Nov 15 03:42 mix75_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7370951 Nov 15 03:55 mix75_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7379845 Nov 15 04:09 mix75_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7286709 Nov 16 13:54 mixed_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7290799 Nov 16 13:03 scoreprop_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7341498 Nov 15 04:24 soup_s012.npz
+-rw-rw-r--  1 ubuntu ubuntu 7293075 Nov 14 23:11 stage2only_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7293914 Nov 15 00:01 stage2only_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7300091 Nov 15 00:51 stage2only_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7306350 Nov 14 17:19 uniform63_s0.npz
+Mon Nov 16 18:16:02 UTC 2026
+PLAN_OK
+
+PLAN_EXIT=0
+Mon Nov 16 18:16:02 UTC 2026
+mixed 1 model(s) at alpha 0.50: 384 of 782 tensors differ from the start model
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (106s)
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 cand+ true
+idates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.674 R@10=0.924 R@100=0.981
+nyt: n=769 top1=0.127 R@10=0.365 R@100=0.609
+wrote runs/plan/ranks/livetopmix50_s2.npz (770s)
+total 214712
+drwxrwxr-x  2 ubuntu ubuntu    4096 Nov 16 18:29 .
+drwxrwxr-x 23 ubuntu ubuntu    4096 Nov 16 18:29 ..
+-rw-rw-r--  1 ubuntu ubuntu 7295435 Nov 14 18:12 allpool_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7320873 Nov 14 20:29 band_25to75_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7361884 Nov 14 21:25 band_75to300_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7386118 Nov 14 22:21 band_rest_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7290221 Nov 14 19:33 band_top25_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7303307 Nov 15 02:06 bandit_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7290177 Nov 14 16:28 goldrand63_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7117673 Nov 14 15:37 goldrand7_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7287439 Nov 16 14:47 livetop_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7287418 Nov 16 17:08 livetop_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7309640 Nov 16 18:16 livetop_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7339943 Nov 16 15:39 livetopbelow_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7358768 Nov 16 17:22 livetopmix50_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7365355 Nov 16 18:29 livetopmix50_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7373626 Nov 15 03:01 mix25_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7374925 Nov 15 03:14 mix25_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7383211 Nov 15 03:28 mix25_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7368317 Nov 15 02:19 mix50_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7381612 Nov 15 02:33 mix50_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7391715 Nov 15 02:47 mix50_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7345924 Nov 15 03:42 mix75_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7370951 Nov 15 03:55 mix75_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7379845 Nov 15 04:09 mix75_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7286709 Nov 16 13:54 mixed_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7290799 Nov 16 13:03 scoreprop_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7341498 Nov 15 04:24 soup_s012.npz
+-rw-rw-r--  1 ubuntu ubuntu 7293075 Nov 14 23:11 stage2only_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7293914 Nov 15 00:01 stage2only_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7300091 Nov 15 00:51 stage2only_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7306350 Nov 14 17:19 uniform63_s0.npz
+STEP9_OK
+
+STEP9_EXIT=0
+Mon Nov 16 18:29:39 UTC 2026
+Shutdown scheduled for Mon 2026-11-16 18:31:39 UTC, use 'shutdown -c' to cancel.

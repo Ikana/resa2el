@@ -1,0 +1,159 @@
+Shutdown scheduled for Mon 2026-11-16 17:11:13 UTC, use 'shutdown -c' to cancel.
+Mon Nov 16 12:11:13 UTC 2026
+=== train scoreprop seed 0: --sampler score_prop --temp 1.0 --negatives 7 ===
+Namespace(silent=False, debug=False, data_parallel=False, no_cuda=False, top_k=10, seed=0, zeshel=False, max_seq_length=256, max_context_length=256, max_cand_length=256, path_to_model='models/biencoder/pytorch_model.bin', bert_model='bert-large-uncased', pull_from_layer=-1, lowercase=True, context_key='context', out_dim=1, add_linear=False, data_path='out', output_path='runs/plan/scoreprop_s0', ev
+11/16/2026 12:11:39 - INFO - Blink -   cand_encoder frozen
+11/16/2026 12:11:46 - INFO - Blink -   sampler score_prop: 66425 of 66425 mentions train, 0 are held out
+   Step 3599 - epoch 0 average loss: 0.28381777001544833
+11/16/2026 12:50:32 - INFO - Blink -   max_updates 1500 reached
+11/16/2026 12:50:33 - INFO - Blink -   The training took 38.6671427488327 minutes
+	Command being timed: "python blink/biencoder/train_biencoder.py --output_path runs/plan/scoreprop_s0 --seed 0 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interva
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 39:29.71
+	Maximum resident set size (kbytes): 22667400
+=== ranks of scoreprop seed 0 on valid and NYT ===
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (120s)
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.757 R@10=0.946 R@100=0.988
+nyt: n=769 top1=0.111 R@10=0.293 R@100=0.555
+wrote runs/plan/ranks/scoreprop_s0.npz (779s)
+/dev/root       193G  185G  8.6G  96% /
+=== train mixed seed 0: --sampler mixed --mixed_hard 4 --mixed_near 25 --negatives 7 ===
+Namespace(silent=False, debug=False, data_parallel=False, no_cuda=False, top_k=10, seed=0, zeshel=False, max_seq_length=256, max_context_length=256, max_cand_length=256, path_to_model='models/biencoder/pytorch_model.bin', bert_model='bert-large-uncased', pull_from_layer=-1, lowercase=True, context_key='context', out_dim=1, add_linear=False, data_path='out', output_path='runs/plan/mixed_s0', evalua
+11/16/2026 13:04:29 - INFO - Blink -   cand_encoder frozen
+11/16/2026 13:04:39 - INFO - Blink -   sampler mixed: 66425 of 66425 mentions train, 0 are held out
+ Step 3599 - epoch 0 average loss: 0.06901299939694581
+11/16/2026 13:41:14 - INFO - Blink -   max_updates 1500 reached
+11/16/2026 13:41:16 - INFO - Blink -   The training took 36.493087605635324 minutes
+	Command being timed: "python blink/biencoder/train_biencoder.py --output_path runs/plan/mixed_s0 --seed 0 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 10
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 37:39.72
+	Maximum resident set size (kbytes): 21478488
+=== ranks of mixed seed 0 on valid and NYT ===
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (117s)
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 cand+ true
+idates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.694 R@10=0.929 R@100=0.984
+nyt: n=769 top1=0.108 R@10=0.267 R@100=0.508
+wrote runs/plan/ranks/mixed_s0.npz (775s)
+/dev/root       193G  185G  8.6G  96% /
+=== train livetop seed 0: --sampler live_top --negatives 7 ===
+Namespace(silent=False, debug=False, data_parallel=False, no_cuda=False, top_k=10, seed=0, zeshel=False, max_seq_length=256, max_context_length=256, max_cand_length=256, path_to_model='models/biencoder/pytorch_model.bin', bert_model='bert-large-uncased', pull_from_layer=-1, lowercase=True, context_key='context', out_dim=1, add_linear=False, data_path='out', output_path='runs/plan/livetop_s0', eval
+11/16/2026 13:55:07 - INFO - Blink -   cand_encoder frozen
+11/16/2026 13:55:18 - INFO - Blink -   sampler live_top: 66425 of 66425 mentions train, 0 are held out
+Step 3599 - epoch 0 average loss: 0.26244863571599125
+11/16/2026 14:34:02 - INFO - Blink -   max_updates 1500 reached
+11/16/2026 14:34:04 - INFO - Blink -   The training took 38.65780679782232 minutes
+	Command being timed: "python blink/biencoder/train_biencoder.py --output_path runs/plan/livetop_s0 --seed 0 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 39:50.04
+	Maximum resident set size (kbytes): 22664660
+=== ranks of livetop seed 0 on valid and NYT ===
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (101s)
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.757 R@10=0.947 R@100=0.987
+nyt: n=769 top1=0.113 R@10=0.315 R@100=0.564
+wrote runs/plan/ranks/livetop_s0.npz (760s)
+/dev/root       193G  185G  8.6G  96% /
+=== train livetopbelow seed 0: --sampler live_top_below --negatives 7 ===
+Namespace(silent=False, debug=False, data_parallel=False, no_cuda=False, top_k=10, seed=0, zeshel=False, max_seq_length=256, max_context_length=256, max_cand_length=256, path_to_model='models/biencoder/pytorch_model.bin', bert_model='bert-large-uncased', pull_from_layer=-1, lowercase=True, context_key='context', out_dim=1, add_linear=False, data_path='out', output_path='runs/plan/livetopbelow_s0',
+11/16/2026 14:47:42 - INFO - Blink -   cand_encoder frozen
+11/16/2026 14:47:52 - INFO - Blink -   sampler live_top_below: 66425 of 66425 mentions train, 0 are held out
+:11:13 - INFO - Blink -   Step 3599 - epoch 0 average loss: 0.07259778653271497
+11/16/2026 15:26:40 - INFO - Blink -   max_updates 1500 reached
+11/16/2026 15:26:42 - INFO - Blink -   The training took 38.71084523995717 minutes
+	Command being timed: "python blink/biencoder/train_biencoder.py --output_path runs/plan/livetopbelow_s0 --seed 0 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_inte
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 39:56.17
+	Maximum resident set size (kbytes): 22670984
+=== ranks of livetopbelow seed 0 on valid and NYT ===
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (94s)
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candi+ true
+dates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.734 R@10=0.944 R@100=0.987
+nyt: n=769 top1=0.111 R@10=0.302 R@100=0.560
+wrote runs/plan/ranks/livetopbelow_s0.npz (752s)
+/dev/root       193G  185G  8.5G  96% /
+total 186068
+drwxrwxr-x  2 ubuntu ubuntu    4096 Nov 16 15:39 .
+drwxrwxr-x 21 ubuntu ubuntu    4096 Nov 16 14:47 ..
+-rw-rw-r--  1 ubuntu ubuntu 7295435 Nov 14 18:12 allpool_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7320873 Nov 14 20:29 band_25to75_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7361884 Nov 14 21:25 band_75to300_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7386118 Nov 14 22:21 band_rest_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7290221 Nov 14 19:33 band_top25_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7303307 Nov 15 02:06 bandit_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7290177 Nov 14 16:28 goldrand63_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7117673 Nov 14 15:37 goldrand7_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7287439 Nov 16 14:47 livetop_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7339943 Nov 16 15:39 livetopbelow_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7373626 Nov 15 03:01 mix25_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7374925 Nov 15 03:14 mix25_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7383211 Nov 15 03:28 mix25_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7368317 Nov 15 02:19 mix50_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7381612 Nov 15 02:33 mix50_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7391715 Nov 15 02:47 mix50_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7345924 Nov 15 03:42 mix75_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7370951 Nov 15 03:55 mix75_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7379845 Nov 15 04:09 mix75_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7286709 Nov 16 13:54 mixed_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7290799 Nov 16 13:03 scoreprop_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7341498 Nov 15 04:24 soup_s012.npz
+-rw-rw-r--  1 ubuntu ubuntu 7293075 Nov 14 23:11 stage2only_s0.npz
+-rw-rw-r--  1 ubuntu ubuntu 7293914 Nov 15 00:01 stage2only_s1.npz
+-rw-rw-r--  1 ubuntu ubuntu 7300091 Nov 15 00:51 stage2only_s2.npz
+-rw-rw-r--  1 ubuntu ubuntu 7306350 Nov 14 17:19 uniform63_s0.npz
+Mon Nov 16 15:39:43 UTC 2026
+PLAN_OK
+
+PLAN_EXIT=0
+Mon Nov 16 15:39:43 UTC 2026
+Shutdown scheduled for Mon 2026-11-16 15:41:43 UTC, use 'shutdown -c' to cancel.
