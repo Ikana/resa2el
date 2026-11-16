@@ -271,7 +271,7 @@ Each run made 1,500 updates. One update uses 32 mentions, each with seven negati
 
 Then I ranked all 5.87 million pages for each of the 16,692 validation mentions and computed recall at 1, 10, and 100 (equation~\ref{eq:recall}). The measure I focus on is recall at ten. If the correct page appears anywhere in the first ten results, I count that mention as a hit. I did the same for the 769 New York Times mentions that have a page. Where I give an interval, it is a 95\% bootstrap interval over mentions, with the three runs averaged first.
 
-Before the experiments I checked that I could repeat the published results. The released retriever and reranker gave me an accuracy of 82.88\% on the Wikipedia test set, and the paper reports 82.87\%. On the New York Times set I got 55.33\%, the same as the paper. I did not use the test set for anything else.
+Before the experiments I checked that I could repeat the published results. The released retriever and reranker gave me an accuracy of 82.88\% on the Wikipedia test set, and the paper reports 82.87\%. On the New York Times set I got 55.33\%, the same as the paper. I used the test set only one more time, at the end, for six rows of Table~\ref{tab:main}. I fixed that list in writing before the first of these evaluations.
 
 \subsection{What changed in the rankings}
 \label{sec:rankings}
@@ -310,6 +310,8 @@ Most of the improvement came from drawing negatives from the pool. ReSa2 added 1
 In-batch sampling finished below the released model. I first suspected my code. So I ran the rule again in a cleaner way, with the stored page vectors, the same mentions as the pool runs, and random correct pages of other mentions as the negatives. With seven such pages recall at ten was 68.2, about the same as before. With 63, the number that EVELINK's own training used, it was 79.4, close to the released model. So the low row is real. Seven random pages are almost always easy, and by Lemma~\ref{lem:bound} easy pages add almost nothing to the loss.
 
 The number of negatives matters more than the sampler. Uniform sampling with 63 negatives put the correct page first 71.0 percent of the time, 1.5 points above ReSa2 with seven (interval 1.1 to 1.9). With all 999 pool pages for each mention there is no sampler at all, and the correct page came first 76.0 percent of the time, 6.4 points above ReSa2 (6.0 to 6.8). The stored page vectors make this cheap, because one more negative costs one more dot product. ReSa2 is the best rule I tested when only seven negatives are used. It is not better than the whole pool.
+
+The test set gives the same order. On its 19,267 mentions the correct page came first 43.0 percent of the time for the released model, 65.5 for uniform sampling, 71.1 for ReSa2, 71.0 for stage 2 only (section~\ref{sec:parts}), 77.7 for all pool pages, and 63.0 for the 50\% mix. Recall at ten was 77.5, 92.8, 93.8, 93.4, 95.2 and 91.5.
 
 \subsection{Which pages the samplers pick}
 \label{sec:picks}
@@ -410,7 +412,7 @@ I started with the difference between the 1996 award and the 1998 award. The res
 
 \section*{Limitations}
 
-The new comparisons use validation data. I did not use the test set to evaluate the trained variants. The results therefore remain validation results.
+Most comparisons use validation data. The test set confirms only six rows.
 
 The page encoder is frozen, and each mention's candidate pool comes from the released model's first 1,000 results. The page vectors and candidate membership stay fixed. Mention-side training can still change their scores. Training both encoders or refreshing the pools could produce different results.
 
