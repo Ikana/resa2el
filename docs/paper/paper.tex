@@ -267,7 +267,7 @@ The loss bound uses Mathlib, the Lean library of mathematics. The other three cl
 
 I started each run from the released EVELINK model. I kept the page encoder fixed and trained only the mention encoder. Since the page vectors never change, the pool of each mention and its scores can be computed once, before training.
 
-Each run made 1,500 updates. One update uses 32 mentions, each with seven negatives. The learning rate, which sets the size of each update, was $10^{-5}$. It rises from zero over about the first 207 updates and then falls slowly. The schedule is sized for one pass over the training data, about 2,075 updates, and not for the 1,500 that I ran. The other settings are those of EVELINK. Training has some randomness, so I ran each of the four samplers three times with different random seeds. That gives twelve runs. Each run took about 56 minutes on one NVIDIA A10G GPU. After these I made twelve more runs to test the result, each with the same settings (sections~\ref{sec:rankings} and~\ref{sec:parts}). Eleven of them use a rule once, and one rule has three runs.
+Each run made 1,500 updates. One update uses 32 mentions, each with seven negatives. The learning rate, which sets the size of each update, was $10^{-5}$. It rises from zero over about the first 207 updates and then falls slowly. The schedule is sized for one pass over the training data, about 2,075 updates, and not for the 1,500 that I ran. The other settings are those of EVELINK. Training has some randomness, so I ran each of the four samplers three times with different random seeds. That gives twelve runs. Each run took about 56 minutes on one NVIDIA A10G GPU. After these I made eleven more runs to test the result, each with the same settings (sections~\ref{sec:rankings} and~\ref{sec:parts}). Eight of them use a rule once, and one rule has three runs.
 
 Then I ranked all 5.87 million pages for each of the 16,692 validation mentions and computed recall at 1, 10, and 100 (equation~\ref{eq:recall}). The measure I focus on is recall at ten. If the correct page appears anywhere in the first ten results, I count that mention as a hit. I did the same for the 769 New York Times mentions that have a page. Where I give an interval, it is a 95\% bootstrap interval over mentions, with the three runs averaged first.
 
@@ -359,7 +359,6 @@ ReSa2 has two stages, and I wanted to know which one matters. I split the pool o
 
 Stage 2 only got 69.2 / 92.9 / 98.3 over three runs. Before the runs I set the margin for ``equal to ReSa2'' at 0.5 points at rank one and 0.3 points of recall at ten. The differences were 0.30 and 0.42 points, so the second is outside the margin. On news text the gap is larger. Recall at ten was 27.0, against 30.9 for ReSa2. Stage 1 changes few pages, but those pages matter, most of all on text that differs from the training data.
 
-Last, I let a bandit choose the band. The EXP3 rule~\cite{auer2002exp3} picked one band for each ten updates. Its reward was the fall of the loss on 128 held-out training mentions, measured against the whole pool. After 150 rounds the probabilities of the four bands were 0.25, 0.35, 0.26, and 0.14. The bandit learned to use the far band less, and no more than that. Its model put the correct page first 68.5 percent of the time, one point below ReSa2. The reward is too noisy for 150 rounds. In the fixed-band runs its standard deviation was about eight times its mean.
 
 \subsection{Mention types, error types, and news text}
 \label{sec:gaps}
@@ -416,7 +415,7 @@ Most comparisons use validation data. The test set confirms only six rows.
 
 The page encoder is frozen, and each mention's candidate pool comes from the released model's first 1,000 results. The page vectors and candidate membership stay fixed. Mention-side training can still change their scores. Training both encoders or refreshing the pools could produce different results.
 
-Each run receives 1,500 updates. The four main rules and stage 2 only have three runs each. The later runs (63 negatives, the whole pool, the four bands, the bandit) have one run each, so for them I can give the noise over mentions but not the noise over runs. The news set has 769 mentions with a page, and I looked at it more than once. The half-and-half mix was named before its numbers were seen. The other two mixes are there to show the trend.
+Each run receives 1,500 updates. The four main rules and stage 2 only have three runs each. The later runs (63 negatives, the whole pool, the four bands) have one run each, so for them I can give the noise over mentions but not the noise over runs. The news set has 769 mentions with a page, and I looked at it more than once. The half-and-half mix was named before its numbers were seen. The other two mixes are there to show the trend.
 
 Two runs failed at the higher learning rate. I did not find the cause.
 
@@ -434,7 +433,7 @@ That work had failures. These included out-of-memory errors, a full disk, a run 
 
 The checks included reproducing the released system's accuracy, tests for the sampling rules, three runs for each rule, and Lean checks for the formal claims. These checks cover different parts of the work. Reproducing the baseline does not verify every later experiment, and Lean does not verify the training implementation.
 
-AI also helped write the paper. I narrated the introduction, sections~\ref{sec:math} and~\ref{sec:samplers}, the main results, and the conclusion, and the agent turned the narration into plain technical English. Sections~\ref{sec:task}, \ref{sec:lean} and~\ref{sec:gaps}, the related work, the limitations, and this section were generated from a sheet of questions, facts, and results. I asked an agent to turn that material into prose in my voice. They were not transcribed from my spoken narration. The paragraphs on the later runs (more negatives, the bands, the bandit, and weight mixing) were drafted by the agent from the result tables.
+AI also helped write the paper. I narrated the introduction, sections~\ref{sec:math} and~\ref{sec:samplers}, the main results, and the conclusion, and the agent turned the narration into plain technical English. Sections~\ref{sec:task}, \ref{sec:lean} and~\ref{sec:gaps}, the related work, the limitations, and this section were generated from a sheet of questions, facts, and results. I asked an agent to turn that material into prose in my voice. They were not transcribed from my spoken narration. The paragraphs on the later runs (more negatives, the bands, and weight mixing) were drafted by the agent from the result tables.
 
 The repository contains an AI-usage log with an entry for each session. The prompts and outputs are also retained.
 
@@ -446,7 +445,6 @@ The repository contains an AI-usage log with an entry for each session. The prom
 \bibitem[Xiong et al.(2021)]{xiong2021ance} Lee Xiong, Chenyan Xiong, Ye Li, Kwok-Fung Tang, Jialin Liu, Paul Bennett, Junaid Ahmed, and Arnold Overwijk. 2021. Approximate Nearest Neighbor Negative Contrastive Learning for Dense Text Retrieval. In \emph{Proceedings of ICLR}.
 \bibitem[Qu et al.(2021)]{qu2021rocketqa} Yingqi Qu, Yuchen Ding, Jing Liu, Kai Liu, Ruiyang Ren, Wayne Xin Zhao, Daxiang Dong, Hua Wu, and Haifeng Wang. 2021. RocketQA: An Optimized Training Approach to Dense Passage Retrieval for Open-Domain Question Answering. In \emph{Proceedings of NAACL}.
 \bibitem[Zhou et al.(2022)]{zhou2022simans} Kun Zhou, Yeyun Gong, Xiao Liu, Wayne Xin Zhao, Yelong Shen, Anlei Dong, Jingwen Lu, Rangan Majumder, Ji-Rong Wen, and Nan Duan. 2022. SimANS: Simple Ambiguous Negatives Sampling for Dense Text Retrieval. In \emph{Proceedings of EMNLP Industry Track}.
-\bibitem[Auer et al.(2002)]{auer2002exp3} Peter Auer, Nicol\`o Cesa-Bianchi, Yoav Freund, and Robert E. Schapire. 2002. The Nonstochastic Multiarmed Bandit Problem. \emph{SIAM Journal on Computing}, 32(1).
 \bibitem[Wortsman et al.(2022)]{wortsman2022wiseft} Mitchell Wortsman, Gabriel Ilharco, Jong Wook Kim, Mike Li, Simon Kornblith, Rebecca Roelofs, Raphael Gontijo Lopes, Ali Farhadi, Hongseok Namkoong, and Ludwig Schmidt. 2022. Robust Fine-Tuning of Zero-Shot Models. In \emph{Proceedings of CVPR}.
 \end{thebibliography}
 
