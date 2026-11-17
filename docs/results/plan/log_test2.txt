@@ -1,0 +1,249 @@
+Shutdown scheduled for Tue 2026-11-17 03:02:44 UTC, use 'shutdown -c' to cancel.
+Shutdown scheduled for Tue 2026-11-17 03:02:44 UTC, use 'shutdown -c' to cancel.
+Mon Nov 16 21:02:44 UTC 2026
+=== train livetop seed 0: --sampler live_top --negatives 7 ===
+Namespace(silent=False, debug=False, data_parallel=False, no_cuda=False, top_k=10, seed=0, zeshel=False, max_seq_length=256, max_context_length=256, max_cand_length=256, path_to_model='models/biencoder/pytorch_model.bin', bert_model='bert-large-uncased', pull_from_layer=-1, lowercase=True, context_key='context', out_dim=1, add_linear=False, data_path='out', output_path='runs/test2/livetop_s0', evaluate=False, output_eval_file=None, train_batch_size=32, max_grad_norm=1.0, learning_rate=1e-05, num_train_epochs=1, print_interval=50, eval_interval=100000, save_interval=1, warmup_proportion=0.1, gradient_accumulation_steps=4, type_optimization='all_encoder_layers', shuffle=True, eval_batch_size=64, mode='valid', save_topk_result=False, encode_batch_size=8, cand_pool_path=None, cand_encode_path=None, sampler='live_top', mixed_hard=4, mixed_near=25, temp=1.0, band_lo=0, band_hi=75, skip_valid_eval=True, heldout=0, reward_interval=0, pools='out/pools/train.npz', encoding='out/pools/all_entities_fp16.npy', negatives=7, freeze_cand_encoder=True, max_updates=1500, resa2_stage1=500, resa2_stage2=75, resa2_tau=0.25)
+11/16/2026 21:05:01 - INFO - Blink -   cand_encoder frozen
+11/16/2026 21:05:12 - INFO - Blink -   sampler live_top: 66425 of 66425 mentions train, 0 are held out
+ Step 3599 - epoch 0 average loss: 0.26244863571599125
+11/16/2026 21:43:54 - INFO - Blink -   max_updates 1500 reached
+11/16/2026 21:43:56 - INFO - Blink -   The training took 38.6085443854332 minutes
+	Command being timed: "python blink/biencoder/train_biencoder.py --output_path runs/test2/livetop_s0 --seed 0 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 100000 --print_interval 50 --shuffle True --freeze_cand_encoder --skip_valid_eval --pools out/pools/train.npz --encoding out/pools/all_entities_fp16.npy --max_updates 1500 --learning_rate 1e-5 --sampler live_top --negatives 7"
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 40:17.92
+	Maximum resident set size (kbytes): 22673060
+=== ranks of livetop seed 0 on valid and NYT ===
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (125s)
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:208.)
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.756 R@10=0.947 R@100=0.987
+nyt: n=769 top1=0.113 R@10=0.315 R@100=0.564
+wrote runs/test2/ranks/livetop_s0.npz (782s)
+/dev/root       193G  187G  6.0G  97% /
+total 7128
+drwxrwxr-x 2 ubuntu ubuntu    4096 Nov 16 21:57 .
+drwxrwxr-x 5 ubuntu ubuntu    4096 Nov 16 21:44 ..
+-rw-rw-r-- 1 ubuntu ubuntu 7287505 Nov 16 21:57 livetop_s0.npz
+Mon Nov 16 21:57:39 UTC 2026
+PLAN_OK
+
+PLAN_EXIT=0
+Mon Nov 16 21:57:39 UTC 2026
+=== test livetop_s0 ===
+mentions 19267 (valid 0, nyt 0); gold found 19267 (80s)
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w+ true
+/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:208.)
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+test: n=19267 top1=0.773 R@10=0.950 R@100=0.989
+wrote runs/test2/ranks_test/livetop_s0.npz (818s)
+/dev/root       193G  185G  8.5G  96% /
+Shutdown scheduled for Tue 2026-11-17 04:11:20 UTC, use 'shutdown -c' to cancel.
+Mon Nov 16 22:11:20 UTC 2026
+=== train livetop seed 1: --sampler live_top --negatives 7 ===
+Namespace(silent=False, debug=False, data_parallel=False, no_cuda=False, top_k=10, seed=1, zeshel=False, max_seq_length=256, max_context_length=256, max_cand_length=256, path_to_model='models/biencoder/pytorch_model.bin', bert_model='bert-large-uncased', pull_from_layer=-1, lowercase=True, context_key='context', out_dim=1, add_linear=False, data_path='out', output_path='runs/test2/livetop_s1', evaluate=False, output_eval_file=None, train_batch_size=32, max_grad_norm=1.0, learning_rate=1e-05, num_train_epochs=1, print_interval=50, eval_interval=100000, save_interval=1, warmup_proportion=0.1, gradient_accumulation_steps=4, type_optimization='all_encoder_layers', shuffle=True, eval_batch_size=64, mode='valid', save_topk_result=False, encode_batch_size=8, cand_pool_path=None, cand_encode_path=None, sampler='live_top', mixed_hard=4, mixed_near=25, temp=1.0, band_lo=0, band_hi=75, skip_valid_eval=True, heldout=0, reward_interval=0, pools='out/pools/train.npz', encoding='out/pools/all_entities_fp16.npy', negatives=7, freeze_cand_encoder=True, max_updates=1500, resa2_stage1=500, resa2_stage2=75, resa2_tau=0.25)
+11/16/2026 22:11:53 - INFO - Blink -   cand_encoder frozen
+11/16/2026 22:12:04 - INFO - Blink -   sampler live_top: 66425 of 66425 mentions train, 0 are held out
+Step 3599 - epoch 0 average loss: 0.28488397009670735
+11/16/2026 22:50:41 - INFO - Blink -   max_updates 1500 reached
+11/16/2026 22:50:43 - INFO - Blink -   The training took 38.54051015377045 minutes
+	Command being timed: "python blink/biencoder/train_biencoder.py --output_path runs/test2/livetop_s1 --seed 1 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 100000 --print_interval 50 --shuffle True --freeze_cand_encoder --skip_valid_eval --pools out/pools/train.npz --encoding out/pools/all_entities_fp16.npy --max_updates 1500 --learning_rate 1e-5 --sampler live_top --negatives 7"
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 39:53.94
+	Maximum resident set size (kbytes): 22678664
+=== ranks of livetop seed 1 on valid and NYT ===
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (108s)
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:208.)
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.756 R@10=0.946 R@100=0.987
+nyt: n=769 top1=0.103 R@10=0.287 R@100=0.541
+wrote runs/test2/ranks/livetop_s1.npz (768s)
+/dev/root       193G  187G  6.0G  97% /
+total 14248
+drwxrwxr-x 2 ubuntu ubuntu    4096 Nov 16 23:04 .
+drwxrwxr-x 7 ubuntu ubuntu    4096 Nov 16 22:11 ..
+-rw-rw-r-- 1 ubuntu ubuntu 7287505 Nov 16 21:57 livetop_s0.npz
+-rw-rw-r-- 1 ubuntu ubuntu 7287422 Nov 16 23:04 livetop_s1.npz
+Mon Nov 16 23:04:06 UTC 2026
+PLAN_OK
+
+PLAN_EXIT=0
+Mon Nov 16 23:04:06 UTC 2026
+=== test livetop_s1 ===
+mentions 19267 (valid 0, nyt 0); gold found 19267 (64s)
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w+ true
+/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:208.)
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+test: n=19267 top1=0.777 R@10=0.950 R@100=0.989
+wrote runs/test2/ranks_test/livetop_s1.npz (803s)
+mixed 1 model(s) at alpha 0.50: 384 of 782 tensors differ from the start model
+=== test livetopmix50_s1 ===
+mentions 19267 (valid 0, nyt 0); gold found 19267 (111s)
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__+ true
+w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:208.)
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+test: n=19267 top1=0.691 R@10=0.929 R@100=0.983
+wrote runs/test2/ranks_test/livetopmix50_s1.npz (850s)
+/dev/root       193G  185G  8.5G  96% /
+Shutdown scheduled for Tue 2026-11-17 05:32:23 UTC, use 'shutdown -c' to cancel.
+Mon Nov 16 23:32:23 UTC 2026
+=== train livetop seed 2: --sampler live_top --negatives 7 ===
+Namespace(silent=False, debug=False, data_parallel=False, no_cuda=False, top_k=10, seed=2, zeshel=False, max_seq_length=256, max_context_length=256, max_cand_length=256, path_to_model='models/biencoder/pytorch_model.bin', bert_model='bert-large-uncased', pull_from_layer=-1, lowercase=True, context_key='context', out_dim=1, add_linear=False, data_path='out', output_path='runs/test2/livetop_s2', evaluate=False, output_eval_file=None, train_batch_size=32, max_grad_norm=1.0, learning_rate=1e-05, num_train_epochs=1, print_interval=50, eval_interval=100000, save_interval=1, warmup_proportion=0.1, gradient_accumulation_steps=4, type_optimization='all_encoder_layers', shuffle=True, eval_batch_size=64, mode='valid', save_topk_result=False, encode_batch_size=8, cand_pool_path=None, cand_encode_path=None, sampler='live_top', mixed_hard=4, mixed_near=25, temp=1.0, band_lo=0, band_hi=75, skip_valid_eval=True, heldout=0, reward_interval=0, pools='out/pools/train.npz', encoding='out/pools/all_entities_fp16.npy', negatives=7, freeze_cand_encoder=True, max_updates=1500, resa2_stage1=500, resa2_stage2=75, resa2_tau=0.25)
+11/16/2026 23:32:55 - INFO - Blink -   cand_encoder frozen
+11/16/2026 23:33:06 - INFO - Blink -   sampler live_top: 66425 of 66425 mentions train, 0 are held out
+tep 3599 - epoch 0 average loss: 0.259056705981493
+11/17/2026 00:11:43 - INFO - Blink -   max_updates 1500 reached
+11/17/2026 00:11:45 - INFO - Blink -   The training took 38.526650408903755 minutes
+	Command being timed: "python blink/biencoder/train_biencoder.py --output_path runs/test2/livetop_s2 --seed 2 --data_path out --bert_model bert-large-uncased --out_dim 1 --pull_from_layer -1 --path_to_model models/biencoder/pytorch_model.bin --max_context_length 256 --max_cand_length 256 --train_batch_size 32 --gradient_accumulation_steps 4 --eval_batch_size 64 --num_train_epochs 1 --eval_interval 100000 --print_interval 50 --shuffle True --freeze_cand_encoder --skip_valid_eval --pools out/pools/train.npz --encoding out/pools/all_entities_fp16.npy --max_updates 1500 --learning_rate 1e-5 --sampler live_top --negatives 7"
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 40:05.54
+	Maximum resident set size (kbytes): 22685320
+=== ranks of livetop seed 2 on valid and NYT ===
+mentions 18454 (valid 16692, nyt 1762); gold found 17461 (127s)
+  | 109/145 [03:05<01:01,  1.70s/it]encode mentions:  76%|███████▌  | 110/145 [03:06<00:59,  1.70s/it]encode mentions:  77%|███████▋  | 111/145 [03:08<00:57,  1.70s/it]encode mentions:  77%|███████▋  | 112/145 [03:10<00:56,  1.70s/it]encode mentions:  78%|███████▊  | 113/145 [03:11<00:54,  1.70s/it]encode mentions:  79%|███████▊  | 114/145 [03:13<00:52,  1.70s/it]encode mentions:  79%|███████▉  | 115/145 [03:15<00:51,  1.70s/it]encode mentions:  80%|████████  | 116/145 [03:17<00:49,  1.70s/it]encode mentions:  81%|████████  | 117/145 [03:18<00:47,  1.71s/it]encode mentions:  81%|████████▏ | 118/145 [03:20<00:46,  1.71s/it]encode mentions:  82%|████████▏ | 119/145 [03:22<00:44,  1.71s/it]encode mentions:  83%|████████▎ | 120/145 [03:23<00:42,  1.71s/it]encode mentions:  83%|████████▎ | 121/145 [03:25<00:40,  1.71s/it]encode mentions:  84%|████████▍ | 122/145 [03:27<00:39,  1.71s/it]encode mentions:  85%|████████▍ | 123/145 [03:28<00:37,  1.71s/it]encode mentions:  86%|████████▌ | 124/145 [03:30<00:35,  1.71s/it]encode mentions:  86%|████████▌ | 125/145 [03:32<00:34,  1.71s/it]encode mentions:  87%|████████▋ | 126/145 [03:34<00:32,  1.71s/it]encode mentions:  88%|████████▊ | 127/145 [03:35<00:30,  1.71s/it]encode mentions:  88%|████████▊ | 128/145 [03:37<00:29,  1.71s/it]encode mentions:  89%|████████▉ | 129/145 [03:39<00:27,  1.71s/it]encode mentions:  90%|████████▉ | 130/145 [03:40<00:25,  1.71s/it]encode mentions:  90%|█████████ | 131/145 [03:42<00:23,  1.71s/it]encode mentions:  91%|█████████ | 132/145 [03:44<00:22,  1.71s/it]encode mentions:  92%|█████████▏| 133/145 [03:46<00:20,  1.71s/it]encode mentions:  92%|█████████▏| 134/145 [03:47<00:18,  1.71s/it]encode mentions:  93%|█████████▎| 135/145 [03:49<00:17,  1.71s/it]encode mentions:  94%|█████████▍| 136/145 [03:51<00:15,  1.70s/it]encode mentions:  94%|█████████▍| 137/145 [03:52<00:13,  1.71s/it]encode mentions:  95%|█████████▌| 138/145 [03:54<00:11,  1.71s/it]encode mentions:  96%|█████████▌| 139/145 [03:56<00:10,  1.71s/it]encode mentions:  97%|█████████▋| 140/145 [03:57<00:08,  1.71s/it]encode mentions:  97%|█████████▋| 141/145 [03:59<00:06,  1.71s/it]encode mentions:  98%|█████████▊| 142/145 [04:01<00:05,  1.71s/it]encode mentions:  99%|█████████▊| 143/145 [04:03<00:03,  1.70s/it]encode mentions:  99%|█████████▉| 144/145 [04:04<00:01,  1.71s/it]encode mentions: 100%|██████████| 145/145 [04:05<00:00,  1.28s/it]encode mentions: 100%|██████████| 145/145 [04:05<00:00,  1.69s/it]
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:208.)
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+valid: n=16692 top1=0.756 R@10=0.947 R@100=0.988
+nyt: n=769 top1=0.103 R@10=0.299 R@100=0.540
+wrote runs/test2/ranks/livetop_s2.npz (784s)
+/dev/root       193G  187G  6.0G  97% /
+total 21388
+drwxrwxr-x 2 ubuntu ubuntu    4096 Nov 17 00:25 .
+drwxrwxr-x 8 ubuntu ubuntu    4096 Nov 16 23:32 ..
+-rw-rw-r-- 1 ubuntu ubuntu 7287505 Nov 16 21:57 livetop_s0.npz
+-rw-rw-r-- 1 ubuntu ubuntu 7287422 Nov 16 23:04 livetop_s1.npz
+-rw-rw-r-- 1 ubuntu ubuntu 7309582 Nov 17 00:25 livetop_s2.npz
+Tue Nov 17 00:25:37 UTC 2026
+PLAN_OK
+
+PLAN_EXIT=0
+Tue Nov 17 00:25:37 UTC 2026
+=== test livetop_s2 ===
+mentions 19267 (valid 0, nyt 0); gold found 19267 (32s)
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w+ true
+/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:208.)
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+test: n=19267 top1=0.780 R@10=0.951 R@100=0.989
+wrote runs/test2/ranks_test/livetop_s2.npz (771s)
+mixed 1 model(s) at alpha 0.50: 384 of 782 tensors differ from the start model
+=== test livetopmix50_s2 ===
+mentions 19267 (valid 0, nyt 0); gold found 19267 (90s)
+/home/ubuntu/resa2el/third_party/event-linking/blink/lowmem.py:148: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:208.)
+  chunk = torch.from_numpy(np.ascontiguousarray(cand_enc[start:end])).to(device)
+chunked_topk: 500000/5870755 candidates
+chunked_topk: 1000000/5870755 candidates
+chunked_topk: 1500000/5870755 candidates
+chunked_topk: 2000000/5870755 candidates
+chunked_topk: 2500000/5870755 candidates
+chunked_topk: 3000000/5870755 candidates
+chunked_topk: 3500000/5870755 candidates
+chunked_topk: 4000000/5870755 candidates
+chunked_topk: 4500000/5870755 candidates
+chunked_topk: 5000000/5870755 candidates
+chunked_topk: 5500000/5870755 candidates
+chunked_topk: 5870755/5870755 candidates
+test: n=19267 top1=0.689 R@10=0.929 R@100=0.982
+wrote runs/test2/ranks_test/livetopmix50_s2.npz (834s)
+/dev/root       193G  185G  8.5G  96% /
+/home/ubuntu/resa2el/third_party/event-linking/runs/test2/ranks:
+total 21388
+drwxrwxr-x 2 ubuntu ubuntu    4096 Nov 17 00:25 .
+drwxrwxr-x 8 ubuntu ubuntu    4096 Nov 17 00:53 ..
+-rw-rw-r-- 1 ubuntu ubuntu 7287505 Nov 16 21:57 livetop_s0.npz
+-rw-rw-r-- 1 ubuntu ubuntu 7287422 Nov 16 23:04 livetop_s1.npz
+-rw-rw-r-- 1 ubuntu ubuntu 7309582 Nov 17 00:25 livetop_s2.npz
+
+/home/ubuntu/resa2el/third_party/event-linking/runs/test2/ranks_test:
+total 36160
+drwxrwxr-x 2 ubuntu ubuntu    4096 Nov 17 00:53 .
+drwxrwxr-x 8 ubuntu ubuntu    4096 Nov 17 00:53 ..
+-rw-rw-r-- 1 ubuntu ubuntu 7363221 Nov 16 22:11 livetop_s0.npz
+-rw-rw-r-- 1 ubuntu ubuntu 7363261 Nov 16 23:17 livetop_s1.npz
+-rw-rw-r-- 1 ubuntu ubuntu 7382512 Nov 17 00:38 livetop_s2.npz
+-rw-rw-r-- 1 ubuntu ubuntu 7448285 Nov 16 23:32 livetopmix50_s1.npz
+-rw-rw-r-- 1 ubuntu ubuntu 7452428 Nov 17 00:53 livetopmix50_s2.npz
+TEST2_OK
+
+TEST2_EXIT=0
+Tue Nov 17 00:53:13 UTC 2026
+Shutdown scheduled for Tue 2026-11-17 00:55:13 UTC, use 'shutdown -c' to cancel.
