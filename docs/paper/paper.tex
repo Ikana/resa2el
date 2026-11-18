@@ -37,37 +37,37 @@
 \maketitle
 
 \begin{abstract}
-A model learns only from the examples it is shown, so the choice of examples shapes what it learns. A neural network needs far more examples than a person needs to learn the same thing. This is the problem of sample efficiency. It can be measured: fix the amount of training and score the model on data it has not seen.
+Say I give a model this sentence: ``He won the Rising Star award in 1996, in his first season with Adelaide.'' I want it to find the Wikipedia page for the 1996 AFL Rising Star. To train it, I need wrong pages. I could give it the page for the 2004 Indian Ocean earthquake, or the page for the 1998 AFL Rising Star. Both are wrong. But the model can rule out the earthquake without ever looking at the year. Give it the 1998 award and the year matters. So I asked a simple question. If I show the model only seven wrong pages at a time, which seven should I pick?
 
-Event linking has the same problem on a small scale. The task is to find the Wikipedia page for an event that a text mentions. Each training step shows the model a sentence that mentions an event, the right page, and a few wrong pages. If the wrong pages are easy to tell apart from the right one, the model learns little from them. If they look like the right page, each step teaches more. The sampler is the part that picks the wrong pages. So the sampler sets how much the model learns in one step, at the same cost.
+I tested that with EVELINK, the event linking system of Yu et al. I started each run from the same released model and trained it for 1,500 updates. What I changed was how I picked the wrong pages. With seven random pages from a pool of candidates, the right page came first on 64.3\% of the validation examples. With ReSa2, a rule that favors pages that look like the right answer, it was 69.5\%. With the seven pages that the model scores highest \emph{right now}, at each step, it was 75.6\%. All 999 pages of the pool gave 76.0\%. The test set gives the same order.
 
-I measure this in EVELINK, the event linking system of Yu et al. I fix the training at 1,500 updates with seven wrong pages for each mention, and I change only the sampler. On validation data the right page came first 64.3\% of the time with random wrong pages, 69.5\% with ReSa2, a recent two-stage sampler, and 75.6\% with live hard negatives, the seven pages that the model scores highest at that step. Training on all 999 candidate pages gave 76.0\%. The test set gives the same order: 65.5, 71.1 and 77.7. I also show why. The wrong pages enter the loss and the size of the update only through one sum, which I call their mass. Among all sets of seven pages, the seven with the highest scores have the most mass. Before training they hold 87\% of the mass of all 999 pages. ReSa2's seven hold 7\% and seven random pages hold 0.7\%. The main steps of the argument are checked in Lean 4. Every trained model gets worse on news text. A model whose weights are half trained and half original is better than the original on both kinds of text.
+Why do seven pages get so close to 999? It comes down to how the training loss counts a wrong page. A page that the model has already ruled out adds almost nothing. A page that scores close to the right one adds much more. I call the sum of these contributions \emph{mass}. I prove that the loss and the size of an update depend on the wrong pages only through their mass, and that the seven highest-scoring pages have the most mass that seven pages can have. The main steps are checked in Lean 4. Before training, seven random pages held 0.7\% of the mass of the pool. The seven highest-scoring pages held 87\%. The words \emph{right now} matter. The same seven pages, picked once and kept, finished at 65.3\%.
+
+There is a wrinkle in the example. The model got much better at putting the right page first, but it picked the right event in the wrong year about as often as before. Choosing the wrong pages well helped the retriever learn more in the same number of updates. It did not teach it to look at the year.
 \end{abstract}
 
 \section{Introduction}
 
-A neural network learns only from the examples it is shown. Patel~\cite{patel2026avalanche} states the cost plainly: to teach a network a skill, ``you have to feed it much more data than it would take a human to learn the same thing.'' He calls this a lack of sample efficiency. He also says that it can be measured, for example by ``how much data it takes to reach a given pretraining loss.'' This paper studies one small case where that measurement is easy to make: the choice of wrong examples for a system that links events to Wikipedia.
+Say I give a model this sentence. ``He won the Rising Star award in 1996, in his first season with Adelaide.'' I want it to find the Wikipedia page for the 1996 AFL Rising Star. Now I need a wrong page to train it on. I could give it the page for the 2004 Indian Ocean earthquake. Or I could give it the page for the 1998 AFL Rising Star.
 
-EVELINK is a system that reads a mention of an event and tries to find the Wikipedia page for that event. Yu and colleagues introduced it in 2023~\cite{yu2023event}. You give it a phrase like ``won the Rising Star award,'' along with the sentence around it. EVELINK uses that context to work out which award the writer is talking about.
+Both pages are wrong. But the model can rule out the earthquake without ever looking at the year. Give it the 1998 award and suddenly the year matters. That got me interested in a simple question. If I get to show the model only seven wrong pages at a time, which seven should I pick?
 
-Take this sentence. ``He won the Rising Star award in 1996, in his first season with Adelaide.''
+The question is a small case of a general one. A neural network learns only from the examples it is shown, and it needs many of them. Patel~\cite{patel2026avalanche} writes that to teach a network a skill, ``you have to feed it much more data than it would take a human to learn the same thing.'' He calls this a lack of sample efficiency, and he says that it can be measured, for example by ``how much data it takes to reach a given pretraining loss.'' I measure it the same way. I fix the amount of training, I change only the wrong pages, and I score the model on data it has not seen.
 
-The page we want is ``1996 AFL Rising Star.'' A page about the 2004 Indian Ocean earthquake is easy to rule out. The page for the 1998 AFL Rising Star is harder. It is the same award. The year is what tells us which page to link to. The Event Linking paper calls this mistake a time error. Its other common mistake is a hierarchy error, where the system picks a larger event that contains the right one, or a smaller event inside it. In both cases the wrong page shares most of its words with the correct page.
+The model is EVELINK, a system that links a mention of an event to the Wikipedia page for that event~\cite{yu2023event}. It works in two stages (section~\ref{sec:task}). The first stage searches all of Wikipedia and pulls out 100 pages that might fit. It is called the \emph{retriever}. The second stage, the \emph{reranker}, puts those 100 pages in a new order. If the retriever leaves out the 1996 page, the reranker cannot bring it back. So I train the retriever.
 
-EVELINK makes that decision in two stages (section~\ref{sec:task}). The first stage searches all of Wikipedia and pulls out 100 pages that might fit. It is called the \emph{retriever}. The second stage reads the mention next to each of those 100 pages and puts them in a new order. It is called the \emph{reranker}. If the retriever leaves out the 1996 page, the reranker cannot bring it back.
-
-That is where this project starts. During training, the retriever sees the correct page next to a few wrong pages. A rule that picks the wrong pages is called a \emph{sampler}, because it usually picks them at random from some set. The cost of a training step depends on the number of wrong pages and not on which pages they are. So a better sampler is a gain in sample efficiency: the model learns more from the same number of steps. I ask two questions.
+During training, the retriever sees the correct page next to a few wrong pages. A rule that picks the wrong pages is called a \emph{sampler}, because it usually picks them at random from some set. I ask two questions.
 \begin{enumerate}[nosep]
   \item With the amount of training fixed, how much does the sampler change the results on held-out data?
   \item Why? What can one step teach with the pages that each sampler picks?
 \end{enumerate}
 
-The paper has five results. First, I show that the wrong pages enter the loss and the update only through one sum, their mass, and that the highest-scoring pages have the most mass that a set of that size can have. The main steps are checked in Lean 4. Second, I train the EVELINK retriever with five samplers, three times each, with the same training for each. One of them is ReSa2~\cite{li2025resa2}, a recent two-stage sampler. The best one is the rule that the math points to: the seven pages that the model scores highest at that step. Third, I measure which pages each sampler picks and how much mass they hold, and I test which part of ReSa2 does the work. Fourth, I repeat the comparison with more wrong pages, up to the whole set of candidates. Seven well-chosen pages do almost as well as all 999. Fifth, I mix the weights of a trained retriever with the released one, and the mix is better than the released model on news text. The code and the logs are in the project repository.
+The paper has five results. First, I show that the wrong pages enter the loss and the update only through one sum, their mass, and that the highest-scoring pages have the most mass that a set of that size can have. The main steps are checked in Lean 4. Second, I train the EVELINK retriever with five samplers, three times each, with the same training for each. One of them is ReSa2~\cite{li2025resa2}, a recent two-stage sampler. The best one is the simplest to describe: ask the model which wrong pages it scores highest right now, and train on those seven. Third, I measure which pages each sampler picks and how much mass they hold, and I test which part of ReSa2 does the work. Fourth, I repeat the comparison with more wrong pages, up to the whole set of candidates. Seven well-chosen pages do almost as well as all 999. Fifth, I check what did not improve: wrong-year mistakes are as common as before, and every trained model is worse on news text unless its weights are mixed with the released ones. The code and the logs are in the project repository.
 
 \section{Event linking: task, system, and evaluation}
 \label{sec:task}
 
-\paragraph{Task.} Event linking connects an event mention in text to the Wikipedia page about that event. A mention is a word or short phrase, together with the text around it. For example, in ``He won the Rising Star award in 1996,'' the mention should lead to the page for the 1996 AFL Rising Star. The year matters. A page for the same award in 1998 is still a wrong answer.
+\paragraph{Task.} Event linking connects an event mention in text to the Wikipedia page about that event. A mention is a word or short phrase, together with the text around it. In the example of the introduction, a page for the same award in 1998 is still a wrong answer.
 
 Formally, a mention $m = (d, [a, b])$ is a document $d$ and the positions $a$ to $b$ of the words in it that refer to the event. Let $\mathcal{E}$ be the set of Wikipedia pages that the system can link to. Event linking is the function
 \begin{equation}
@@ -99,7 +99,7 @@ This project changes the first stage, so I measure \emph{recall at 10}. This is 
 \end{equation}
 It measures whether the retriever supplies the right candidate, even if that candidate is not first. The released retriever gets 77.7\% on the Wikipedia validation set. I also report recall at 1 and at 100.
 
-\paragraph{Where the mistakes are.} \citeauthor{yu2023event} describe two important mistakes. A \emph{time mistake} selects the same event in another year. A \emph{hierarchy mistake} selects a larger event that contains the correct event, or a smaller event inside it. Selecting a war when the mention refers to one battle is a hierarchy mistake. These pages are hard negatives because they share much of the right page's meaning and wording. The retriever must learn which details identify the event.
+\paragraph{Where the mistakes are.} \citeauthor{yu2023event} describe two important mistakes. A \emph{time mistake} selects the same event in another year. A \emph{hierarchy mistake} selects a larger event that contains the correct event, or a smaller event inside it. Selecting a war when the mention refers to one battle is a hierarchy mistake. The 1998 award page is a time mistake.
 
 \section{Related work}
 
@@ -321,7 +321,7 @@ Live hard negatives mixed 50\% with released & 7 & 67.6 $\pm$ 0.3 & 92.4 $\pm$ 0
 \end{tabular}
 \end{table}
 
-The sampler changes most how often the correct page comes first. With uniform sampling it came first 64.3 percent of the time. With ReSa2 it was 69.5, and with live hard negatives 75.6. Live hard negatives is 6.1 points above ReSa2 (interval 5.7 to 6.4), and 1.3 points above it in recall at ten (1.2 to 1.5). For these three samplers the three runs differ by 0.3 points or less, so the gaps are much larger than the differences between runs. The cost of a step is the same for all three.
+The sampler changes most how often the correct page comes first. With uniform sampling it came first 64.3 percent of the time. With ReSa2 it was 69.5, and with live hard negatives 75.6. Live hard negatives is 6.1 points above ReSa2 (interval 5.7 to 6.4), and 1.3 points above it in recall at ten (1.2 to 1.5). For these three samplers the three runs differ by 0.3 points or less, so the gaps are much larger than the differences between runs.
 
 In-batch sampling finished below the released model. I first suspected my code. So I ran the rule again in a cleaner way, with the stored page vectors, the same mentions as the pool runs, and random correct pages of other mentions as the negatives. With seven such pages recall at ten was 68.2, about the same as before. With 63, the number that EVELINK's own training used, it was 79.4, close to the released model. So the low row is real. Seven random pages are almost always easy, and by Lemma~\ref{lem:bound} easy pages add almost nothing to the loss.
 
@@ -369,7 +369,7 @@ The score gap says how hard the negatives are. On average, ReSa2's negatives sco
 
 Section~\ref{sec:teach} says that a step can teach only as much as the mass of its negatives allows. I computed that mass on 200 stored pools with the scores of the released model. This is the state before the first update, when top-score and live hard negatives pick the same seven pages. The last column of Table~\ref{tab:q1} gives the result. Seven uniform pages hold 0.7\% of the mass of the pool, which is the $7/999$ of Proposition~\ref{prop:unif}. ReSa2's seven hold 7.0\%. The seven highest-scoring pages hold 87.4\%, and for half of the mentions more than 92\%. The mean loss of a step is 0.28 for uniform, 0.59 for ReSa2 and 2.77 for the seven highest, against 2.87 for the whole pool. The mean total push is 0.09, 0.24 and 0.59, against 0.60.
 
-This is the order of the results: 64.3, 69.5 and 75.6 percent at rank one, against 76.0 for the whole pool. It also says why seven live negatives do as well as 999. A few pages hold almost all of the mass, so the other 992 add almost nothing to the step.
+This is the order of the results in Table~\ref{tab:main}. It also says why seven live negatives do as well as 999. A few pages hold almost all of the mass, so the other 992 add almost nothing to the step.
 
 Top-score starts with the same 87\% and still finished at 65.3. The one difference from live hard negatives is that its scores are fixed. It shows the same seven pages at every step (Table~\ref{tab:q1}, overlap 1.00). Training pushes those seven down, the mass moves to other pages, and top-score never shows them. Uniform and ReSa2 also read fixed scores. Their random draws protect them, because each step brings different pages. With current scores that protection is not needed: live hard negatives uses no randomness at all.
 
@@ -384,7 +384,7 @@ Stage 2 only got 69.2 / 92.9 / 98.3 over three runs. Before the runs I set the m
 \subsection{Mention types, error types, and news text}
 \label{sec:gaps}
 
-The proposal included three checks: performance by mention type, time and hierarchy mistakes, and transfer to news text. I made the first two for the released model and the three pool samplers with fixed scores. ReSa2 improves the first check. It does not reduce time mistakes. On news text every trained model is worse than the released model, unless its weights are mixed with the released ones.
+The proposal included three checks: performance by mention type, time and hierarchy mistakes, and transfer to news text. ReSa2 improves the first check. No sampler reduces time mistakes. On news text every trained model is worse than the released model, unless its weights are mixed with the released ones.
 
 Figure~\ref{fig:class} gives recall at 10 by mention type. Hard noun mentions are the weakest category for the released retriever, with 68.9\%. ReSa2 raises this to 90.3\%. Uniform sampling reaches 88.8\%, while top-score reaches 84.9\%.
 
@@ -395,7 +395,7 @@ Figure~\ref{fig:class} gives recall at 10 by mention type. Hard noun mentions ar
 \label{fig:class}
 \end{figure}
 
-The error breakdown in Figure~\ref{fig:errors} is less favorable to the original motivation. Time mistakes remain close to 2\% of all validation mentions. The released model has 1.8\%, uniform and top-score have 2.1\%, and ReSa2 has 2.0\%. There is no reduction here.
+The error breakdown in Figure~\ref{fig:errors} is less favorable to the original motivation. Time mistakes remain close to 2\% of all validation mentions. The released model has 1.8\%, uniform and top-score have 2.1\%, and ReSa2 has 2.0\%. Live hard negatives, which is not in the figure, has 1.7\%. Its first result is wrong for 24.4\% of mentions, against 57.4\% for the released model, so every other kind of mistake fell and this one did not.
 
 \begin{figure}[t]
 \centering
@@ -414,13 +414,17 @@ The error labels are approximate. A title rule identifies the same title with a 
 
 \section{Conclusion}
 
-I asked how much a retriever learns from a fixed number of training steps when only the wrong pages change. The difference was large. With the same 1,500 updates and seven negatives, the correct page came first 64.3 percent of the time with random pool pages, 69.5 with ReSa2, and 75.6 with the seven pages that the model scores highest at that step. The math gives a reason. The negatives enter the loss and the update only through their mass. The seven highest-scoring pages have the most mass that seven pages can have, and in these pools they hold almost all of it. That is why seven live negatives did as well as all 999. ReSa2 was the best rule that reads fixed scores. Its random draws protect it when the scores go out of date, and a rule that reads the current scores does not need them. Two things did not improve. The wrong-year errors of the introduction are as frequent after training as before, for every sampler that I checked. On news text every trained model is worse than the released one, and only the mixes are better.
+I asked which seven wrong pages to show. With the same 1,500 updates, the right page came first 64.3 percent of the time with random pool pages, 69.5 with ReSa2, and 75.6 with the seven pages that the model scored highest at each step. All 999 pages gave 76.0. The seven get that close because of how the loss counts a wrong page. The wrong pages enter the loss and the update only through their mass, the seven highest-scoring pages have the most mass that seven pages can have, and in these pools they hold almost all of it.
+
+The part that matters is \emph{right now}. The seven highest-scoring pages, picked once and kept, finished at 65.3 percent. My explanation is that once the model learns to rule out those pages, something else becomes its hardest mistake. I measured the mass before training. I did not track it as it moved from page to page, so that part is an explanation I would still want to test.
+
+And there is a wrinkle in the example I started with. The model got much better at putting the right Wikipedia page first. But when I checked the cases where it picked the right event in the wrong year, that mistake was still about as common. So I can say that choosing the wrong pages well helped the retriever learn more in the same number of updates. I cannot say that it learned to pay attention to the year. Those turned out to be two different questions.
 
 \section*{Limitations}
 
 Most comparisons use validation data. The test set confirms eight rows. I used it in two rounds, and the first list said that there would be one round only. The second round exists because I chose live hard negatives among four new rules with validation and news numbers, and I wanted a check on data that had no part in that choice. The news result has no such check. There is one news set, I looked at it many times, and the choice among the four rules used it.
 
-The mass in Table~\ref{tab:q1} is measured before the first update, on 200 pools. I did not measure how it moves during training, so the account of top-score in section~\ref{sec:why} is an explanation that fits the results and not a measurement. The checks by mention type and by kind of mistake do not cover live hard negatives.
+The mass in Table~\ref{tab:q1} is measured before the first update, on 200 pools. I did not measure how it moves during training, so the account of top-score in section~\ref{sec:why} is an explanation that fits the results and not a measurement. The check by mention type does not cover live hard negatives.
 
 With stored page vectors, training on the whole pool costs about the same as live hard negatives, because both score all 999 pages. The saving of seven negatives matters when each negative must pass through an encoder.
 
@@ -442,7 +446,7 @@ That work had failures. These included out-of-memory errors, a full disk, a run 
 
 The checks included reproducing the released system's accuracy, tests for the sampling rules, three runs for each rule, and Lean checks for the formal claims. These checks cover different parts of the work. Reproducing the baseline does not verify every later experiment, and Lean does not verify the training implementation.
 
-AI also helped write the paper. I narrated the introduction, sections~\ref{sec:math} and~\ref{sec:samplers}, the main results, and the conclusion, and the agent turned the narration into plain technical English. Sections~\ref{sec:task}, \ref{sec:lean} and~\ref{sec:gaps}, the related work, the limitations, and this section were generated from a sheet of questions, facts, and results. I asked an agent to turn that material into prose in my voice. They were not transcribed from my spoken narration. The paragraphs on the later runs (more negatives, the bands, weight mixing, and live hard negatives) were drafted by the agent from the result tables. I gave the agent the framing of the abstract and of the first paragraph of the introduction as a short text, with the Patel reference. The agent proposed live hard negatives and the three other rules with current scores after I asked for samplers other than ReSa2. It also wrote section~\ref{sec:teach} and its Lean file, and I asked for that math.
+AI also helped write the paper. I narrated the introduction, sections~\ref{sec:math} and~\ref{sec:samplers}, the main results, and the conclusion, and the agent turned the narration into plain technical English. The abstract, the opening of the introduction and the conclusion follow a second narration that I wrote after the last runs. Sections~\ref{sec:task}, \ref{sec:lean} and~\ref{sec:gaps}, the related work, the limitations, and this section were generated from a sheet of questions, facts, and results. I asked an agent to turn that material into prose in my voice. They were not transcribed from my spoken narration. The paragraphs on the later runs (more negatives, the bands, weight mixing, and live hard negatives) were drafted by the agent from the result tables. I gave the agent the Patel reference and the idea of sample efficiency as the frame. The agent proposed live hard negatives and the three other rules with current scores after I asked for samplers other than ReSa2. It also wrote section~\ref{sec:teach} and its Lean file, and I asked for that math.
 
 The repository contains an AI-usage log with an entry for each session. The prompts and outputs are also retained.
 
@@ -489,6 +493,6 @@ Three files in the project repository, Lean 4 v4.34.1, built with \texttt{lake b
 
 \lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={30-31,60-62}]{../../lean/LossBound.lean}
 \lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={36-46,55-57,74-75,88-89,91-93,115-117,128-130}]{../../lean/Sampling.lean}
-\lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={18-18,21-21,28-29,37-38,61-62,81-81}]{../../lean/FalseNegatives.lean}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={18-18,21-21,28-29,61-62,81-81}]{../../lean/FalseNegatives.lean}
 
 \end{document}
