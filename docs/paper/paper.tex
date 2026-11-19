@@ -27,8 +27,8 @@
 \titlespacing*{\subsection}{0pt}{1.2em}{0.5em}
 \lstset{basicstyle=\ttfamily\footnotesize, breaklines=true, columns=fullflexible, keepspaces=true, frame=single, framerule=0.3pt, xleftmargin=4pt, extendedchars=true, literate={Σ}{{$\Sigma$}}1 {←}{{$\leftarrow$}}1 {≤}{{$\le$}}1 {ℕ}{{$\mathbb{N}$}}1 {ℝ}{{$\mathbb{R}$}}1 {∑}{{$\sum$}}1 {≥}{{$\ge$}}1 {₀}{{$_0$}}1 {…}{{\dots}}1 {′}{{$'$}}1 {∈}{{$\in$}}1 {∀}{{$\forall$}}1 {→}{{$\to$}}1 {−}{{$-$}}1 {·}{{$\cdot$}}1 {⟨}{{$\langle$}}1 {⟩}{{$\rangle$}}1 {ι}{{$\iota$}}1 {θ}{{$\theta$}}1 {⊆}{{$\subseteq$}}1 {∉}{{$\notin$}}1 {∧}{{$\wedge$}}1}
 
-\title{Which Wrong Pages Should an Event Linker Train On?\\
-\large Choosing the wrong examples for Event Linking}
+\title{The Importance of Sampling\\
+\large Choosing the Right (Wrong) Examples for Event Linking}
 \author{Rodrigo Quezada\\ COMPSCI 2242, Fall 2026}
 \date{Draft, \today}
 
@@ -37,13 +37,13 @@
 \maketitle
 
 \begin{abstract}
-Say I give a model this sentence: ``He won the Rising Star award in 1996, in his first season with Adelaide.'' I want it to find the Wikipedia page for the 1996 AFL Rising Star. To train it, I need wrong pages. I could give it the page for the 2004 Indian Ocean earthquake, or the page for the 1998 AFL Rising Star. Both are wrong. But the model can rule out the earthquake without ever looking at the year. Give it the 1998 award and the year matters. So I asked a simple question. If I show the model only seven wrong pages at a time, which seven should I pick?
+Event linking is the task of finding the Wikipedia page for an event that a text mentions. This is an implementation paper for a class project. I take EVELINK, the event linking system of Yu et al., and I change one part of its training: the sampler, which chooses the examples that the system learns from.
 
-I tested that with EVELINK, the event linking system of Yu et al. I started each run from the same released model and trained it for 1,500 updates. What I changed was how I picked the wrong pages. With seven random pages from a pool of candidates, the right page came first on 64.3\% of the validation examples. With ReSa2, a rule that favors pages that look like the right answer, it was 69.5\%. With the seven pages that the model scores highest \emph{right now}, at each step, it was 75.6\%. All 999 pages of the pool gave 76.0\%. The test set gives the same order.
+I am interested in sampling because it is the first step of training a machine learning model. The model learns only from the examples that it is shown. Sampling is also a good place to iterate. I can learn what the options are, select one piece of a larger system, implement it, and improve it step by step.
 
-Why do seven pages get so close to 999? It comes down to how the training loss counts a wrong page. A page that the model has already ruled out adds almost nothing. A page that scores close to the right one adds much more. I call the sum of these contributions \emph{mass}. I prove that the loss and the size of an update depend on the wrong pages only through their mass, and that the seven highest-scoring pages have the most mass that seven pages can have. The main steps are checked in Lean 4. Before training, seven random pages held 0.7\% of the mass of the pool. The seven highest-scoring pages held 87\%. The words \emph{right now} matter. The same seven pages, picked once and kept, finished at 65.3\%.
+EVELINK turns the mention and each Wikipedia page into a vector, a semantic embedding, and returns the pages whose vectors are closest to the mention. Yu et al. report that it gets some cases wrong when two events are similar and differ in one specific detail. Often that detail is the year. During training the system sees the right page next to a few wrong pages. I try to improve the training by choosing those wrong pages with more care, so that each one carries more information about what not to do.
 
-There is a wrinkle in the example. The model got much better at putting the right page first, but it picked the right event in the wrong year about as often as before. Choosing the wrong pages well helped the retriever learn more in the same number of updates. It did not teach it to look at the year.
+I started each run from the same released model and trained it for 1,500 updates with seven wrong pages for each mention. With seven random pages from a pool of candidates, the right page came first on 64.3\% of the validation examples. With ReSa2, a recent rule that favors pages that look like the right answer, it was 69.5\%. With the seven pages that the model scores highest at that step, it was 75.6\%. All 999 pages of the pool gave 76.0\%. The test set gives the same order. I also show why seven pages get so close to 999. The wrong pages enter the training loss only through one sum, which I call their mass, and the seven highest-scoring pages have the most mass that seven pages can have. The main steps of the proof are checked in Lean 4. One thing did not improve. The system picked the right event in the wrong year about as often as before.
 \end{abstract}
 
 \section{Introduction}
