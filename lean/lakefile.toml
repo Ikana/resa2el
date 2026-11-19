@@ -1,5 +1,5 @@
 name = "resa2proofs"
-defaultTargets = ["FalseNegatives", "LossBound", "Sampling"]
+defaultTargets = ["FalseNegatives", "LossBound", "Sampling", "Mix"]
 
 [[require]]
 name = "mathlib"
@@ -14,3 +14,6 @@ name = "LossBound"
 
 [[lean_lib]]
 name = "Sampling"
+
+[[lean_lib]]
+name = "Mix"

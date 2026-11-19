@@ -25,7 +25,7 @@
 \usepackage{titlesec}
 \titlespacing*{\section}{0pt}{1.6em}{0.7em}
 \titlespacing*{\subsection}{0pt}{1.2em}{0.5em}
-\lstset{basicstyle=\ttfamily\footnotesize, breaklines=true, columns=fullflexible, keepspaces=true, frame=single, framerule=0.3pt, xleftmargin=4pt, extendedchars=true, literate={Σ}{{$\Sigma$}}1 {←}{{$\leftarrow$}}1 {≤}{{$\le$}}1 {ℕ}{{$\mathbb{N}$}}1 {ℝ}{{$\mathbb{R}$}}1 {∑}{{$\sum$}}1 {≥}{{$\ge$}}1 {₀}{{$_0$}}1 {…}{{\dots}}1 {′}{{$'$}}1 {∈}{{$\in$}}1 {∀}{{$\forall$}}1 {→}{{$\to$}}1 {−}{{$-$}}1 {·}{{$\cdot$}}1 {⟨}{{$\langle$}}1 {⟩}{{$\rangle$}}1 {ι}{{$\iota$}}1 {θ}{{$\theta$}}1 {⊆}{{$\subseteq$}}1 {∉}{{$\notin$}}1 {∧}{{$\wedge$}}1}
+\lstset{basicstyle=\ttfamily\footnotesize, breaklines=true, columns=fullflexible, keepspaces=true, frame=single, framerule=0.3pt, xleftmargin=4pt, extendedchars=true, literate={Σ}{{$\Sigma$}}1 {←}{{$\leftarrow$}}1 {≤}{{$\le$}}1 {ℕ}{{$\mathbb{N}$}}1 {ℝ}{{$\mathbb{R}$}}1 {∑}{{$\sum$}}1 {≥}{{$\ge$}}1 {₀}{{$_0$}}1 {…}{{\dots}}1 {′}{{$'$}}1 {∈}{{$\in$}}1 {∀}{{$\forall$}}1 {→}{{$\to$}}1 {−}{{$-$}}1 {·}{{$\cdot$}}1 {⟨}{{$\langle$}}1 {⟩}{{$\rangle$}}1 {ι}{{$\iota$}}1 {θ}{{$\theta$}}1 {⊆}{{$\subseteq$}}1 {∉}{{$\notin$}}1 {∧}{{$\wedge$}}1 {α}{{$\alpha$}}1 {↔}{{$\leftrightarrow$}}1}
 
 \title{The Importance of Sampling\\
 \large Choosing the Right (Wrong) Examples for Event Linking}
@@ -48,26 +48,26 @@ I started each run from the same released model and trained it for 1,500 updates
 
 \section{Introduction}
 
-Say I give a model this sentence. ``He won the Rising Star award in 1996, in his first season with Adelaide.'' I want it to find the Wikipedia page for the 1996 AFL Rising Star. Now I need a wrong page to train it on. I could give it the page for the 2004 Indian Ocean earthquake. Or I could give it the page for the 1998 AFL Rising Star.
+Event linking is the task of finding the Wikipedia page for an event that a text mentions. This is an implementation paper for a class project. I take EVELINK, the event linking system of Yu et al.~\cite{yu2023event}, and I change one part of its training: the \emph{sampler}, the rule that chooses the examples that the system learns from.
 
-Both pages are wrong. But the model can rule out the earthquake without ever looking at the year. Give it the 1998 award and suddenly the year matters. That got me interested in a simple question. If I get to show the model only seven wrong pages at a time, which seven should I pick?
+I chose sampling for two reasons. First, it is the first step of training a machine learning model, and the model learns only from the examples that it is shown. Patel~\cite{patel2026avalanche} writes that to teach a network a skill, ``you have to feed it much more data than it would take a human to learn the same thing.'' He calls this a lack of sample efficiency, and he says that it can be measured, for example by ``how much data it takes to reach a given pretraining loss.'' Second, sampling is a good place to iterate. It is one small piece of a large system. I can learn what the options are, implement one, measure it, and improve it step by step, and the rest of the system stays as it is.
 
-The question is a small case of a general one. A neural network learns only from the examples it is shown, and it needs many of them. Patel~\cite{patel2026avalanche} writes that to teach a network a skill, ``you have to feed it much more data than it would take a human to learn the same thing.'' He calls this a lack of sample efficiency, and he says that it can be measured, for example by ``how much data it takes to reach a given pretraining loss.'' I measure it the same way. I fix the amount of training, I change only the wrong pages, and I score the model on data it has not seen.
+EVELINK works in two stages (section~\ref{sec:task}). The first stage, the \emph{retriever}, turns the mention and each Wikipedia page into a vector, a semantic embedding, and pulls out the 100 pages whose vectors are closest to the mention. The second stage, the \emph{reranker}, puts those 100 pages in a new order. If the retriever leaves out the right page, the reranker cannot bring it back. So I train the retriever.
 
-The model is EVELINK, a system that links a mention of an event to the Wikipedia page for that event~\cite{yu2023event}. It works in two stages (section~\ref{sec:task}). The first stage searches all of Wikipedia and pulls out 100 pages that might fit. It is called the \emph{retriever}. The second stage, the \emph{reranker}, puts those 100 pages in a new order. If the retriever leaves out the 1996 page, the reranker cannot bring it back. So I train the retriever.
+Yu et al. report that the system gets some cases wrong when two events are similar and differ in one specific detail. Often that detail is the year. Here is one case from the validation data. The right page for a mention is ``2004 United States presidential election.'' One of my trained retrievers put ``2008 United States presidential election'' first. The two pages share almost all of their words.
 
-During training, the retriever sees the correct page next to a few wrong pages. A rule that picks the wrong pages is called a \emph{sampler}, because it usually picks them at random from some set. I ask two questions.
+During training, the retriever sees the right page next to a few wrong pages. A page about an earthquake is wrong, and the model can rule it out without ever looking at the year. Give it the 2008 election as the wrong page and the year matters. So I try to improve the training by choosing the wrong pages with more care, so that each one carries more information about what not to do. I can show the model only seven wrong pages at a time. I ask two questions.
 \begin{enumerate}[nosep]
   \item With the amount of training fixed, how much does the sampler change the results on held-out data?
   \item Why? What can one step teach with the pages that each sampler picks?
 \end{enumerate}
 
-The paper has five results. First, I show that the wrong pages enter the loss and the update only through one sum, their mass, and that the highest-scoring pages have the most mass that a set of that size can have. The main steps are checked in Lean 4. Second, I train the EVELINK retriever with five samplers, three times each, with the same training for each. One of them is ReSa2~\cite{li2025resa2}, a recent two-stage sampler. The best one is the simplest to describe: ask the model which wrong pages it scores highest right now, and train on those seven. Third, I measure which pages each sampler picks and how much mass they hold, and I test which part of ReSa2 does the work. Fourth, I repeat the comparison with more wrong pages, up to the whole set of candidates. Seven well-chosen pages do almost as well as all 999. Fifth, I check what did not improve: wrong-year mistakes are as common as before, and every trained model is worse on news text unless its weights are mixed with the released ones. The code and the logs are in the project repository.
+The paper has five results. First, I show that the wrong pages enter the loss and the update only through one sum, their mass, and that the highest-scoring pages have the most mass that a set of that size can have. The main steps are checked in Lean 4. Second, I train the EVELINK retriever with five samplers, three times each, with the same training for each. One of them is ReSa2~\cite{li2025resa2}, a recent two-stage sampler. The best one is the simplest to describe: ask the model which wrong pages it scores highest right now, and train on those seven. Third, I measure which pages each sampler picks and how much mass they hold, and I test which part of ReSa2 does the work. Fourth, I repeat the comparison with more wrong pages, up to the whole set of candidates. Seven well-chosen pages do almost as well as all 999. Fifth, I check what did not improve. Wrong-year mistakes are as common as before. Every trained model is worse on news text, and I repair that with the average of the trained weights and the released weights. I give a condition for when such an average beats both models. The code and the logs are in the project repository.
 
 \section{Event linking: task, system, and evaluation}
 \label{sec:task}
 
-\paragraph{Task.} Event linking connects an event mention in text to the Wikipedia page about that event. A mention is a word or short phrase, together with the text around it. In the example of the introduction, a page for the same award in 1998 is still a wrong answer.
+\paragraph{Task.} Event linking connects an event mention in text to the Wikipedia page about that event. A mention is a word or short phrase, together with the text around it. In the example of the introduction, the page for the 2008 election is a wrong answer for a mention of the 2004 election.
 
 Formally, a mention $m = (d, [a, b])$ is a document $d$ and the positions $a$ to $b$ of the words in it that refer to the event. Let $\mathcal{E}$ be the set of Wikipedia pages that the system can link to. Event linking is the function
 \begin{equation}
@@ -99,7 +99,7 @@ This project changes the first stage, so I measure \emph{recall at 10}. This is 
 \end{equation}
 It measures whether the retriever supplies the right candidate, even if that candidate is not first. The released retriever gets 77.7\% on the Wikipedia validation set. I also report recall at 1 and at 100.
 
-\paragraph{Where the mistakes are.} \citeauthor{yu2023event} describe two important mistakes. A \emph{time mistake} selects the same event in another year. A \emph{hierarchy mistake} selects a larger event that contains the correct event, or a smaller event inside it. Selecting a war when the mention refers to one battle is a hierarchy mistake. The 1998 award page is a time mistake.
+\paragraph{Where the mistakes are.} \citeauthor{yu2023event} describe two important mistakes. A \emph{time mistake} selects the same event in another year. A \emph{hierarchy mistake} selects a larger event that contains the correct event, or a smaller event inside it. Selecting a war when the mention refers to one battle is a hierarchy mistake. The 2008 election page of the introduction is a time mistake.
 
 \section{Related work}
 
@@ -165,7 +165,7 @@ and $\partial L / \partial s^{+} = -\sum_i p_i$.
 Write $Z = e^{s^{+}} + \sum_j e^{s_j}$, so $L = \log Z - s^{+}$. Then $\partial L/\partial s_i = e^{s_i}/Z$ and $\partial L/\partial s^{+} = e^{s^{+}}/Z - 1 = -\sum_i e^{s_i}/Z$.
 \end{proof}
 
-So if the retriever already puts the earthquake page far below the 1996 award, that page contributes almost nothing to the update. If the 1998 award scores close to the 1996 award, the loss puts more pressure on the model to separate them.
+So if the retriever already puts an earthquake page far below the 2004 election, that page contributes almost nothing to the update. If the 2008 election scores close to the 2004 election, the loss puts more pressure on the model to separate them.
 
 The update itself moves the mention vector.
 
@@ -222,6 +222,31 @@ All of this uses the scores of the model \emph{at the current step}. If a sample
 
 In the experiment, I keep the loss and the number of negatives fixed. I change which seven pages the model sees.
 
+\subsection{The average of two models}
+\label{sec:mixmath}
+
+Section~\ref{sec:gaps} uses one more tool. Let $\theta_0$ be the weights of the released mention encoder and $\theta_1$ the weights after my training. Training starts from $\theta_0$, so the two lists of numbers have the same length. For $0 \le \alpha \le 1$ let $\theta_\alpha = (1 - \alpha)\,\theta_0 + \alpha\,\theta_1$. The half-and-half mix is $\theta_{1/2}$. This is the weight average of WiSE-FT~\cite{wortsman2022wiseft} and of model soups~\cite{wortsman2022soups}. No training is needed to make it.
+
+\begin{proposition}[The mix is close to the mean of two scores]
+\label{prop:mixscore}
+Let $g(\alpha)$ be the mention vector that the encoder with weights $\theta_\alpha$ gives for a mention $m$. If $g$ is twice differentiable and $\|g''(\alpha)\| \le \beta$ on $[0, 1]$, then $\|g(\tfrac12) - \tfrac12\,(g(0) + g(1))\| \le \beta/8$. So for every page $e$, the score of the mix differs from the mean of the two scores by at most $\beta\,\|v_e\|/8$.
+\end{proposition}
+\begin{proof}
+For a unit vector $z$, the real function $h(\alpha) = z \cdot g(\alpha)$ has $|h''| \le \beta$. The line through $h(0)$ and $h(1)$ differs from $h$ at the midpoint by at most $\beta/8$, the error bound of linear interpolation. Take $z$ in the direction of $g(\tfrac12) - \tfrac12(g(0) + g(1))$. The score is linear in the mention vector (equation~\ref{eq:score}), and the Cauchy--Schwarz inequality gives the last claim.
+\end{proof}
+
+If the encoder were linear in its weights, $\beta$ would be zero and the mix would give each page exactly the mean of the two scores. So the mix is like two experts with equal say, one that knows Wikipedia text well and one that has not forgotten other text, at the cost of one model.
+
+\begin{proposition}[When the mix beats both models]
+\label{prop:mixbeats}
+Let $f(\alpha)$ be the loss of the model $\theta_\alpha$ on some data. Suppose $f(\alpha) = a\alpha^2 + b\alpha + c$ with $a > 0$, so its lowest point is at $\alpha^{*} = -b/(2a)$. Then $f(\tfrac12) < f(0)$ and $f(\tfrac12) < f(1)$ if and only if $\tfrac14 < \alpha^{*} < \tfrac34$.
+\end{proposition}
+\begin{proof}
+$f(\tfrac12) - f(0) = a/4 + b/2$, which is negative exactly when $\alpha^{*} > \tfrac14$. And $f(\tfrac12) - f(1) = -3a/4 - b/2$, which is negative exactly when $\alpha^{*} < \tfrac34$. Lean checks this.
+\end{proof}
+
+So the mix is better than both models on data where training first helps and then goes too far. On data where training helps all the way, $\alpha^{*} \ge 1$ and the mix is between the two models.
+
 \section{How I chose the seven pages}
 \label{sec:samplers}
 
@@ -236,21 +261,32 @@ First, ReSa2 draws 500 pages without replacement. It gives the most weight to pa
 \end{equation}
 It draws one page with probability $w_i / \sum_j w_j$, removes it, and draws again from the pages that are left. The weight drops as the score moves away from $s^{+}$ in either direction. Figure~\ref{fig:weight} shows the weight next to the real scores. The scores are about 550, and most pool pages are 5 to 20 points below the correct page. The weight is close to zero for any page more than 4 points away. So stage 1 is close to a fixed rule. It keeps the 500 pages whose scores are closest to $s^{+}$. On 200 stored pools, 96\% of the pages it kept were among those 500, and two draws shared 95\% of their pages. Then ReSa2 compares the 500 pages that are left with the correct page itself. It keeps the 75 pages whose vectors are most similar to the correct page vector and draws seven of those uniformly. After both stages, 89\% of the 75 pages are among the 75 pool pages most similar to the correct page. ReSa2 is therefore close to a simpler rule, which I call \emph{stage 2 only}: seven uniform picks from the 75 most similar pool pages. I test that rule in section~\ref{sec:parts}.
 
+
+Once a page makes the final 75, it has a 7-in-75 chance of being used.
+
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.47\textwidth]{figures/weight_window.pdf}
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/weight_window.pdf}
 \caption{The weight of equation~\ref{eq:weight} (green, scaled to fit) and how far the pool pages score from the correct page (gray, 2,000 validation mentions). Most pool pages score 5 to 20 points below the correct page. The weight is close to zero for pages more than 4 points away.}
 \label{fig:weight}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/inclusion_by_rank.pdf}
+\caption{The probability that a pool page is picked, by how similar it is to the correct page. Rank 1 is the most similar page. Both axes are logarithmic. Uniform gives every page the same chance. ReSa2 gives about 0.09 to each of the 75 most similar pages and picks nothing beyond rank 300.}
+\label{fig:incl}
+\end{minipage}
 \end{figure}
 
-Once a page makes the final 75, it has a 7-in-75 chance of being used (Proposition~\ref{prop:share}).
 
 \subsection{What the Lean proofs establish}
 \label{sec:lean}
 
 Lean is a proof assistant. It checks whether a formal proof follows from its definitions and assumptions. I use it to check the claims below. They explain the experiment. They do not prove which sampler gives the best retriever. The files are in Appendix~\ref{app:lean}.
 
-\emph{Loss and mass.} Lean checks Lemma~\ref{lem:bound}, the identity $P(S) = 1 - e^{-L(S)}$ of Proposition~\ref{prop:mass}, and all three parts of Proposition~\ref{prop:top}.
+\emph{Loss and mass.} Lean checks Lemma~\ref{lem:bound}, the identity $P(S) = 1 - e^{-L(S)}$ of Proposition~\ref{prop:mass}, all three parts of Proposition~\ref{prop:top}, and Proposition~\ref{prop:mixbeats}.
 
 \emph{Possible false negatives.} A pool page that scores above the correct page may be a valid answer that has no label. I call such a page a \emph{possible false negative}.
 
@@ -264,15 +300,7 @@ A selection cannot contain more such pages than its size or than the pool has. S
 
 So no rule selects more possible false negatives than a rule that takes the highest scores. This is the risk of top-score and of live hard negatives. Section~\ref{sec:rankings} tests whether it matters.
 
-\begin{proposition}[The 7/75 share]
-\label{prop:share}
-Of all 7-page subsets of a set of 75 pages, the fraction that contains one fixed page is $7/75$; equivalently, $75 \binom{74}{6} = 7 \binom{75}{7}$. Hence the probability that ReSa2 selects page $i$ is $\tfrac{7}{75}$ times the probability that $i$ is among the 75 pages kept by stage 2.
-\end{proposition}
-\begin{proof}
-A subset that contains the fixed page is that page plus 6 of the other 74, so there are $\binom{74}{6}$ of them out of $\binom{75}{7}$. Lean checks the identity by computation.
-\end{proof}
-
-The norm bound of Proposition~\ref{prop:mass}, Proposition~\ref{prop:unif}, Lemma~\ref{lem:push} and Corollary~\ref{cor:grad} are proved by hand and are not checked in Lean. The first stage of ReSa2 has a separate numerical check: exact selection probabilities for pools of up to eight pages agree with a simulation of the code to within 0.015.
+The norm bound of Proposition~\ref{prop:mass}, Propositions~\ref{prop:unif} and~\ref{prop:mixscore}, Lemma~\ref{lem:push} and Corollary~\ref{cor:grad} are proved by hand and are not checked in Lean. The first stage of ReSa2 has a separate numerical check: exact selection probabilities for pools of up to eight pages agree with a simulation of the code to within 0.015.
 
 \section{Experiments}
 \label{sec:experiments}
@@ -285,7 +313,7 @@ Each run made 1,500 updates. One update uses 32 mentions, each with seven negati
 
 Then I ranked all 5.87 million pages for each of the 16,692 validation mentions and computed recall at 1, 10, and 100 (equation~\ref{eq:recall}). The measure I focus on is recall at ten. If the correct page appears anywhere in the first ten results, I count that mention as a hit. I did the same for the 769 New York Times mentions that have a page. Where I give an interval, it is a 95\% bootstrap interval over mentions, with the three runs averaged first.
 
-Before the experiments I checked that I could repeat the published results. The released retriever and reranker gave me an accuracy of 82.88\% on the Wikipedia test set, and the paper reports 82.87\%. On the New York Times set I got 55.33\%, the same as the paper. I used the test set two more times. Each time I fixed the list of models in writing before the first evaluation (section~\ref{sec:rankings}).
+Apart from the reproduction in section~\ref{sec:task}, I used the test set two times. Each time I fixed the list of models in writing before the first evaluation (section~\ref{sec:rankings}).
 
 \subsection{What changed in the rankings}
 \label{sec:rankings}
@@ -323,7 +351,7 @@ Live hard negatives mixed 50\% with released & 7 & 67.6 $\pm$ 0.3 & 92.4 $\pm$ 0
 
 The sampler changes most how often the correct page comes first. With uniform sampling it came first 64.3 percent of the time. With ReSa2 it was 69.5, and with live hard negatives 75.6. Live hard negatives is 6.1 points above ReSa2 (interval 5.7 to 6.4), and 1.3 points above it in recall at ten (1.2 to 1.5). For these three samplers the three runs differ by 0.3 points or less, so the gaps are much larger than the differences between runs.
 
-In-batch sampling finished below the released model. I first suspected my code. So I ran the rule again in a cleaner way, with the stored page vectors, the same mentions as the pool runs, and random correct pages of other mentions as the negatives. With seven such pages recall at ten was 68.2, about the same as before. With 63, the number that EVELINK's own training used, it was 79.4, close to the released model. So the low row is real. Seven random pages are almost always easy, and by Lemma~\ref{lem:bound} easy pages add almost nothing to the loss.
+In-batch sampling finished below the released model. To check this, I ran the rule again with the stored page vectors and random correct pages of other mentions as the negatives. With seven such pages recall at ten was 68.2, about the same. With 63, the number that EVELINK's own training used, it was 79.4, close to the released model. So the low row is real. Seven random pages are almost always easy, and by Lemma~\ref{lem:bound} easy pages add almost nothing to the loss.
 
 More negatives also help. Uniform sampling with 63 negatives put the correct page first 71.0 percent of the time. With all 999 pool pages for each mention there is no sampler at all, and the correct page came first 76.0 percent of the time. By Proposition~\ref{prop:top}(a) the whole pool is the upper limit for the mass of a step. Live hard negatives with seven pages is 0.4 points below it at rank one (interval 0.1 to 0.7) and equal to it in recall at ten.
 
@@ -353,12 +381,6 @@ ReSa2     & 2.15 / 3.98 / 0.87 / 0.00 & 84  & 0.05 & $-8.6$ & 7.0\% \\
 \end{tabular}
 \end{table}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.47\textwidth]{figures/inclusion_by_rank.pdf}
-\caption{The probability that a pool page is picked, by how similar it is to the correct page. Rank 1 is the most similar page. Both axes are logarithmic. Uniform gives every page the same chance. ReSa2 gives about 0.09 to each of the 75 most similar pages and picks nothing beyond rank 300.}
-\label{fig:incl}
-\end{figure}
 
 ReSa2 picked about six of its seven negatives from the 75 pages most similar to the correct page. For uniform sampling, the average was about half a page. Top-score gave me the same seven pages every time. Two ReSa2 draws shared very few pages, even though both tended to draw from the same part of the pool. Over 200 draws, uniform sampling used 756 different pool pages. ReSa2 used 84, and top-score used 7.
 
@@ -386,14 +408,7 @@ Stage 2 only got 69.2 / 92.9 / 98.3 over three runs. Before the runs I set the m
 
 The proposal included three checks: performance by mention type, time and hierarchy mistakes, and transfer to news text. ReSa2 improves the first check. No sampler reduces time mistakes. On news text every trained model is worse than the released model, unless its weights are mixed with the released ones.
 
-Figure~\ref{fig:class} gives recall at 10 by mention type. Hard noun mentions are the weakest category for the released retriever, with 68.9\%. ReSa2 raises this to 90.3\%. Uniform sampling reaches 88.8\%, while top-score reaches 84.9\%.
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=0.64\textwidth]{figures/by_mention_type.pdf}
-\caption{Recall at 10 on the validation set by kind of mention. Each dot is one retriever (mean of three runs). The numbers mark the released retriever and ReSa2. The means and standard deviations are in \texttt{docs/results/gaps/gaps.md} in the repository.}
-\label{fig:class}
-\end{figure}
+By mention type, hard noun mentions are the weakest category for the released retriever, with 68.9\% recall at 10. ReSa2 raises this to 90.3\%, uniform sampling to 88.8\%, and top-score to 84.9\%. The other categories are in \texttt{docs/results/gaps/gaps.md} in the repository.
 
 The error breakdown in Figure~\ref{fig:errors} is less favorable to the original motivation. Time mistakes remain close to 2\% of all validation mentions. The released model has 1.8\%, uniform and top-score have 2.1\%, and ReSa2 has 2.0\%. Live hard negatives, which is not in the figure, has 1.7\%. Its first result is wrong for 24.4\% of mentions, against 57.4\% for the released model, so every other kind of mistake fell and this one did not.
 
@@ -408,9 +423,11 @@ Top-score produces the fewest hierarchy mistakes: 3.0\% of validation mentions, 
 
 The news results show a transfer limit. On the 769 New York Times mentions with a page, the released retriever gets 33.6\% recall at 10. ReSa2 gets 30.9\%. Recall at 100 also falls, from 57.3\% to 55.9\%. Live hard negatives gets 30.0\%, equal to ReSa2 within the noise (difference $-0.9$, interval $-2.4$ to $+0.7$). The gains after 1,500 Wikipedia training updates do not carry over to news text.
 
-Weight mixing changes this. I averaged the weights of the released mention encoder and a ReSa2 mention encoder, as in WiSE-FT~\cite{wortsman2022wiseft}. I named the half-and-half mix as the main result before I looked at any number. Over the three ReSa2 runs, the mix got 37.0\% recall at 10 on the news mentions, 3.4 points above the released model (interval 1.4 to 5.5), and 61.6\% recall at 100. On validation it got 91.0\%, which is 2.3 points below ReSa2 and 13.3 above the released model. The same mix of live hard negatives, over two runs, got 36.3\% on news, 2.7 points above the released model (0.7 to 4.9). On validation it put the correct page first 67.6\% of the time, against 62.4\% for the ReSa2 mix and 42.6\% for the released model.
+The average of section~\ref{sec:mixmath} changes this. I averaged the weights of the released mention encoder and a ReSa2 mention encoder. I named the half-and-half mix as the main result before I looked at any number. Over the three ReSa2 runs, the mix got 37.0\% recall at 10 on the news mentions, 3.4 points above the released model (interval 1.4 to 5.5), and 61.6\% recall at 100. On validation it got 91.0\%, which is 2.3 points below ReSa2 and 13.3 above the released model. The same mix of live hard negatives, over two runs, got 36.3\% on news, 2.7 points above the released model (0.7 to 4.9). On validation it put the correct page first 67.6\% of the time, against 62.4\% for the ReSa2 mix and 42.6\% for the released model.
 
-The error labels are approximate. A title rule identifies the same title with a different year as a time mistake. It identifies one title's words contained in another title as a hierarchy mistake. Everything else is ``other.'' No person reviewed every case. These labels measure title patterns, which can miss real relationships or assign a relationship that the titles alone do not establish.
+Proposition~\ref{prop:mixbeats} says when to expect this. For ReSa2 I also made the mixes with $\alpha = 0.25$ and $0.75$. From $\alpha = 0$ to $1$, recall at 10 on news was 33.6, 37.0, 37.0, 34.1 and 30.9. A quadratic fits these five points to within 0.8 points, and its highest point is at $\alpha = 0.41$, between $\tfrac14$ and $\tfrac34$. On validation the correct page came first 42.6, 53.8, 62.4, 67.4 and 69.5 percent of the time. The fitted curve is highest at $\alpha = 1.04$, so there the mix is between the two models. Both are as the proposition says, with accuracy in the place of the loss. Training on Wikipedia text first helps on news and then goes too far.
+
+The error labels are approximate. A title rule calls the same title with a different year a time mistake, and one title's words contained in another title a hierarchy mistake. No person reviewed the cases.
 
 \section{Conclusion}
 
@@ -418,7 +435,7 @@ I asked which seven wrong pages to show. With the same 1,500 updates, the right 
 
 The part that matters is \emph{right now}. The seven highest-scoring pages, picked once and kept, finished at 65.3 percent. My explanation is that once the model learns to rule out those pages, something else becomes its hardest mistake. I measured the mass before training. I did not track it as it moved from page to page, so that part is an explanation I would still want to test.
 
-And there is a wrinkle in the example I started with. The model got much better at putting the right Wikipedia page first. But when I checked the cases where it picked the right event in the wrong year, that mistake was still about as common. So I can say that choosing the wrong pages well helped the retriever learn more in the same number of updates. I cannot say that it learned to pay attention to the year. Those turned out to be two different questions.
+And there is a wrinkle. I started with events that differ only in the year. The model got much better at putting the right Wikipedia page first. But when I checked the cases where it picked the right event in the wrong year, that mistake was still about as common. So I can say that choosing the wrong pages well helped the retriever learn more in the same number of updates. I cannot say that it learned to pay attention to the year. Those turned out to be two different questions. The other cost was on news text, where every trained model got worse. The average of the trained weights and the released weights repaired that.
 
 \section*{Limitations}
 
@@ -434,7 +451,7 @@ Each run receives 1,500 updates. The five main rules and stage 2 only have three
 
 The fixed candidate pools also limit what training can address. For about 2\% of mentions, the correct page is absent from the first 1,000 candidates. The experiments do not explore negatives outside those pools.
 
-The Lean proofs cover specific mathematical claims. They do not verify the training code, the data, or the experimental results. The derivative, the gradient and the expectation arguments remain outside Lean.
+The Lean proofs cover specific mathematical claims. They do not verify the training code, the data, or the experimental results. The derivative, the gradient and the expectation arguments remain outside Lean. Proposition~\ref{prop:mixbeats} assumes a quadratic loss along the line between the two models. I checked it against accuracy at five points for ReSa2, and I did not measure the $\beta$ of Proposition~\ref{prop:mixscore}.
 
 \section*{How I used AI}
 
@@ -442,11 +459,9 @@ AI assistance was a large part of this project. Before the proposal, I used Code
 
 During the project I used Claude, through an agent that ran on my computer and on a cloud GPU. The agent did substantial implementation work. It set up the cloud environment, changed the implementation to fit a 24 GB GPU, implemented the sampling rules, ran the 45 training runs, and produced tables, figures, and Lean proofs.
 
-That work had failures. These included out-of-memory errors, a full disk, a run that reached its time limit, and a bug in the original validation code. The process required checks and corrections.
+That work had failures: out-of-memory errors, a full disk, a run that reached its time limit, and a bug in the original validation code. The checks were the reproduction of the released system's accuracy, tests for the sampling rules, three runs for each rule, and Lean for the formal claims. Lean does not verify the training code.
 
-The checks included reproducing the released system's accuracy, tests for the sampling rules, three runs for each rule, and Lean checks for the formal claims. These checks cover different parts of the work. Reproducing the baseline does not verify every later experiment, and Lean does not verify the training implementation.
-
-AI also helped write the paper. I narrated the introduction, sections~\ref{sec:math} and~\ref{sec:samplers}, the main results, and the conclusion, and the agent turned the narration into plain technical English. The abstract, the opening of the introduction and the conclusion follow a second narration that I wrote after the last runs. Sections~\ref{sec:task}, \ref{sec:lean} and~\ref{sec:gaps}, the related work, the limitations, and this section were generated from a sheet of questions, facts, and results. I asked an agent to turn that material into prose in my voice. They were not transcribed from my spoken narration. The paragraphs on the later runs (more negatives, the bands, weight mixing, and live hard negatives) were drafted by the agent from the result tables. I gave the agent the Patel reference and the idea of sample efficiency as the frame. The agent proposed live hard negatives and the three other rules with current scores after I asked for samplers other than ReSa2. It also wrote section~\ref{sec:teach} and its Lean file, and I asked for that math.
+AI also helped write the paper. I narrated the introduction, sections~\ref{sec:math} and~\ref{sec:samplers}, the main results, and the conclusion, and the agent turned the narration into plain technical English. The abstract, the opening of the introduction and the conclusion follow a second narration that I wrote after the last runs. Sections~\ref{sec:task}, \ref{sec:lean} and~\ref{sec:gaps}, the related work, the limitations, and this section were generated from a sheet of questions, facts, and results. I asked an agent to turn that material into prose in my voice. They were not transcribed from my spoken narration. The paragraphs on the later runs (more negatives, the bands, weight mixing, and live hard negatives) were drafted by the agent from the result tables. I gave the agent the Patel reference and the idea of sample efficiency as the frame. The agent proposed live hard negatives and the three other rules with current scores after I asked for samplers other than ReSa2. It also wrote sections~\ref{sec:teach} and~\ref{sec:mixmath} and their Lean files, and I asked for that math.
 
 The repository contains an AI-usage log with an entry for each session. The prompts and outputs are also retained.
 
@@ -459,6 +474,7 @@ The repository contains an AI-usage log with an entry for each session. The prom
 \bibitem[Qu et al.(2021)]{qu2021rocketqa} Yingqi Qu, Yuchen Ding, Jing Liu, Kai Liu, Ruiyang Ren, Wayne Xin Zhao, Daxiang Dong, Hua Wu, and Haifeng Wang. 2021. RocketQA: An Optimized Training Approach to Dense Passage Retrieval for Open-Domain Question Answering. In \emph{Proceedings of NAACL}.
 \bibitem[Zhou et al.(2022)]{zhou2022simans} Kun Zhou, Yeyun Gong, Xiao Liu, Wayne Xin Zhao, Yelong Shen, Anlei Dong, Jingwen Lu, Rangan Majumder, Ji-Rong Wen, and Nan Duan. 2022. SimANS: Simple Ambiguous Negatives Sampling for Dense Text Retrieval. In \emph{Proceedings of EMNLP Industry Track}.
 \bibitem[Wortsman et al.(2022)]{wortsman2022wiseft} Mitchell Wortsman, Gabriel Ilharco, Jong Wook Kim, Mike Li, Simon Kornblith, Rebecca Roelofs, Raphael Gontijo Lopes, Ali Farhadi, Hongseok Namkoong, and Ludwig Schmidt. 2022. Robust Fine-Tuning of Zero-Shot Models. In \emph{Proceedings of CVPR}.
+\bibitem[Wortsman et al.(2022b)]{wortsman2022soups} Mitchell Wortsman, Gabriel Ilharco, Samir Ya Gadre, and others. 2022. Model soups: averaging weights of multiple fine-tuned models improves accuracy without increasing inference time. In \emph{Proceedings of ICML}.
 \bibitem[Patel(2026)]{patel2026avalanche} Dwarkesh Patel. 2026. The avalanche that hit math is coming for AI development. Blog post, 13 November. \url{https://www.dwarkesh.com/p/rsi}. Video version: ``Recursive self-improvement has started,'' \url{https://www.youtube.com/watch?v=1NHPDzpfR6Y}.
 \end{thebibliography}
 
@@ -489,10 +505,10 @@ Live hard negatives & 75.7 / 94.7 / 98.7 & 75.6 / 94.6 / 98.7 & 75.6 / 94.7 / 98
 \section{The Lean files}
 \label{app:lean}
 
-Three files in the project repository, Lean 4 v4.34.1, built with \texttt{lake build}. \texttt{lean/LossBound.lean} and \texttt{lean/Sampling.lean} use Mathlib (real numbers, $\exp$, $\log$, finite sums); their proofs depend only on the axioms \texttt{propext}, \texttt{Classical.choice} and \texttt{Quot.sound}. \texttt{lean/FalseNegatives.lean} uses the core library only. The listings give the definitions and the main statements in that order. The proofs are in the files.
+Four files in the project repository, Lean 4 v4.34.1, built with \texttt{lake build}. The files \texttt{LossBound}, \texttt{Sampling} and \texttt{Mix} in \texttt{lean/} use Mathlib (real numbers, $\exp$, $\log$, finite sums); their proofs depend only on the axioms \texttt{propext}, \texttt{Classical.choice} and \texttt{Quot.sound}. \texttt{FalseNegatives} (Proposition~\ref{prop:bound}) uses the core library only. The listings give the definitions and the main statements of the first three files. The proofs are in the files.
 
 \lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={30-31,60-62}]{../../lean/LossBound.lean}
-\lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={36-46,55-57,74-75,88-89,91-93,115-117,128-130}]{../../lean/Sampling.lean}
-\lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={18-18,21-21,28-29,61-62,81-81}]{../../lean/FalseNegatives.lean}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={37-37,40-40,43-43,46-46,56-57,74-75,88-89,92-93,115-117,129-130}]{../../lean/Sampling.lean}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={19-19,21-23}]{../../lean/Mix.lean}
 
 \end{document}
