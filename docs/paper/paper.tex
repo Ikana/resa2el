@@ -33,11 +33,12 @@
 \date{Draft, \today}
 
 \usepackage{float}
+\newcommand{\partline}[1]{\vspace{1.2em}\noindent\rule{\textwidth}{0.4pt}\\[0.3em]{\Large\bfseries #1}\par\vspace{0.4em}}
 \begin{document}
 \maketitle
 
 \begin{abstract}
-Event linking is the task of finding the Wikipedia page for an event that a text mentions. This is an implementation paper for a class project. I take EVELINK, the event linking system of Yu et al., and I change one part of its training: the sampler, which chooses the examples that the system learns from.
+Event linking is the task of finding the Wikipedia page for an event that a text mentions. This is an implementation paper for a class project. I take EVELINK, the event linking system of Yu et al., and I change one part of its training: the sampler, which chooses the examples that the system learns from. The paper has two parts, ReSa2 and what came after it, and each part gives the math first and the experiments second.
 
 I am interested in sampling because it is the first step of training a machine learning model. The model learns only from the examples that it is shown. Sampling is also a good place to iterate. I can learn what the options are, select one piece of a larger system, implement it, and improve it step by step.
 
@@ -62,7 +63,7 @@ During training, the retriever sees the right page next to a few wrong pages. A 
   \item Why? What can one step teach with the pages that each sampler picks?
 \end{enumerate}
 
-The paper has five results. First, I show that the wrong pages enter the loss and the update only through one sum, their mass, and that the highest-scoring pages have the most mass that a set of that size can have. The main steps are checked in Lean 4. Second, I train the EVELINK retriever with five samplers, three times each, with the same training for each. One of them is ReSa2~\cite{li2025resa2}, a recent two-stage sampler. The best one is the simplest to describe: ask the model which wrong pages it scores highest right now, and train on those seven. Third, I measure which pages each sampler picks and how much mass they hold, and I test which part of ReSa2 does the work. Fourth, I repeat the comparison with more wrong pages, up to the whole set of candidates. Seven well-chosen pages do almost as well as all 999. Fifth, I check what did not improve. Wrong-year mistakes are as common as before. Every trained model is worse on news text, and I repair that with the average of the trained weights and the released weights. I give a condition for when such an average beats both models. The code and the logs are in the project repository.
+The paper has two parts, and each part gives the math first and the experiments second. Part I is about ReSa2~\cite{li2025resa2}, a recent two-stage sampler. Its math shows that the wrong pages enter the loss and the update only through one sum, their mass. Its experiments order four samplers as rungs of a ladder, from easy wrong pages to hard ones, and ReSa2 is the best of them. One rung does not fit. The epilogue is about what came after ReSa2. Its math shows which seven pages have the most mass, and when the average of two models beats both. Its experiments add two rungs: the seven pages that the model scores highest right now, which do almost as well as all 999, and the whole pool. Then I check what did not improve. Wrong-year mistakes are as common as before. Every trained model is worse on news text, and the average of the trained weights and the released weights repairs that. The main steps of the math are checked in Lean 4. The code and the logs are in the project repository.
 
 \section{Event linking: task, system, and evaluation}
 \label{sec:task}
@@ -103,17 +104,15 @@ It measures whether the retriever supplies the right candidate, even if that can
 
 \section{Related work}
 
-This project builds on EVELINK, the event linking system released by Yu et al.~\cite{yu2023event}. EVELINK builds on BLINK~\cite{wu2020blink}, a two-stage system for linking entities to Wikipedia. I keep the EVELINK task, data, and two-stage structure. The experiment changes how wrong pages are selected for retriever training.
+This project builds on EVELINK~\cite{yu2023event}, which builds on BLINK~\cite{wu2020blink}, a two-stage system for linking entities to Wikipedia. I keep the task, the data, and the two-stage structure, and I change how wrong pages are selected for retriever training.
 
-The cheapest negatives are answers already present in the training batch. DPR~\cite{karpukhin2020dpr} uses this approach. It avoids a separate search for wrong pages, but those pages may be easy to distinguish from the correct answer.
+\sloppy The cheapest negatives are answers already present in the training batch, as in DPR~\cite{karpukhin2020dpr}. They need no search, but they may be easy to tell apart from the correct answer. ANCE~\cite{xiong2021ance} takes the pages that the model scores highest and refreshes them during training. The risk is that a high-scoring page may be a valid answer without a label. RocketQA~\cite{qu2021rocketqa} filters such pages with a second model. SimANS~\cite{zhou2022simans} samples at random but prefers pages whose scores are close to the correct answer's score. ReSa2~\cite{li2025resa2} adds a second step that keeps the pages most similar to the correct answer. Its released code starts with 1,000 candidates, keeps 500, then 75, and trains on 7 of those.\par\fussy
 
-Another approach takes the pages that the model scores highest. ANCE~\cite{xiong2021ance} uses high-scoring negatives and refreshes them during training. The live hard negatives of this paper are that rule inside a fixed pool. These pages provide harder comparisons. The risk is that a high-scoring page may be a valid answer that was not labeled. Training then pushes down a page that should not be treated as wrong. RocketQA~\cite{qu2021rocketqa} addresses this problem with a second model that filters potential false negatives.
+\partline{Part I: ReSa2}
 
-SimANS~\cite{zhou2022simans} uses random sampling but prefers pages whose scores are close to the correct answer's score. ReSa2~\cite{li2025resa2} adds another selection step. After the first sample, it keeps pages that are most similar to the correct answer. In the released ReSa2 code, the process starts with 1,000 candidates. The first step selects 500. The second keeps 75. Training then uses 7 pages sampled from those 75.
+Part I gives the math of the training loss and of ReSa2, and then the experiments up to ReSa2. One quantity, the mass of the wrong pages, is defined here and stays to the end of the paper.
 
-I test these rules on event linking with the same training for each, and I give one quantity, the mass of the negatives, that explains the order of the results.
-
-\section{The retriever and its training loss}
+\section{Math I: the loss and the mass}
 \label{sec:math}
 
 The retriever of equation~\ref{eq:retrieve} uses two copies of BERT, a neural network that turns a text into a list of numbers. Such a network is called an \emph{encoder}. One encoder reads the mention and its context. The other reads the Wikipedia page. Each one turns its input into a vector with 1,024 numbers. I call the mention vector $u_m$ and the page vector $v_e$.
@@ -132,8 +131,6 @@ During training, I give the retriever the correct page and seven wrong pages. I 
 \end{equation}
 The fraction is the correct page's share of the total after I exponentiate the eight scores. When the correct page gets almost all of that share, the loss is close to zero. When a wrong page scores about as high as the correct one, it takes a bigger share and the loss goes up.
 
-To see the difference, suppose the correct page scores 10 and there is just one negative. If that negative scores $-10$, the loss is about two billionths. If it scores 9.5, the loss is about 0.47. The correct page has the same score in both cases. All I changed was the wrong page.
-
 The math puts a bound on this. Write $g_i = s^{+} - s_i$ for the gap by which negative $i$ scores below the correct page.
 
 \begin{lemma}[Easy negatives add little]
@@ -148,7 +145,7 @@ For any $n \ge 1$ and real scores $s^{+}, s_1, \dots, s_n$, the loss of equation
 Divide the numerator and the denominator of the fraction in equation~\ref{eq:loss} by $e^{s^{+}}$: $L = -\log\bigl(1 / (1 + \sum_i e^{s_i - s^{+}})\bigr) = \log(1 + \sum_i e^{-g_i})$. For $x \ge 0$, $\log(1 + x) \le x$, so the first inequality holds. If every $g_i \ge g$ then each $e^{-g_i} \le e^{-g}$, and the second follows.
 \end{proof}
 
-So a negative that scores $g$ points below the correct page adds at most $e^{-g}$ to the loss. At $g = 20$ that is about $2 \times 10^{-9}$. At $g = 0.5$ it is about $0.61$. I checked Lemma~\ref{lem:bound} in Lean 4 (section~\ref{sec:lean}).
+So a negative that scores $g$ points below the correct page adds at most $e^{-g}$ to the loss. At $g = 20$ that is about $2 \times 10^{-9}$. At $g = 0.5$ it is about $0.61$.
 
 I can also ask how much the loss changes if I raise one negative's score.
 
@@ -181,9 +178,9 @@ With the page vectors fixed, the gradient of $L$ with respect to the mention vec
 By the chain rule through equation~\ref{eq:score}, $\nabla_{u_m} L = \sum_i (\partial L/\partial s_i)\, v_{e_i} + (\partial L/\partial s^{+})\, v_{e^{+}} = \sum_i p_i v_{e_i} - \bigl(\sum_i p_i\bigr) v_{e^{+}}$ by Lemma~\ref{lem:push}.
 \end{proof}
 
-Equation~\ref{eq:grad} is a weighted sum of the differences between each negative's page vector and the correct page vector. A negative that scores far below the correct page has $p_i \approx 0$ and moves nothing. A negative that scores close to it has a large $p_i$, and the step is along $v_{e_i} - v_{e^{+}}$. If the two pages are near-duplicates, that difference is small.
+Equation~\ref{eq:grad} is a weighted sum of the differences between each negative's page vector and the correct page vector. A negative that scores far below the correct page has $p_i \approx 0$ and moves nothing.
 
-\subsection{What one step can teach}
+\subsection{The mass of the wrong pages}
 \label{sec:teach}
 
 The results above are about one fixed set of negatives. A sampler chooses that set, so I now compare sets. Let the pool of a mention be $N$ wrong pages. Give page $i$ the \emph{weight} $w_i = e^{-g_i} = e^{s_i - s^{+}}$. Give a set $S$ of pool pages the \emph{mass} $M(S) = \sum_{i \in S} w_i$. By Lemma~\ref{lem:bound}, the loss with the negatives $S$ is $L(S) = \log(1 + M(S))$. I call $P(S) = \sum_{i \in S} p_i$ the \emph{total push} of the step.
@@ -198,6 +195,154 @@ Divide the numerator and the denominator of equation~\ref{eq:push} by $e^{s^{+}}
 
 So the negatives enter the loss and the size of the update only through their mass. A set with almost no mass gives almost no update, whatever the pages are.
 
+\begin{proposition}[Uniform sampling]
+\label{prop:unif}
+Let $S$ be $k$ pool pages drawn uniformly without replacement. Then $\mathbb{E}[M(S)] = \frac{k}{N}\, M(\mathrm{pool})$ and $\mathbb{E}[L(S)] \le \log\bigl(1 + \frac{k}{N}\, M(\mathrm{pool})\bigr)$.
+\end{proposition}
+\begin{proof}
+Let $X_i$ be the indicator variable of the event that page $i$ is drawn, so $\mathbb{E}[X_i] = k/N$. Then $M(S) = \sum_i X_i w_i$, and by linearity of expectation $\mathbb{E}[M(S)] = \frac{k}{N} \sum_i w_i$. The function $\log(1 + x)$ is concave, so Jensen's inequality gives the bound.
+\end{proof}
+
+With $k = 7$ and $N = 999$, seven uniform pages hold 0.7\% of the mass of the pool on average. A sampler that wants to teach more in one step must hold more mass than that.
+
+\subsection{The samplers of Part I}
+\label{sec:samplers}
+
+Part I compares four samplers. The first uses the correct pages of the other seven mentions that are trained at the same time. This is EVELINK's own sampler, and it is called \emph{in-batch}. For the other three, I started with the pages that the released retriever ranked highest for that mention. I took the first 1,000 and excluded the correct page, which leaves 999 in most cases. I call these pages the \emph{pool}. These three samplers read numbers that are computed once, before training: the score $s_i$ of each pool page, the score $s^{+}$ of the correct page, and the similarity $\sigma_i = v_{e_i} \cdot v_{e^{+}}$ between each pool page and the correct page.
+
+\emph{Uniform} sampling gives every page in the pool the same chance, $k/N = 7/999$. \emph{Top-score} sampling always takes the seven pages with the highest of these fixed scores. Those seven are picked with probability 1 and the rest with probability 0. ReSa2 makes the choice in two stages.
+
+First, ReSa2 draws 500 pages without replacement. It gives the most weight to pages that score close to the correct page:
+\begin{equation}
+  w_i = \exp\!\left(-\tau\,(s_i - s^{+})^2\right), \qquad \tau = 0.25 .
+  \label{eq:weight}
+\end{equation}
+It draws one page with probability $w_i / \sum_j w_j$, removes it, and draws again from the pages that are left. The weight drops as the score moves away from $s^{+}$ in either direction. Figure~\ref{fig:weight} shows the weight next to the real scores. The scores are about 550, and most pool pages are 5 to 20 points below the correct page. The weight is close to zero for any page more than 4 points away. So stage 1 is close to a fixed rule. It keeps the 500 pages whose scores are closest to $s^{+}$. On 200 stored pools, 96\% of the pages it kept were among those 500, and two draws shared 95\% of their pages. Then ReSa2 compares the 500 pages that are left with the correct page itself. It keeps the 75 pages whose vectors are most similar to the correct page vector and draws seven of those uniformly. After both stages, 89\% of the 75 pages are among the 75 pool pages most similar to the correct page. ReSa2 is therefore close to a simpler rule, which I call \emph{stage 2 only}: seven uniform picks from the 75 most similar pool pages. I test that rule in section~\ref{sec:parts}. Once a page makes the final 75, it has a 7-in-75 chance of being used.
+
+\begin{figure}[t]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/weight_window.pdf}
+\caption{The weight of equation~\ref{eq:weight} (green, scaled to fit) and how far the pool pages score from the correct page (gray, 2,000 validation mentions). Most pool pages score 5 to 20 points below the correct page. The weight is close to zero for pages more than 4 points away.}
+\label{fig:weight}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\textwidth]{figures/inclusion_by_rank.pdf}
+\caption{The probability that a pool page is picked, by how similar it is to the correct page. Rank 1 is the most similar page. Both axes are logarithmic. Uniform gives every page the same chance. ReSa2 gives about 0.09 to each of the 75 most similar pages and picks nothing beyond rank 300.}
+\label{fig:incl}
+\end{minipage}
+\end{figure}
+
+A pool page that scores above the correct page may be a valid answer that has no label. I call such a page a \emph{possible false negative}.
+
+\begin{proposition}[A count for every sampler]
+\label{prop:bound}
+Let the pool contain $A$ possible false negatives. Any $k$ distinct pool pages contain at most $\min(k, A)$ of them, and the $k$ highest-scoring pages contain exactly $\min(k, A)$.
+\end{proposition}
+\begin{proof}
+A selection cannot contain more such pages than its size or than the pool has. Sorting by score puts every page above $s^{+}$ before every page below it.
+\end{proof}
+
+So no rule selects more possible false negatives than a rule that takes the highest scores. Section~\ref{sec:rankings} tests whether that matters.
+
+\paragraph{What Lean checks.}
+\label{sec:lean}
+Lean is a proof assistant. It checks whether a formal proof follows from its definitions and assumptions. In Part I it checks Lemma~\ref{lem:bound}, the identity $P(S) = 1 - e^{-L(S)}$ of Proposition~\ref{prop:mass}, and Proposition~\ref{prop:bound}. The norm bound of Proposition~\ref{prop:mass}, Proposition~\ref{prop:unif}, Lemma~\ref{lem:push} and Corollary~\ref{cor:grad} are proved by hand. The first stage of ReSa2 has a numerical check: exact selection probabilities for pools of up to eight pages agree with a simulation of the code to within 0.015. These proofs explain the experiments. They do not prove which sampler gives the best retriever. The files are in Appendix~\ref{app:lean}.
+
+\section{Practice I: the ladder up to ReSa2}
+\label{sec:experiments}
+
+\subsection{Setup}
+
+I started each run from the released EVELINK model. I kept the page encoder fixed and trained only the mention encoder. Since the page vectors never change, the pool of each mention and its scores can be computed once, before training.
+
+Each run made 1,500 updates. One update uses 32 mentions, each with seven negatives. The learning rate, which sets the size of each update, was $10^{-5}$. It rises from zero over about the first 207 updates and then falls slowly. The schedule is sized for one pass over the training data, about 2,075 updates, and not for the 1,500 that I ran. The other settings are those of EVELINK. Training has some randomness, so I ran each of the five main samplers three times with different random seeds. Each run took about 56 minutes on one NVIDIA A10G GPU. I also made fourteen runs to test the result, each with the same settings (sections~\ref{sec:parts} and~\ref{sec:rankings}). Eleven of them use a rule once, and one rule has three runs. An earlier set of runs used a learning rate three times higher. Two of those runs failed, and every sampler scored lower, so I report the runs at $10^{-5}$.
+
+Then I ranked all 5.87 million pages for each of the 16,692 validation mentions and computed recall at 1, 10, and 100 (equation~\ref{eq:recall}). The measure I focus on is recall at ten. If the correct page appears anywhere in the first ten results, I count that mention as a hit. I did the same for the 769 New York Times mentions that have a page. Where I give an interval, it is a 95\% bootstrap interval over mentions, with the three runs averaged first.
+
+Apart from the reproduction in section~\ref{sec:task}, I used the test set two times. Each time I fixed the list of models in writing before the first evaluation (section~\ref{sec:test}).
+
+I order the samplers as rungs of a ladder, from easy wrong pages to hard ones. For each rung I give the share of the mass of the pool that its seven pages hold, and then its result. I computed the mass on 200 stored pools with the scores of the released model, which is the state before the first update.
+
+\subsection{Four rungs}
+\label{sec:rungs}
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\caption{The rungs of Part I: recall after 1,500 updates with seven negatives, on the 16,692 validation mentions, and recall at 10 on the 769 New York Times mentions. Mean of three runs, with the standard deviation for the first column. The mass is the share of the mass of the pool that the seven negatives hold before training. ``Released'' is the model before my training.}
+\label{tab:part1}
+\begin{tabular}{@{}clccccc@{}}
+\toprule
+Rung & Seven negatives from & Pool mass & Top-1 & R@10 & R@100 & News R@10 \\
+\midrule
+ & Released & & 42.6 & 77.7 & 93.1 & 33.6 \\
+1 & Correct pages of other mentions (in-batch) & $\le$ 0.7\% (bound) & 33.6 $\pm$ 1.9 & 69.6 & 89.8 & 24.4 \\
+2 & Uniform from the pool & 0.7\% & 64.3 $\pm$ 0.2 & 92.2 & 98.4 & 27.4 \\
+3 & Top-score, fixed scores & 87.4\% & 65.3 $\pm$ 1.2 & 87.2 & 95.9 & 14.4 \\
+4 & ReSa2 & 7.0\% & 69.5 $\pm$ 0.3 & 93.3 & 98.5 & 30.9 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:part1} gives the four rungs.
+
+\emph{Rung 1: correct pages of other mentions.} I did not measure the mass of this rung, but there is a bound. A page outside the pool scores below every page in it. So seven pages from outside the pool hold at most the mass of seven average pool pages, 0.7\%. A correct page of another mention is one of 5.87 million pages, and it is rarely among the 999 of the pool. In-batch sampling finished below the released model. To check this, I ran the rule again with the stored page vectors and random correct pages of other mentions as the negatives. With seven such pages recall at ten was 68.2, about the same. With 63, the number that EVELINK's own training used, it was 79.4, close to the released model. So the low result is real. By Lemma~\ref{lem:bound} easy pages add almost nothing to the loss.
+
+\emph{Rung 2: uniform from the pool.} Seven uniform pool pages hold 0.7\% of the mass, the $7/999$ of Proposition~\ref{prop:unif}. The correct page came first 64.3 percent of the time, against 42.6 for the released model. Most of the gain of this paper comes from this step, from pages of other mentions to pages of the pool. With 63 uniform pages, which hold $63/999 = 6.3\%$ of the mass on average, it came first 71.0 percent of the time.
+
+\emph{Rung 3: top-score.} The seven highest-scoring pages hold 87.4\% of the mass, and for half of the mentions more than 92\%. By the mass, this rung should be far above the others. It is not. The correct page came first 65.3 percent of the time, and recall at ten was 87.2, five points below uniform. On news text it is the worst rule. Part I cannot explain this rung. I come back to it in the epilogue.
+
+\emph{Rung 4: ReSa2.} ReSa2's seven pages hold 7.0\% of the mass, ten times the share of uniform pages. The correct page came first 69.5 percent of the time, 5.2 points above uniform, and recall at ten was 1.1 points above uniform (interval 0.9 to 1.3). For both samplers the three runs differ by 0.3 points or less. ReSa2 also helps the weakest kind of mention. For hard noun mentions the released retriever has 68.9\% recall at ten. ReSa2 raises this to 90.3\%, uniform sampling to 88.8\%, and top-score to 84.9\%.
+
+\subsection{Which pages the samplers pick}
+\label{sec:picks}
+
+I also wanted to see which pages the samplers actually picked. I drew negatives 200 times each for 500 validation mentions. Table~\ref{tab:q1} and Figure~\ref{fig:incl} give the result.
+
+\begin{table}[t]
+\centering
+\small
+\caption{What each sampler picks, over 500 validation mentions and 200 draws per mention. The first column splits the seven negatives of one draw by how similar they are to the correct page: among the 25 most similar pool pages, the next 50, the next 225, or the rest. The overlap of two draws is the number of pages they share divided by the number of pages in either. The last column is the share of the mass of the whole pool that the seven negatives hold (200 pools, scores of the released model).}
+\label{tab:q1}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Sampler & \begin{tabular}[c]{@{}c@{}}Negatives by similarity rank\\ top 25 / 25--75 / 75--300 / rest\end{tabular} & \begin{tabular}[c]{@{}c@{}}Distinct pages\\ (of 1,000)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Overlap of\\ two draws\end{tabular} & \begin{tabular}[c]{@{}c@{}}Score gap to\\ correct page\end{tabular} & \begin{tabular}[c]{@{}c@{}}Share of\\ pool mass\end{tabular} \\
+\midrule
+Uniform   & 0.17 / 0.34 / 1.55 / 4.95 & 756 & 0.00 & $-13.3$ & 0.7\% \\
+Top-score & 4.13 / 1.07 / 1.17 / 0.62 & 7   & 1.00 & $-1.4$ & 87.4\% \\
+ReSa2     & 2.15 / 3.98 / 0.87 / 0.00 & 84  & 0.05 & $-8.6$ & 7.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+ReSa2 picked about six of its seven negatives from the 75 pages most similar to the correct page. For uniform sampling, the average was about half a page. Top-score gave me the same seven pages every time. Two ReSa2 draws shared very few pages, even though both drew from the same part of the pool. Over 200 draws, uniform sampling used 756 different pool pages, ReSa2 used 84, and top-score used 7. The score gap says how hard the negatives are. ReSa2's negatives score 8.6 points below the correct page on average, uniform negatives 13.3, and top-score negatives only 1.4.
+
+\subsection{Which part of ReSa2 does the work}
+\label{sec:parts}
+
+ReSa2 has two stages, and I wanted to know which one matters. I split the pool of each mention into four bands by similarity to the correct page: the 25 most similar pages, the next 50, the next 225, and the rest. I trained one model for each band, with seven uniform picks from that band. The correct page came first for 69.5, 66.6, 63.3, and 59.9 percent of the validation mentions. Each step away from the correct page costs about three points, and the interval of each step is about half a point on each side. Recall at 100 was the same for all four bands (98.3 to 98.4). The similar pages decide which page comes first.
+
+Stage 2 only got 69.2 / 92.9 / 98.3 over three runs. Before the runs I set the margin for ``equal to ReSa2'' at 0.5 points at rank one and 0.3 points of recall at ten. The differences were 0.30 and 0.42 points, so the second is outside the margin. On news text the gap is larger. Recall at ten was 27.0, against 30.9 for ReSa2. Stage 1 changes few pages, but those pages matter, most of all on text that differs from the training data.
+
+\subsection{Where Part I stands}
+
+ReSa2 is the best of the samplers that read fixed scores. For three of the four rungs the mass and the result go together: at most 0.7\%, 0.7\% and 7.0\% of the mass, and 33.6, 64.3 and 69.5 percent at rank one. Uniform sampling with 63 pages has about the mass of ReSa2 and about its result. Two things stay open. Rung 3 has the most mass and a poor result. And 7\% is far from the limit, so the math says that a better rung can exist.
+
+\partline{Epilogue: after ReSa2}
+
+The epilogue takes up the two open points of Part I, in the same order as before: first the math, then the experiments. It ends with a repair for news text.
+
+\section{Math II: the most mass, and the average of two models}
+\label{sec:math2}
+
+\subsection{Which seven pages have the most mass}
+\label{sec:topmath}
+
 \begin{proposition}[Which sets have the most mass]
 \label{prop:top}
 (a) If $S \subseteq T$ then $M(S) \le M(T)$, $L(S) \le L(T)$ and $P(S) \le P(T)$.
@@ -208,24 +353,16 @@ So the negatives enter the loss and the size of the update only through their ma
 (a) The weights are positive, and $\log(1 + x)$ and $x/(1 + x)$ increase with $x$. (b) $S$ and $T_k$ have the same size, so $S \setminus T_k$ and $T_k \setminus S$ have the same number of pages. Every page of $T_k \setminus S$ has at least the weight of every page of $S \setminus T_k$. So the exchange of the second set for the first does not lower the sum. (c) The mean weight of the $k$ highest pages is at least the mean weight of all $N$ pages.
 \end{proof}
 
-\begin{proposition}[Uniform sampling]
-\label{prop:unif}
-Let $S$ be $k$ pool pages drawn uniformly without replacement. Then $\mathbb{E}[M(S)] = \frac{k}{N}\, M(\mathrm{pool})$ and $\mathbb{E}[L(S)] \le \log\bigl(1 + \frac{k}{N}\, M(\mathrm{pool})\bigr) \le L(T_k)$.
-\end{proposition}
-\begin{proof}
-Let $X_i$ be the indicator variable of the event that page $i$ is drawn, so $\mathbb{E}[X_i] = k/N$. Then $M(S) = \sum_i X_i w_i$, and by linearity of expectation $\mathbb{E}[M(S)] = \frac{k}{N} \sum_i w_i$. The function $\log(1 + x)$ is concave, so Jensen's inequality gives the first bound. The second is Proposition~\ref{prop:top}(c).
-\end{proof}
+Part (a) says that the whole pool is the upper limit for the mass of a step. Part (b) says which seven pages come closest to it. Part (c) and Proposition~\ref{prop:unif} say that these seven hold at least the expected share of seven uniform pages, so $\mathbb{E}[L(S)] \le L(T_k)$ for uniform $S$.
 
-With $k = 7$ and $N = 999$, seven uniform pages hold 0.7\% of the mass of the pool on average. The seven highest-scoring pages hold the largest share that seven pages can hold, and the whole pool is the upper limit. How close the seven come to that limit depends on the scores. I measure it in section~\ref{sec:why}.
+All of this uses the scores of the model \emph{at the current step}. If a sampler reads scores that were computed once, before training, its seven highest pages are the right ones only for the first update. Training lowers the score of each page that it pushes on. The mass then moves to other pages, and a fixed list does not follow it. This is a possible answer for rung 3.
 
-All of this uses the scores of the model \emph{at the current step}. If a sampler reads scores that were computed once, before training, its seven highest pages are the right ones only for the first update. Training lowers the score of each page that it pushes on. The mass then moves to other pages, and a fixed list does not follow it.
-
-In the experiment, I keep the loss and the number of negatives fixed. I change which seven pages the model sees.
+It also gives a new sampler, which I call \emph{live hard negatives}. At each step I compute the score of every pool page with the mention encoder as it is at that step, and I take the seven highest. The page vectors are stored, so this costs 999 dot products for each mention. The rule differs from top-score only in which scores it reads. It is the rule of ANCE~\cite{xiong2021ance} inside a fixed pool. By Proposition~\ref{prop:bound} it also takes every possible false negative that it can.
 
 \subsection{The average of two models}
 \label{sec:mixmath}
 
-Section~\ref{sec:gaps} uses one more tool. Let $\theta_0$ be the weights of the released mention encoder and $\theta_1$ the weights after my training. Training starts from $\theta_0$, so the two lists of numbers have the same length. For $0 \le \alpha \le 1$ let $\theta_\alpha = (1 - \alpha)\,\theta_0 + \alpha\,\theta_1$. The half-and-half mix is $\theta_{1/2}$. This is the weight average of WiSE-FT~\cite{wortsman2022wiseft} and of model soups~\cite{wortsman2022soups}. No training is needed to make it.
+The second tool of the epilogue is for news text (section~\ref{sec:news}). Let $\theta_0$ be the weights of the released mention encoder and $\theta_1$ the weights after my training. Training starts from $\theta_0$, so the two lists of numbers have the same length. For $0 \le \alpha \le 1$ let $\theta_\alpha = (1 - \alpha)\,\theta_0 + \alpha\,\theta_1$. The half-and-half mix is $\theta_{1/2}$. This is the weight average of WiSE-FT~\cite{wortsman2022wiseft} and of model soups~\cite{wortsman2022soups}. No training is needed to make it.
 
 \begin{proposition}[The mix is close to the mean of two scores]
 \label{prop:mixscore}
@@ -245,86 +382,30 @@ Let $f(\alpha)$ be the loss of the model $\theta_\alpha$ on some data. Suppose $
 $f(\tfrac12) - f(0) = a/4 + b/2$, which is negative exactly when $\alpha^{*} > \tfrac14$. And $f(\tfrac12) - f(1) = -3a/4 - b/2$, which is negative exactly when $\alpha^{*} < \tfrac34$. Lean checks this.
 \end{proof}
 
-So the mix is better than both models on data where training first helps and then goes too far. On data where training helps all the way, $\alpha^{*} \ge 1$ and the mix is between the two models.
+So the mix is better than both models on data where training first helps and then goes too far. On data where training helps all the way, $\alpha^{*} \ge 1$ and the mix is between the two models. Lean checks all three parts of Proposition~\ref{prop:top} and Proposition~\ref{prop:mixbeats}. Proposition~\ref{prop:mixscore} is proved by hand.
 
-\section{How I chose the seven pages}
-\label{sec:samplers}
+\section{Practice II: the rungs above ReSa2}
+\label{sec:experiments2}
 
-I compared five samplers. The first uses the correct pages of the other seven mentions that are trained at the same time. This is EVELINK's own sampler, and it is called \emph{in-batch}. For the other four, I started with the pages that the released retriever ranked highest for that mention. I took the first 1,000 and excluded the correct page, which leaves 999 in most cases. I call these pages the \emph{pool}. Three of these samplers read numbers that are computed once, before training: the score $s_i$ of each pool page, the score $s^{+}$ of the correct page, and the similarity $\sigma_i = v_{e_i} \cdot v_{e^{+}}$ between each pool page and the correct page.
-
-\emph{Uniform} sampling gives every page in the pool the same chance, $k/N = 7/999$. \emph{Top-score} sampling always takes the seven pages with the highest of these fixed scores. Those seven are picked with probability 1 and the rest with probability 0. \emph{Live hard negatives} is the rule that Proposition~\ref{prop:top} points to. At each step I compute the score of every pool page with the mention encoder as it is at that step, and I take the seven highest. The page vectors are stored, so this costs 999 dot products for each mention. The rule differs from top-score only in which scores it reads. ReSa2 makes the choice in two stages, from the fixed scores.
-
-First, ReSa2 draws 500 pages without replacement. It gives the most weight to pages that score close to the correct page:
-\begin{equation}
-  w_i = \exp\!\left(-\tau\,(s_i - s^{+})^2\right), \qquad \tau = 0.25 .
-  \label{eq:weight}
-\end{equation}
-It draws one page with probability $w_i / \sum_j w_j$, removes it, and draws again from the pages that are left. The weight drops as the score moves away from $s^{+}$ in either direction. Figure~\ref{fig:weight} shows the weight next to the real scores. The scores are about 550, and most pool pages are 5 to 20 points below the correct page. The weight is close to zero for any page more than 4 points away. So stage 1 is close to a fixed rule. It keeps the 500 pages whose scores are closest to $s^{+}$. On 200 stored pools, 96\% of the pages it kept were among those 500, and two draws shared 95\% of their pages. Then ReSa2 compares the 500 pages that are left with the correct page itself. It keeps the 75 pages whose vectors are most similar to the correct page vector and draws seven of those uniformly. After both stages, 89\% of the 75 pages are among the 75 pool pages most similar to the correct page. ReSa2 is therefore close to a simpler rule, which I call \emph{stage 2 only}: seven uniform picks from the 75 most similar pool pages. I test that rule in section~\ref{sec:parts}.
-
-
-Once a page makes the final 75, it has a 7-in-75 chance of being used.
-
-\begin{figure}[t]
-\centering
-\begin{minipage}[t]{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{figures/weight_window.pdf}
-\caption{The weight of equation~\ref{eq:weight} (green, scaled to fit) and how far the pool pages score from the correct page (gray, 2,000 validation mentions). Most pool pages score 5 to 20 points below the correct page. The weight is close to zero for pages more than 4 points away.}
-\label{fig:weight}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.48\textwidth}
-\centering
-\includegraphics[width=\textwidth]{figures/inclusion_by_rank.pdf}
-\caption{The probability that a pool page is picked, by how similar it is to the correct page. Rank 1 is the most similar page. Both axes are logarithmic. Uniform gives every page the same chance. ReSa2 gives about 0.09 to each of the 75 most similar pages and picks nothing beyond rank 300.}
-\label{fig:incl}
-\end{minipage}
-\end{figure}
-
-
-\subsection{What the Lean proofs establish}
-\label{sec:lean}
-
-Lean is a proof assistant. It checks whether a formal proof follows from its definitions and assumptions. I use it to check the claims below. They explain the experiment. They do not prove which sampler gives the best retriever. The files are in Appendix~\ref{app:lean}.
-
-\emph{Loss and mass.} Lean checks Lemma~\ref{lem:bound}, the identity $P(S) = 1 - e^{-L(S)}$ of Proposition~\ref{prop:mass}, all three parts of Proposition~\ref{prop:top}, and Proposition~\ref{prop:mixbeats}.
-
-\emph{Possible false negatives.} A pool page that scores above the correct page may be a valid answer that has no label. I call such a page a \emph{possible false negative}.
-
-\begin{proposition}[A count for every sampler]
-\label{prop:bound}
-Let the pool contain $A$ possible false negatives. Any $k$ distinct pool pages contain at most $\min(k, A)$ of them, and the $k$ highest-scoring pages contain exactly $\min(k, A)$.
-\end{proposition}
-\begin{proof}
-A selection cannot contain more such pages than its size or than the pool has. Sorting by score puts every page above $s^{+}$ before every page below it.
-\end{proof}
-
-So no rule selects more possible false negatives than a rule that takes the highest scores. This is the risk of top-score and of live hard negatives. Section~\ref{sec:rankings} tests whether it matters.
-
-The norm bound of Proposition~\ref{prop:mass}, Propositions~\ref{prop:unif} and~\ref{prop:mixscore}, Lemma~\ref{lem:push} and Corollary~\ref{cor:grad} are proved by hand and are not checked in Lean. The first stage of ReSa2 has a separate numerical check: exact selection probabilities for pools of up to eight pages agree with a simulation of the code to within 0.015.
-
-\section{Experiments}
-\label{sec:experiments}
-
-\subsection{Setup}
-
-I started each run from the released EVELINK model. I kept the page encoder fixed and trained only the mention encoder. Since the page vectors never change, the pool of each mention and its scores can be computed once, before training.
-
-Each run made 1,500 updates. One update uses 32 mentions, each with seven negatives. The learning rate, which sets the size of each update, was $10^{-5}$. It rises from zero over about the first 207 updates and then falls slowly. The schedule is sized for one pass over the training data, about 2,075 updates, and not for the 1,500 that I ran. The other settings are those of EVELINK. Training has some randomness, so I ran each of the five samplers three times with different random seeds. Each run took about 56 minutes on one NVIDIA A10G GPU. I also made fourteen runs to test the result, each with the same settings (sections~\ref{sec:rankings} and~\ref{sec:parts}). Eleven of them use a rule once, and one rule has three runs. An earlier set of runs used a learning rate three times higher. Two of those runs failed, and every sampler scored lower, so I report the runs at $10^{-5}$.
-
-Then I ranked all 5.87 million pages for each of the 16,692 validation mentions and computed recall at 1, 10, and 100 (equation~\ref{eq:recall}). The measure I focus on is recall at ten. If the correct page appears anywhere in the first ten results, I count that mention as a hit. I did the same for the 769 New York Times mentions that have a page. Where I give an interval, it is a 95\% bootstrap interval over mentions, with the three runs averaged first.
-
-Apart from the reproduction in section~\ref{sec:task}, I used the test set two times. Each time I fixed the list of models in writing before the first evaluation (section~\ref{sec:rankings}).
-
-\subsection{What changed in the rankings}
+\subsection{Rung 5: the seven highest pages right now}
 \label{sec:rankings}
 
-Table~\ref{tab:main} gives the results. The released retriever got 77.7 percent recall at ten. After fine-tuning, in-batch sampling got 69.6. Uniform sampling from the pool got 92.2. Top-score got 87.2. ReSa2 got 93.3. Live hard negatives got 94.7.
+Live hard negatives starts with the same seven pages as top-score, and so with the same 87.4\% of the mass. With it the correct page came first 75.6 percent of the time. That is 6.1 points above ReSa2 (interval 5.7 to 6.4) and 10.3 points above top-score. Recall at ten was 94.7, 1.3 points above ReSa2 (1.2 to 1.5). The three runs differ by less than 0.1 points.
+
+This answers rung 3. The one difference between the two rules is that top-score reads fixed scores. It shows the same seven pages at every step (Table~\ref{tab:q1}, overlap 1.00). Training pushes those seven down, the mass moves to other pages, and top-score never shows them. Uniform and ReSa2 also read fixed scores. Their random draws protect them, because each step brings different pages. With current scores that protection is not needed: live hard negatives uses no randomness at all.
+
+Live hard negatives was one of four rules that read the current scores, and I tried each with one run before I chose it. The second rule draws seven pages with probability in proportion to $e^{s_i}$ and corrects the loss for that, as in sampled softmax. It gave the same result, 75.7. The third takes the seven highest pages among those that score below the correct page. It was 2.2 points lower (1.8 to 2.7). So the pages above the correct page, the possible false negatives of Proposition~\ref{prop:bound}, help more than they hurt. The fourth mixes four hard pages with three random ones, and it was equal to ReSa2 (69.4). I chose live hard negatives for the three runs because it is the simplest of the four and was the highest of them on news text.
+
+\subsection{Rung 6: all 999 pages}
+\label{sec:why}
+
+With all 999 pool pages for each mention there is no sampler at all, and the step has all of the mass. The correct page came first 76.0 percent of the time. Live hard negatives with seven pages is 0.4 points below that (interval 0.1 to 0.7) and equal to it in recall at ten. The mass says why seven pages do as well as 999. Before training, the mean loss of a step is 2.77 with the seven highest pages and 2.87 with the whole pool, and the mean total push is 0.59 against 0.60. For uniform pages the two numbers are 0.28 and 0.09, and for ReSa2 0.59 and 0.24. A few pages hold almost all of the mass, so the other 992 add almost nothing to the step. Table~\ref{tab:main} puts all the rungs and the control runs in one place.
 
 \begin{table}[t]
 \centering
 \footnotesize
 \setlength{\tabcolsep}{4pt}
-\caption{Recall after 1,500 updates on the 16,692 validation mentions, and recall at 10 on the 769 New York Times mentions. $k$ is the number of negatives for each mention. A cell with $\pm$ is the mean of three runs and their standard deviation (two runs for the last row). The other rows are one run. ``Released'' is the model before my training. The runs are listed one by one in Appendix~\ref{app:seeds} and in \texttt{docs/results/plan} in the repository.}
+\caption{The whole ladder. Recall after 1,500 updates on the 16,692 validation mentions, and recall at 10 on the 769 New York Times mentions. $k$ is the number of negatives for each mention. A cell with $\pm$ is the mean of three runs and their standard deviation (two runs for the last row). The other rows are one run. ``Released'' is the model before my training. The runs are listed one by one in \texttt{docs/results} in the repository.}
 \label{tab:main}
 \begin{tabular}{@{}lrcccc@{}}
 \toprule
@@ -349,68 +430,24 @@ Live hard negatives mixed 50\% with released & 7 & 67.6 $\pm$ 0.3 & 92.4 $\pm$ 0
 \end{tabular}
 \end{table}
 
-The sampler changes most how often the correct page comes first. With uniform sampling it came first 64.3 percent of the time. With ReSa2 it was 69.5, and with live hard negatives 75.6. Live hard negatives is 6.1 points above ReSa2 (interval 5.7 to 6.4), and 1.3 points above it in recall at ten (1.2 to 1.5). For these three samplers the three runs differ by 0.3 points or less, so the gaps are much larger than the differences between runs.
+\subsection{The test set}
+\label{sec:test}
 
-In-batch sampling finished below the released model. To check this, I ran the rule again with the stored page vectors and random correct pages of other mentions as the negatives. With seven such pages recall at ten was 68.2, about the same. With 63, the number that EVELINK's own training used, it was 79.4, close to the released model. So the low row is real. Seven random pages are almost always easy, and by Lemma~\ref{lem:bound} easy pages add almost nothing to the loss.
+The test set gives the same order. I used it in two rounds, each with a fixed list. In the first round the correct page came first 43.0 percent of the time for the released model, 65.5 for uniform sampling, 71.1 for ReSa2, 71.0 for stage 2 only, 77.7 for all pool pages, and 63.0 for the 50\% mix of ReSa2. The second round came after I had chosen live hard negatives on validation data. I trained it again and it got 77.7, which is 6.6 points above ReSa2 (99\% interval 6.1 to 7.0). Its 50\% mix got 69.0.
 
-More negatives also help. Uniform sampling with 63 negatives put the correct page first 71.0 percent of the time. With all 999 pool pages for each mention there is no sampler at all, and the correct page came first 76.0 percent of the time. By Proposition~\ref{prop:top}(a) the whole pool is the upper limit for the mass of a step. Live hard negatives with seven pages is 0.4 points below it at rank one (interval 0.1 to 0.7) and equal to it in recall at ten.
+\subsection{A side step: news text and the average of two models}
+\label{sec:news}
 
-Live hard negatives was one of four rules that read the current scores, and I tried each with one run before I chose it. The second rule draws seven pages with probability in proportion to $e^{s_i}$ and corrects the loss for that, as in sampled softmax. It gave the same result, 75.7. The third takes the seven highest pages among those that score below the correct page. It was 2.2 points lower (1.8 to 2.7). So the pages above the correct page, the possible false negatives of Proposition~\ref{prop:bound}, help more than they hurt. The fourth mixes four hard pages with three random ones, and it was equal to ReSa2 (69.4). I chose live hard negatives for the three runs because it is the simplest of the four and was the highest of them on news text.
+The gains do not carry over to news text. On the 769 New York Times mentions with a page, the released retriever gets 33.6\% recall at 10. ReSa2 gets 30.9\%, and recall at 100 falls from 57.3\% to 55.9\%. Live hard negatives gets 30.0\%, equal to ReSa2 within the noise (difference $-0.9$, interval $-2.4$ to $+0.7$).
 
-The test set gives the same order. I used it in two rounds, each with a fixed list. In the first round the correct page came first 43.0 percent of the time for the released model, 65.5 for uniform sampling, 71.1 for ReSa2, 71.0 for stage 2 only (section~\ref{sec:parts}), 77.7 for all pool pages, and 63.0 for the 50\% mix of ReSa2. The second round came after I had chosen live hard negatives on validation data. I trained it again and it got 77.7, which is 6.6 points above ReSa2 (99\% interval 6.1 to 7.0). Its 50\% mix got 69.0. Recall at ten for the eight rows was 77.5, 92.8, 93.8, 93.4, 95.2, 91.5, 95.0 and 92.9.
+The average of section~\ref{sec:mixmath} changes this. I averaged the weights of the released mention encoder and a ReSa2 mention encoder. I named the half-and-half mix as the main result before I looked at any number. Over the three ReSa2 runs, the mix got 37.0\% recall at 10 on the news mentions, 3.4 points above the released model (interval 1.4 to 5.5), and 61.6\% recall at 100. On validation it got 91.0\%, which is 2.3 points below ReSa2 and 13.3 above the released model. The same mix of live hard negatives, over two runs, got 36.3\% on news, 2.7 points above the released model (0.7 to 4.9). On validation it put the correct page first 67.6\% of the time, against 62.4\% for the ReSa2 mix and 42.6\% for the released model.
 
-\subsection{Which pages the samplers pick}
-\label{sec:picks}
+Proposition~\ref{prop:mixbeats} says when to expect this. For ReSa2 I also made the mixes with $\alpha = 0.25$ and $0.75$. From $\alpha = 0$ to $1$, recall at 10 on news was 33.6, 37.0, 37.0, 34.1 and 30.9. A quadratic fits these five points to within 0.8 points, and its highest point is at $\alpha = 0.41$, between $\tfrac14$ and $\tfrac34$. On validation the correct page came first 42.6, 53.8, 62.4, 67.4 and 69.5 percent of the time. The fitted curve is highest at $\alpha = 1.04$, so there the mix is between the two models. Both are as the proposition says, with accuracy in the place of the loss. Training on Wikipedia text first helps on news and then goes too far.
 
-I also wanted to see which pages the samplers actually picked. I drew negatives 200 times each for 500 validation mentions. Table~\ref{tab:q1} and Figure~\ref{fig:incl} give the result.
-
-\begin{table}[t]
-\centering
-\small
-\caption{What each sampler picks, over 500 validation mentions and 200 draws per mention. The first column splits the seven negatives of one draw by how similar they are to the correct page: among the 25 most similar pool pages, the next 50, the next 225, or the rest. The overlap of two draws is the number of pages they share divided by the number of pages in either. The last column is the share of the mass of the whole pool that the seven negatives hold (section~\ref{sec:why}; 200 pools, scores of the released model).}
-\label{tab:q1}
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-Sampler & \begin{tabular}[c]{@{}c@{}}Negatives by similarity rank\\ top 25 / 25--75 / 75--300 / rest\end{tabular} & \begin{tabular}[c]{@{}c@{}}Distinct pages\\ (of 1,000)\end{tabular} & \begin{tabular}[c]{@{}c@{}}Overlap of\\ two draws\end{tabular} & \begin{tabular}[c]{@{}c@{}}Score gap to\\ correct page\end{tabular} & \begin{tabular}[c]{@{}c@{}}Share of\\ pool mass\end{tabular} \\
-\midrule
-Uniform   & 0.17 / 0.34 / 1.55 / 4.95 & 756 & 0.00 & $-13.3$ & 0.7\% \\
-Top-score & 4.13 / 1.07 / 1.17 / 0.62 & 7   & 1.00 & $-1.4$ & 87.4\% \\
-ReSa2     & 2.15 / 3.98 / 0.87 / 0.00 & 84  & 0.05 & $-8.6$ & 7.0\% \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-
-ReSa2 picked about six of its seven negatives from the 75 pages most similar to the correct page. For uniform sampling, the average was about half a page. Top-score gave me the same seven pages every time. Two ReSa2 draws shared very few pages, even though both tended to draw from the same part of the pool. Over 200 draws, uniform sampling used 756 different pool pages. ReSa2 used 84, and top-score used 7.
-
-The score gap says how hard the negatives are. On average, ReSa2's negatives score 8.6 points below the correct page. Uniform negatives score 13.3 points below it, so they are easier. Top-score negatives score only 1.4 points below it, so they are the hardest. Figure~\ref{fig:incl} shows the same picture page by page. Top-score puts most of its picks on the first few pages, which are the near-copies of the correct page.
-
-\subsection{Why the order comes out this way}
-\label{sec:why}
-
-Section~\ref{sec:teach} says that a step can teach only as much as the mass of its negatives allows. I computed that mass on 200 stored pools with the scores of the released model. This is the state before the first update, when top-score and live hard negatives pick the same seven pages. The last column of Table~\ref{tab:q1} gives the result. Seven uniform pages hold 0.7\% of the mass of the pool, which is the $7/999$ of Proposition~\ref{prop:unif}. ReSa2's seven hold 7.0\%. The seven highest-scoring pages hold 87.4\%, and for half of the mentions more than 92\%. The mean loss of a step is 0.28 for uniform, 0.59 for ReSa2 and 2.77 for the seven highest, against 2.87 for the whole pool. The mean total push is 0.09, 0.24 and 0.59, against 0.60.
-
-This is the order of the results in Table~\ref{tab:main}. It also says why seven live negatives do as well as 999. A few pages hold almost all of the mass, so the other 992 add almost nothing to the step.
-
-Top-score starts with the same 87\% and still finished at 65.3. The one difference from live hard negatives is that its scores are fixed. It shows the same seven pages at every step (Table~\ref{tab:q1}, overlap 1.00). Training pushes those seven down, the mass moves to other pages, and top-score never shows them. Uniform and ReSa2 also read fixed scores. Their random draws protect them, because each step brings different pages. With current scores that protection is not needed: live hard negatives uses no randomness at all.
-
-\subsection{Which part of ReSa2 does the work}
-\label{sec:parts}
-
-ReSa2 has two stages, and I wanted to know which one matters. I split the pool of each mention into four bands by similarity to the correct page: the 25 most similar pages, the next 50, the next 225, and the rest. I trained one model for each band, with seven uniform picks from that band. The correct page came first for 69.5, 66.6, 63.3, and 59.9 percent of the validation mentions. Each step away from the correct page costs about three points, and the interval of each step is about half a point on each side. Recall at 100 was the same for all four bands (98.3 to 98.4). The similar pages decide which page comes first.
-
-Stage 2 only got 69.2 / 92.9 / 98.3 over three runs. Before the runs I set the margin for ``equal to ReSa2'' at 0.5 points at rank one and 0.3 points of recall at ten. The differences were 0.30 and 0.42 points, so the second is outside the margin. On news text the gap is larger. Recall at ten was 27.0, against 30.9 for ReSa2. Stage 1 changes few pages, but those pages matter, most of all on text that differs from the training data.
-
-
-\subsection{Mention types, error types, and news text}
+\section{What did not improve}
 \label{sec:gaps}
 
-The proposal included three checks: performance by mention type, time and hierarchy mistakes, and transfer to news text. ReSa2 improves the first check. No sampler reduces time mistakes. On news text every trained model is worse than the released model, unless its weights are mixed with the released ones.
-
-By mention type, hard noun mentions are the weakest category for the released retriever, with 68.9\% recall at 10. ReSa2 raises this to 90.3\%, uniform sampling to 88.8\%, and top-score to 84.9\%. The other categories are in \texttt{docs/results/gaps/gaps.md} in the repository.
-
-The error breakdown in Figure~\ref{fig:errors} is less favorable to the original motivation. Time mistakes remain close to 2\% of all validation mentions. The released model has 1.8\%, uniform and top-score have 2.1\%, and ReSa2 has 2.0\%. Live hard negatives, which is not in the figure, has 1.7\%. Its first result is wrong for 24.4\% of mentions, against 57.4\% for the released model, so every other kind of mistake fell and this one did not.
+I started with events that differ only in the year. Figure~\ref{fig:errors} splits the wrong first results by kind of mistake. Time mistakes remain close to 2\% of all validation mentions. The released model has 1.8\%, uniform and top-score have 2.1\%, and ReSa2 has 2.0\%. Live hard negatives, which is not in the figure, has 1.7\%. Its first result is wrong for 24.4\% of mentions, against 57.4\% for the released model, so every other kind of mistake fell and this one did not.
 
 \begin{figure}[t]
 \centering
@@ -419,15 +456,7 @@ The error breakdown in Figure~\ref{fig:errors} is less favorable to the original
 \label{fig:errors}
 \end{figure}
 
-Top-score produces the fewest hierarchy mistakes: 3.0\% of validation mentions, compared with 4.4\% for ReSa2. ReSa2 still has fewer errors overall. Its first result is wrong for 30.5\% of mentions, compared with 34.7\% for top-score. Its advantage comes from the broader error count, especially the ``other'' category.
-
-The news results show a transfer limit. On the 769 New York Times mentions with a page, the released retriever gets 33.6\% recall at 10. ReSa2 gets 30.9\%. Recall at 100 also falls, from 57.3\% to 55.9\%. Live hard negatives gets 30.0\%, equal to ReSa2 within the noise (difference $-0.9$, interval $-2.4$ to $+0.7$). The gains after 1,500 Wikipedia training updates do not carry over to news text.
-
-The average of section~\ref{sec:mixmath} changes this. I averaged the weights of the released mention encoder and a ReSa2 mention encoder. I named the half-and-half mix as the main result before I looked at any number. Over the three ReSa2 runs, the mix got 37.0\% recall at 10 on the news mentions, 3.4 points above the released model (interval 1.4 to 5.5), and 61.6\% recall at 100. On validation it got 91.0\%, which is 2.3 points below ReSa2 and 13.3 above the released model. The same mix of live hard negatives, over two runs, got 36.3\% on news, 2.7 points above the released model (0.7 to 4.9). On validation it put the correct page first 67.6\% of the time, against 62.4\% for the ReSa2 mix and 42.6\% for the released model.
-
-Proposition~\ref{prop:mixbeats} says when to expect this. For ReSa2 I also made the mixes with $\alpha = 0.25$ and $0.75$. From $\alpha = 0$ to $1$, recall at 10 on news was 33.6, 37.0, 37.0, 34.1 and 30.9. A quadratic fits these five points to within 0.8 points, and its highest point is at $\alpha = 0.41$, between $\tfrac14$ and $\tfrac34$. On validation the correct page came first 42.6, 53.8, 62.4, 67.4 and 69.5 percent of the time. The fitted curve is highest at $\alpha = 1.04$, so there the mix is between the two models. Both are as the proposition says, with accuracy in the place of the loss. Training on Wikipedia text first helps on news and then goes too far.
-
-The error labels are approximate. A title rule calls the same title with a different year a time mistake, and one title's words contained in another title a hierarchy mistake. No person reviewed the cases.
+Hierarchy mistakes did fall, from 11.6\% of validation mentions for the released model to 4.4\% for ReSa2 and 3.2\% for live hard negatives. The labels are approximate. A title rule calls the same title with a different year a time mistake, and one title's words contained in another title a hierarchy mistake. No person reviewed the cases.
 
 \section{Conclusion}
 
@@ -441,13 +470,13 @@ And there is a wrinkle. I started with events that differ only in the year. The 
 
 Most comparisons use validation data. The test set confirms eight rows. I used it in two rounds, and the first list said that there would be one round only. The second round exists because I chose live hard negatives among four new rules with validation and news numbers, and I wanted a check on data that had no part in that choice. The news result has no such check. There is one news set, I looked at it many times, and the choice among the four rules used it.
 
-The mass in Table~\ref{tab:q1} is measured before the first update, on 200 pools. I did not measure how it moves during training, so the account of top-score in section~\ref{sec:why} is an explanation that fits the results and not a measurement. The check by mention type does not cover live hard negatives.
+The mass in Tables~\ref{tab:part1} and~\ref{tab:q1} is measured before the first update, on 200 pools. For rung 1 it is a bound and not a measurement. I did not measure how it moves during training, so the account of top-score in section~\ref{sec:rankings} is an explanation that fits the results and not a measurement. The check by mention type does not cover live hard negatives.
 
 With stored page vectors, training on the whole pool costs about the same as live hard negatives, because both score all 999 pages. The saving of seven negatives matters when each negative must pass through an encoder.
 
 The page encoder is frozen, and each mention's candidate pool comes from the released model's first 1,000 results. The page vectors and candidate membership stay fixed. Mention-side training can still change their scores. Training both encoders or refreshing the pools could produce different results.
 
-Each run receives 1,500 updates. The five main rules and stage 2 only have three runs each. The other runs (63 negatives, the whole pool, the four bands, three of the rules with current scores) have one run each, so for them I can give the noise over mentions but not the noise over runs. The half-and-half mix was named before its numbers were seen.
+Each run receives 1,500 updates. The five rungs with seven negatives and stage 2 only have three runs each. The other runs (63 negatives, the whole pool, the four bands, three of the rules with current scores) have one run each, so for them I can give the noise over mentions but not the noise over runs. The half-and-half mix was named before its numbers were seen.
 
 The fixed candidate pools also limit what training can address. For about 2\% of mentions, the correct page is absent from the first 1,000 candidates. The experiments do not explore negatives outside those pools.
 
@@ -461,7 +490,7 @@ During the project I used Claude, through an agent that ran on my computer and o
 
 That work had failures: out-of-memory errors, a full disk, a run that reached its time limit, and a bug in the original validation code. The checks were the reproduction of the released system's accuracy, tests for the sampling rules, three runs for each rule, and Lean for the formal claims. Lean does not verify the training code.
 
-AI also helped write the paper. I narrated the introduction, sections~\ref{sec:math} and~\ref{sec:samplers}, the main results, and the conclusion, and the agent turned the narration into plain technical English. The abstract, the opening of the introduction and the conclusion follow a second narration that I wrote after the last runs. Sections~\ref{sec:task}, \ref{sec:lean} and~\ref{sec:gaps}, the related work, the limitations, and this section were generated from a sheet of questions, facts, and results. I asked an agent to turn that material into prose in my voice. They were not transcribed from my spoken narration. The paragraphs on the later runs (more negatives, the bands, weight mixing, and live hard negatives) were drafted by the agent from the result tables. I gave the agent the Patel reference and the idea of sample efficiency as the frame. The agent proposed live hard negatives and the three other rules with current scores after I asked for samplers other than ReSa2. It also wrote sections~\ref{sec:teach} and~\ref{sec:mixmath} and their Lean files, and I asked for that math.
+AI also helped write the paper. I narrated the introduction, the first math and sampler sections, the main results, and the conclusion, and the agent turned the narration into plain technical English. The abstract and the conclusion follow later narrations of mine. The task section, the related work, the limitations, and this section were written by an agent from a sheet of my questions, facts, and results. The paragraphs on the later runs were drafted by the agent from the result tables. I gave the Patel reference and the idea of sample efficiency. The agent proposed live hard negatives and the three other rules with current scores after I asked for samplers other than ReSa2. It wrote sections~\ref{sec:teach}, \ref{sec:topmath} and~\ref{sec:mixmath} and their Lean files, and I asked for that math. The order of the paper, math before practice and ReSa2 before the epilogue, is mine. The ladder of rungs is the agent's proposal.
 
 The repository contains an AI-usage log with an entry for each session. The prompts and outputs are also retained.
 
@@ -481,34 +510,13 @@ The repository contains an AI-usage log with an entry for each session. The prom
 \appendix
 \small
 
-\section{Per-seed results}
-\label{app:seeds}
-
-Each cell gives recall at 1, 10, and 100 on the validation set for one run of Table~\ref{tab:main}.
-
-\begin{table}[H]
-\centering
-\footnotesize
-\begin{tabular}{@{}lccc@{}}
-\toprule
-Sampler & Seed 0 & Seed 1 & Seed 2 \\
-\midrule
-In-batch & 36.0 / 71.7 / 91.2 & 31.4 / 67.4 / 88.1 & 33.4 / 69.7 / 90.1 \\
-Uniform & 64.4 / 92.3 / 98.5 & 64.5 / 92.4 / 98.4 & 64.1 / 92.0 / 98.4 \\
-Top-score & 64.4 / 86.5 / 95.6 & 64.6 / 86.7 / 95.4 & 67.0 / 88.5 / 96.7 \\
-ReSa2 & 70.0 / 93.2 / 98.4 & 69.4 / 93.3 / 98.5 & 69.3 / 93.4 / 98.6 \\
-Live hard negatives & 75.7 / 94.7 / 98.7 & 75.6 / 94.6 / 98.7 & 75.6 / 94.7 / 98.8 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
 \section{The Lean files}
 \label{app:lean}
 
 Four files in the project repository, Lean 4 v4.34.1, built with \texttt{lake build}. The files \texttt{LossBound}, \texttt{Sampling} and \texttt{Mix} in \texttt{lean/} use Mathlib (real numbers, $\exp$, $\log$, finite sums); their proofs depend only on the axioms \texttt{propext}, \texttt{Classical.choice} and \texttt{Quot.sound}. \texttt{FalseNegatives} (Proposition~\ref{prop:bound}) uses the core library only. The listings give the definitions and the main statements of the first three files. The proofs are in the files.
 
 \lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={30-31,60-62}]{../../lean/LossBound.lean}
-\lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={37-37,40-40,43-43,46-46,56-57,74-75,88-89,92-93,115-117,129-130}]{../../lean/Sampling.lean}
+\lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={37-37,40-40,43-43,46-46,56-57,88-89,92-93,129-130}]{../../lean/Sampling.lean}
 \lstinputlisting[basicstyle=\ttfamily\scriptsize,linerange={19-19,21-23}]{../../lean/Mix.lean}
 
 \end{document}
